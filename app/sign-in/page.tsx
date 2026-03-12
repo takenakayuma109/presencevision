@@ -1,9 +1,20 @@
 "use client";
 
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Button, Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui";
 import { Input } from "@/components/ui";
 
 export default function SignInPage() {
+  const router = useRouter();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    router.push("/dashboard");
+  };
+
   return (
     <div className="flex min-h-screen items-center justify-center bg-muted/30 p-4">
       <Card className="w-full max-w-sm">
@@ -12,19 +23,31 @@ export default function SignInPage() {
             PV
           </div>
           <CardTitle className="text-xl">PresenceVision</CardTitle>
-          <CardDescription>Sign in to your account</CardDescription>
+          <CardDescription>アカウントにサインイン</CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div>
-            <label className="text-sm font-medium mb-2 block">Email</label>
-            <Input type="email" placeholder="you@example.com" />
-          </div>
-          <div>
-            <label className="text-sm font-medium mb-2 block">Password</label>
-            <Input type="password" placeholder="••••••••" />
-          </div>
-          <Button className="w-full">Sign In</Button>
-        </CardContent>
+        <form onSubmit={handleSubmit}>
+          <CardContent className="space-y-4">
+            <div>
+              <label className="text-sm font-medium mb-2 block">メールアドレス</label>
+              <Input
+                type="email"
+                placeholder="you@example.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+              />
+            </div>
+            <div>
+              <label className="text-sm font-medium mb-2 block">パスワード</label>
+              <Input
+                type="password"
+                placeholder="••••••••"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
+            </div>
+            <Button type="submit" className="w-full">サインイン</Button>
+          </CardContent>
+        </form>
       </Card>
     </div>
   );

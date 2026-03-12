@@ -1,16 +1,9 @@
 "use client";
 
-import { Button, Badge, Card, CardHeader, CardTitle, CardContent } from "@/components/ui";
+import { Button, Badge, Card, CardHeader, CardTitle, CardContent, TechTerm } from "@/components/ui";
 import { Eye, AlertCircle } from "lucide-react";
 import { useT } from "@/lib/i18n";
-
-const mockMentions = [
-  { id: "1", source: "Twitter", snippet: "PresenceVisionのAEO機能を発見 - コンテンツ戦略が変わる！", sentiment: "positive", time: "2時間前" },
-  { id: "2", source: "Reddit", snippet: "PresenceVisionを試した方いますか？導入前にフィードバックを聞きたい。", sentiment: "neutral", time: "5時間前" },
-  { id: "3", source: "LinkedIn", snippet: "チームでPresenceVisionを使ったデジタルプレゼンス最適化を導入中。", sentiment: "positive", time: "1日前" },
-  { id: "4", source: "Hacker News", snippet: "PresenceVisionは価格に対して過大評価されている気がする。", sentiment: "negative", time: "2日前" },
-  { id: "5", source: "ブログ", snippet: "PresenceVisionはブランドのAI検索最適化を支援。", sentiment: "positive", time: "3日前" },
-];
+import { useStore } from "@/lib/store";
 
 const mockFaqGaps = [
   { question: "PresenceVisionとは？", status: "未対応" },
@@ -38,14 +31,27 @@ const sentimentLabel: Record<string, string> = {
 
 export default function MonitoringPage() {
   const t = useT();
+  const { mentions, addMention } = useStore();
+
+  const handleRunMonitoring = () => {
+    addMention({
+      source: "Twitter",
+      snippet: `新しいメンションを検出しました（${new Date().toLocaleTimeString("ja-JP")}）`,
+      sentiment: "neutral",
+      time: "たった今",
+    });
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-lg font-semibold">{t("monitoring.title")}</h2>
+          <h2 className="text-lg font-semibold">
+            <TechTerm term="モニタリング">{t("monitoring.title")}</TechTerm>
+          </h2>
           <p className="text-sm text-muted-foreground">{t("monitoring.subtitle")}</p>
         </div>
-        <Button>
+        <Button onClick={handleRunMonitoring}>
           <Eye className="h-4 w-4 mr-2" />
           {t("monitoring.run")}
         </Button>
@@ -54,11 +60,13 @@ export default function MonitoringPage() {
       <div className="grid gap-4 lg:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">{t("monitoring.recentMentions")}</CardTitle>
+            <CardTitle className="text-base">
+              <TechTerm term="メンション">{t("monitoring.recentMentions")}</TechTerm>
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              {mockMentions.map((m) => (
+              {mentions.map((m) => (
                 <div key={m.id} className="py-3 border-b last:border-0">
                   <div className="flex items-center justify-between mb-1">
                     <Badge variant="outline">{m.source}</Badge>
@@ -76,7 +84,8 @@ export default function MonitoringPage() {
           <Card>
             <CardHeader>
               <CardTitle className="text-base flex items-center gap-2">
-                <AlertCircle className="h-4 w-4" /> {t("monitoring.faqGaps")}
+                <AlertCircle className="h-4 w-4" />
+                <TechTerm term="FAQギャップ">{t("monitoring.faqGaps")}</TechTerm>
               </CardTitle>
             </CardHeader>
             <CardContent>

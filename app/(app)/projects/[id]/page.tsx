@@ -3,38 +3,21 @@
 import { useState } from "react";
 import { useParams } from "next/navigation";
 import { buttonVariants } from "@/components/ui/button";
-import { Badge, Card, CardHeader, CardTitle, CardContent } from "@/components/ui";
+import { Badge, Card, CardHeader, CardTitle, CardContent, TechTerm } from "@/components/ui";
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui";
 import { cn } from "@/lib/utils";
 import { ArrowLeft, BarChart3, Box, FileText } from "lucide-react";
 import Link from "next/link";
-
-const mockProject = {
-  id: "1",
-  name: "Digital Presence Guide",
-  description: "Comprehensive guide to digital presence optimization for AEO and GEO.",
-  entities: 12,
-  topics: 24,
-  content: 18,
-};
-
-const mockEntities = [
-  { id: "1", name: "PresenceVision", type: "Organization", status: "Active" },
-  { id: "2", name: "Digital Presence", type: "Concept", status: "Active" },
-  { id: "3", name: "AEO", type: "Concept", status: "Active" },
-  { id: "4", name: "GEO", type: "Concept", status: "Active" },
-  { id: "5", name: "Answer Engine", type: "Technology", status: "Active" },
-];
-
-const mockTopics = [
-  { id: "1", title: "What is Digital Presence?", intent: "Informational", status: "completed", cluster: "Core" },
-  { id: "2", title: "AEO vs SEO comparison", intent: "Comparison", status: "in_progress", cluster: "Strategy" },
-  { id: "3", title: "How to optimize for GEO", intent: "How-to", status: "backlog", cluster: "Tactics" },
-  { id: "4", title: "Entity-based content strategy", intent: "Informational", status: "completed", cluster: "Core" },
-  { id: "5", title: "LLM citation best practices", intent: "How-to", status: "backlog", cluster: "Tactics" },
-];
+import { useStore } from "@/lib/store";
+import { useT } from "@/lib/i18n";
 
 type Tab = "overview" | "entities" | "topics";
+
+const tabLabels: Record<Tab, string> = {
+  overview: "概要",
+  entities: "エンティティ",
+  topics: "トピック",
+};
 
 const statusVariant: Record<string, "secondary" | "warning" | "success"> = {
   backlog: "secondary",
@@ -42,22 +25,44 @@ const statusVariant: Record<string, "secondary" | "warning" | "success"> = {
   completed: "success",
 };
 
+const statusLabel: Record<string, string> = {
+  backlog: "未着手",
+  in_progress: "進行中",
+  completed: "完了",
+};
+
 export default function ProjectDetailPage() {
   const params = useParams();
+  const t = useT();
+  const { projects, entities, topics } = useStore();
   const [activeTab, setActiveTab] = useState<Tab>("overview");
+
+  const project = projects.find((p) => p.id === params.id);
+
+  if (!project) {
+    return (
+      <div className="space-y-6">
+        <Link href="/projects" className={cn(buttonVariants({ variant: "ghost", size: "sm" }), "inline-flex")}>
+          <ArrowLeft className="h-4 w-4 mr-1" />
+          戻る
+        </Link>
+        <p className="text-sm text-muted-foreground">プロジェクトが見つかりません。</p>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-4">
         <Link href="/projects" className={cn(buttonVariants({ variant: "ghost", size: "sm" }), "inline-flex")}>
           <ArrowLeft className="h-4 w-4 mr-1" />
-          Back
+          戻る
         </Link>
       </div>
 
       <div>
-        <h2 className="text-lg font-semibold">{mockProject.name}</h2>
-        <p className="text-sm text-muted-foreground mt-1">{mockProject.description}</p>
+        <h2 className="text-lg font-semibold">{project.name}</h2>
+        <p className="text-sm text-muted-foreground mt-1">{project.description}</p>
       </div>
 
       <div className="flex gap-2 border-b">
@@ -70,7 +75,7 @@ export default function ProjectDetailPage() {
               activeTab === tab ? "border-foreground text-foreground" : "border-transparent text-muted-foreground hover:text-foreground"
             )}
           >
-            {tab.charAt(0).toUpperCase() + tab.slice(1)}
+            {tabLabels[tab]}
           </button>
         ))}
       </div>
@@ -80,22 +85,22 @@ export default function ProjectDetailPage() {
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium flex items-center gap-2">
-                <BarChart3 className="h-4 w-4" /> Stats
+                <BarChart3 className="h-4 w-4" /> 統計
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
                 <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Entities</span>
-                  <span className="font-medium">{mockProject.entities}</span>
+                  <span className="text-muted-foreground"><TechTerm term="エンティティ">エンティティ</TechTerm></span>
+                  <span className="font-medium">{project.entities}</span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Topics</span>
-                  <span className="font-medium">{mockProject.topics}</span>
+                  <span className="text-muted-foreground">トピック</span>
+                  <span className="font-medium">{project.topics}</span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Content</span>
-                  <span className="font-medium">{mockProject.content}</span>
+                  <span className="text-muted-foreground">コンテンツ</span>
+                  <span className="font-medium">{project.content}</span>
                 </div>
               </div>
             </CardContent>
@@ -106,23 +111,23 @@ export default function ProjectDetailPage() {
       {activeTab === "entities" && (
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Entities</CardTitle>
+            <CardTitle className="text-base"><TechTerm term="エンティティ">エンティティ</TechTerm></CardTitle>
           </CardHeader>
           <CardContent>
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Type</TableHead>
-                  <TableHead>Status</TableHead>
+                  <TableHead>名前</TableHead>
+                  <TableHead>タイプ</TableHead>
+                  <TableHead>ステータス</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {mockEntities.map((e) => (
+                {entities.map((e) => (
                   <TableRow key={e.id}>
                     <TableCell className="font-medium">{e.name}</TableCell>
                     <TableCell>{e.type}</TableCell>
-                    <TableCell><Badge variant="success">{e.status}</Badge></TableCell>
+                    <TableCell><Badge variant="success">アクティブ</Badge></TableCell>
                   </TableRow>
                 ))}
               </TableBody>
@@ -134,25 +139,25 @@ export default function ProjectDetailPage() {
       {activeTab === "topics" && (
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Topics</CardTitle>
+            <CardTitle className="text-base">トピック</CardTitle>
           </CardHeader>
           <CardContent>
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Title</TableHead>
-                  <TableHead>Intent</TableHead>
-                  <TableHead>Cluster</TableHead>
-                  <TableHead>Status</TableHead>
+                  <TableHead>タイトル</TableHead>
+                  <TableHead>意図</TableHead>
+                  <TableHead>クラスター</TableHead>
+                  <TableHead>ステータス</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {mockTopics.map((t) => (
-                  <TableRow key={t.id}>
-                    <TableCell className="font-medium">{t.title}</TableCell>
-                    <TableCell>{t.intent}</TableCell>
-                    <TableCell>{t.cluster}</TableCell>
-                    <TableCell><Badge variant={statusVariant[t.status]}>{t.status.replace("_", " ")}</Badge></TableCell>
+                {topics.map((tp) => (
+                  <TableRow key={tp.id}>
+                    <TableCell className="font-medium">{tp.title}</TableCell>
+                    <TableCell>{tp.intent}</TableCell>
+                    <TableCell>{tp.cluster}</TableCell>
+                    <TableCell><Badge variant={statusVariant[tp.status]}>{statusLabel[tp.status] ?? tp.status}</Badge></TableCell>
                   </TableRow>
                 ))}
               </TableBody>

@@ -1,7 +1,8 @@
 "use client";
 
+import { useMemo } from "react";
 import { StatCard, PipelineChart, ActivityFeed } from "@/components/dashboard";
-import { Card, CardContent, CardHeader, CardTitle, Badge } from "@/components/ui";
+import { Card, CardContent, CardHeader, CardTitle, Badge, TechTerm } from "@/components/ui";
 import {
   Eye,
   Box,
@@ -10,27 +11,48 @@ import {
   AlertTriangle,
   TrendingUp,
 } from "lucide-react";
-import type { DashboardData } from "@/types";
+import type { ActivityItem } from "@/types";
 import { useT } from "@/lib/i18n";
-
-const mockData: DashboardData = {
-  visibilityOverview: { score: 72, trend: 5 },
-  entityCoverage: { total: 3, covered: 1 },
-  contentPipeline: { draft: 3, review: 2, approved: 1, published: 5 },
-  pendingApprovals: 2,
-  riskAlerts: 1,
-  recentActivity: [
-    { id: "1", action: "Published", resource: "デジタルプレゼンスとは？完全ガイド", timestamp: new Date() },
-    { id: "2", action: "Created brief", resource: "AEO入門", timestamp: new Date(Date.now() - 3600000) },
-    { id: "3", action: "Research completed", resource: "GEO vs SEO", timestamp: new Date(Date.now() - 7200000) },
-    { id: "4", action: "Entity added", resource: "PresenceVision", timestamp: new Date(Date.now() - 86400000) },
-  ],
-  weeklySummary: { articlesPublished: 5, topicsResearched: 12, entitiesUpdated: 3 },
-};
+import { useStore } from "@/lib/store";
 
 export default function DashboardPage() {
-  const data = mockData;
   const t = useT();
+  const { contentItems, approvals, complianceFlags, entities, auditLogs } = useStore();
+
+  const pipelineCounts = useMemo(() => ({
+    draft: contentItems.filter((c) => c.status === "DRAFT").length,
+    review: contentItems.filter((c) => c.status === "REVIEW").length,
+    approved: contentItems.filter((c) => c.status === "APPROVED").length,
+    published: contentItems.filter((c) => c.status === "PUBLISHED").length,
+  }), [contentItems]);
+
+  const pendingApprovals = useMemo(
+    () => approvals.filter((a) => a.status === "PENDING").length,
+    [approvals],
+  );
+
+  const unresolvedFlags = useMemo(
+    () => complianceFlags.filter((f) => !f.resolved).length,
+    [complianceFlags],
+  );
+
+  const entityCount = entities.length;
+
+  const recentActivity: ActivityItem[] = useMemo(
+    () =>
+      auditLogs.slice(0, 4).map((log) => ({
+        id: log.id,
+        action: log.action,
+        resource: log.resource,
+        timestamp: log.timestamp,
+      })),
+    [auditLogs],
+  );
+
+  const entityCovered = useMemo(
+    () => entities.filter((e) => e.contentCount > 0).length,
+    [entities],
+  );
 
   return (
     <div className="space-y-6">
@@ -38,7 +60,7 @@ export default function DashboardPage() {
         <div>
           <h2 className="text-lg font-semibold">{t("dashboard.overview")}</h2>
           <p className="text-sm text-muted-foreground">
-            {t("dashboard.subtitle")}
+            <TechTerm term="デジタルプレゼンス">{t("dashboard.subtitle")}</TechTerm>
           </p>
         </div>
         <Badge variant="info">{t("common.demoMode")}</Badge>
@@ -47,34 +69,34 @@ export default function DashboardPage() {
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <StatCard
           title={t("dashboard.visibilityScore")}
-          value={data.visibilityOverview.score}
+          value={72}
           subtitle="/ 100"
           icon={TrendingUp}
-          trend={data.visibilityOverview.trend}
+          trend={5}
         />
         <StatCard
           title={t("dashboard.entityCoverage")}
-          value={`${data.entityCoverage.covered}/${data.entityCoverage.total}`}
+          value={`${entityCovered}/${entityCount}`}
           icon={Box}
         />
         <StatCard
           title={t("dashboard.pendingApprovals")}
-          value={data.pendingApprovals}
+          value={pendingApprovals}
           icon={CheckCircle2}
         />
         <StatCard
           title={t("dashboard.riskAlerts")}
-          value={data.riskAlerts}
+          value={unresolvedFlags}
           icon={AlertTriangle}
         />
       </div>
 
       <div className="grid gap-4 lg:grid-cols-7">
         <div className="lg:col-span-4">
-          <PipelineChart data={data.contentPipeline} />
+          <PipelineChart data={pipelineCounts} />
         </div>
         <div className="lg:col-span-3">
-          <ActivityFeed items={data.recentActivity} />
+          <ActivityFeed items={recentActivity} />
         </div>
       </div>
 
@@ -89,15 +111,15 @@ export default function DashboardPage() {
             <div className="space-y-2">
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">{t("dashboard.articlesPublished")}</span>
-                <span className="font-medium">{data.weeklySummary.articlesPublished}</span>
+                <span className="font-medium">{pipelineCounts.published}</span>
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">{t("dashboard.topicsResearched")}</span>
-                <span className="font-medium">{data.weeklySummary.topicsResearched}</span>
+                <span className="font-medium">12</span>
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">{t("dashboard.entitiesUpdated")}</span>
-                <span className="font-medium">{data.weeklySummary.entitiesUpdated}</span>
+                <span className="font-medium">{entityCount}</span>
               </div>
             </div>
           </CardContent>
@@ -106,7 +128,7 @@ export default function DashboardPage() {
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium flex items-center gap-2">
-              <Eye className="h-4 w-4" /> {t("dashboard.presenceLayers")}
+              <Eye className="h-4 w-4" /> <TechTerm term="プレゼンスレイヤー">{t("dashboard.presenceLayers")}</TechTerm>
             </CardTitle>
           </CardHeader>
           <CardContent>

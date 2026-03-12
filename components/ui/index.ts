@@ -5,3 +5,5 @@ export { Input } from "./input";
 export { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "./table";
 export { Select } from "./select";
 export { Textarea } from "./textarea";
+export { Dialog } from "./dialog";
+export { TechTerm, techTerms } from "./tech-term";

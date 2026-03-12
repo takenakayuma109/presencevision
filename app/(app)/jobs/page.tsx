@@ -1,18 +1,12 @@
 "use client";
 
-import { Button, Badge, Card, CardHeader, CardTitle, CardContent } from "@/components/ui";
+import { useState } from "react";
+import { Button, Badge, Card, CardHeader, CardTitle, CardContent, Dialog, Input, Select } from "@/components/ui";
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui";
 import { Zap } from "lucide-react";
 import { formatDateTime } from "@/lib/utils";
 import { useT } from "@/lib/i18n";
-
-const mockJobs = [
-  { id: "1", type: "リサーチ", project: "デジタルプレゼンスガイド", status: "completed", created: new Date(Date.now() - 3600000), completed: new Date(Date.now() - 3500000) },
-  { id: "2", type: "エンティティ同期", project: "ブランドナレッジベース", status: "processing", created: new Date(Date.now() - 1800000), completed: null },
-  { id: "3", type: "モニタリング", project: "全体", status: "queued", created: new Date(Date.now() - 900000), completed: null },
-  { id: "4", type: "レポート生成", project: "AEO戦略", status: "completed", created: new Date(Date.now() - 86400000), completed: new Date(Date.now() - 86350000) },
-  { id: "5", type: "コンテンツインデックス", project: "デジタルプレゼンスガイド", status: "failed", created: new Date(Date.now() - 172800000), completed: null },
-];
+import { useStore } from "@/lib/store";
 
 const statusVariant: Record<string, "secondary" | "warning" | "success" | "destructive"> = {
   queued: "secondary",
@@ -28,8 +22,29 @@ const statusLabel: Record<string, string> = {
   failed: "失敗",
 };
 
+const jobTypes = ["リサーチ", "エンティティ同期", "モニタリング", "レポート生成", "コンテンツインデックス"];
+
 export default function JobsPage() {
   const t = useT();
+  const { jobs, addJob } = useStore();
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [newType, setNewType] = useState(jobTypes[0]);
+  const [newProject, setNewProject] = useState("");
+
+  const handleAdd = () => {
+    if (!newProject.trim()) return;
+    addJob({
+      type: newType,
+      project: newProject.trim(),
+      status: "queued",
+      created: new Date(),
+      completed: null,
+    });
+    setNewType(jobTypes[0]);
+    setNewProject("");
+    setDialogOpen(false);
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -37,7 +52,7 @@ export default function JobsPage() {
           <h2 className="text-lg font-semibold">{t("jobs.title")}</h2>
           <p className="text-sm text-muted-foreground">{t("jobs.subtitle")}</p>
         </div>
-        <Button>
+        <Button onClick={() => setDialogOpen(true)}>
           <Zap className="h-4 w-4 mr-2" />
           {t("jobs.enqueue")}
         </Button>
@@ -59,7 +74,7 @@ export default function JobsPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {mockJobs.map((j) => (
+              {jobs.map((j) => (
                 <TableRow key={j.id}>
                   <TableCell className="font-medium">{j.type}</TableCell>
                   <TableCell>{j.project}</TableCell>
@@ -72,6 +87,31 @@ export default function JobsPage() {
           </Table>
         </CardContent>
       </Card>
+
+      <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)} title="ジョブ追加">
+        <div className="space-y-4">
+          <div>
+            <label className="text-sm font-medium mb-2 block">{t("jobs.type")}</label>
+            <Select value={newType} onChange={(e) => setNewType(e.target.value)}>
+              {jobTypes.map((jt) => (
+                <option key={jt} value={jt}>{jt}</option>
+              ))}
+            </Select>
+          </div>
+          <div>
+            <label className="text-sm font-medium mb-2 block">{t("jobs.project")}</label>
+            <Input
+              value={newProject}
+              onChange={(e) => setNewProject(e.target.value)}
+              placeholder="プロジェクト名"
+            />
+          </div>
+          <div className="flex justify-end gap-2">
+            <Button variant="outline" onClick={() => setDialogOpen(false)}>キャンセル</Button>
+            <Button onClick={handleAdd}>追加</Button>
+          </div>
+        </div>
+      </Dialog>
     </div>
   );
 }

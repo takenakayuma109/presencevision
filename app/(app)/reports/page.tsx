@@ -1,17 +1,11 @@
 "use client";
 
-import { Button, Badge, Card, CardHeader, CardTitle, CardContent } from "@/components/ui";
+import { useState } from "react";
+import { Button, Badge, Card, CardHeader, CardTitle, CardContent, Input, Select, Dialog } from "@/components/ui";
 import { BarChart3, FileText } from "lucide-react";
 import { formatDate } from "@/lib/utils";
 import { useT } from "@/lib/i18n";
-
-const mockReports = [
-  { id: "1", title: "週間サマリー - 3月10日", type: "weekly", date: new Date(Date.now() - 86400000) },
-  { id: "2", title: "デイリーダイジェスト - 3月11日", type: "daily", date: new Date(Date.now() - 3600000) },
-  { id: "3", title: "月間概要 - 2025年2月", type: "monthly", date: new Date(Date.now() - 2592000000) },
-  { id: "4", title: "週間サマリー - 3月3日", type: "weekly", date: new Date(Date.now() - 604800000) },
-  { id: "5", title: "デイリーダイジェスト - 3月9日", type: "daily", date: new Date(Date.now() - 172800000) },
-];
+import { useStore } from "@/lib/store";
 
 const typeVariant: Record<string, "secondary" | "info" | "default"> = {
   daily: "secondary",
@@ -35,6 +29,24 @@ const mockWeeklySummary = {
 
 export default function ReportsPage() {
   const t = useT();
+  const { reports, addReport } = useStore();
+
+  const [open, setOpen] = useState(false);
+  const [title, setTitle] = useState("");
+  const [type, setType] = useState("daily");
+
+  const handleSubmit = () => {
+    if (!title.trim()) return;
+    addReport({
+      title: title.trim(),
+      type,
+      date: new Date(),
+    });
+    setTitle("");
+    setType("daily");
+    setOpen(false);
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -42,11 +54,39 @@ export default function ReportsPage() {
           <h2 className="text-lg font-semibold">{t("reports.title")}</h2>
           <p className="text-sm text-muted-foreground">{t("reports.subtitle")}</p>
         </div>
-        <Button>
+        <Button onClick={() => setOpen(true)}>
           <BarChart3 className="h-4 w-4 mr-2" />
           {t("reports.generate")}
         </Button>
       </div>
+
+      <Dialog open={open} onClose={() => setOpen(false)} title={t("reports.generate")}>
+        <div className="space-y-4">
+          <div>
+            <label className="text-sm font-medium">タイトル</label>
+            <Input
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder="レポートタイトル"
+              className="mt-1"
+            />
+          </div>
+          <div>
+            <label className="text-sm font-medium">タイプ</label>
+            <Select value={type} onChange={(e) => setType(e.target.value)} className="mt-1">
+              <option value="daily">daily</option>
+              <option value="weekly">weekly</option>
+              <option value="monthly">monthly</option>
+            </Select>
+          </div>
+          <div className="flex justify-end gap-2 pt-2">
+            <Button variant="outline" onClick={() => setOpen(false)}>
+              キャンセル
+            </Button>
+            <Button onClick={handleSubmit}>生成</Button>
+          </div>
+        </div>
+      </Dialog>
 
       <Card>
         <CardHeader>
@@ -86,7 +126,7 @@ export default function ReportsPage() {
       </Card>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {mockReports.map((r) => (
+        {reports.map((r) => (
           <Card key={r.id}>
             <CardHeader className="pb-2">
               <div className="flex items-start justify-between">

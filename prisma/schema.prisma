@@ -1,0 +1,482 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../node_modules/.prisma/client"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ─── Auth & Workspace ───────────────────────────────────────────────
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String    @unique
+  emailVerified DateTime?
+  image         String?
+  passwordHash  String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  memberships      Membership[]
+  approvalRequests ApprovalRequest[]
+  reviewComments   ReviewComment[]
+  auditLogs        AuditLog[]
+  accounts         Account[]
+  sessions         Session[]
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+model Workspace {
+  id        String   @id @default(cuid())
+  name      String
+  slug      String   @unique
+  plan      String   @default("free")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  memberships Membership[]
+  projects    Project[]
+  channels    Channel[]
+  auditLogs   AuditLog[]
+}
+
+enum MemberRole {
+  OWNER
+  ADMIN
+  EDITOR
+  REVIEWER
+  ANALYST
+  VIEWER
+}
+
+model Membership {
+  id          String     @id @default(cuid())
+  userId      String
+  workspaceId String
+  role        MemberRole @default(VIEWER)
+  createdAt   DateTime   @default(now())
+
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, workspaceId])
+}
+
+// ─── Projects & Entities ────────────────────────────────────────────
+
+model Project {
+  id          String   @id @default(cuid())
+  workspaceId String
+  name        String
+  description String?  @db.Text
+  locale      String   @default("ja")
+  status      String   @default("active")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  workspace       Workspace        @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  entities        Entity[]
+  competitors     Competitor[]
+  topics          Topic[]
+  topicClusters   TopicCluster[]
+  contentBriefs   ContentBrief[]
+  contentAssets   ContentAsset[]
+  channels        Channel[]
+  reports         Report[]
+  scheduledTasks  ScheduledTask[]
+  metricSnapshots MetricSnapshot[]
+  mentions        Mention[]
+}
+
+model Entity {
+  id          String   @id @default(cuid())
+  projectId   String
+  name        String
+  type        String
+  description String?  @db.Text
+  locale      String   @default("ja")
+  metadata    Json?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  project       Project        @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  contentBriefs ContentBrief[]
+  contentAssets ContentAsset[]
+  mentions      Mention[]
+}
+
+model Competitor {
+  id        String   @id @default(cuid())
+  projectId String
+  name      String
+  domain    String?
+  notes     String?  @db.Text
+  createdAt DateTime @default(now())
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+}
+
+// ─── Topics ─────────────────────────────────────────────────────────
+
+model TopicCluster {
+  id        String   @id @default(cuid())
+  projectId String
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  topics  Topic[]
+}
+
+model Topic {
+  id             String   @id @default(cuid())
+  projectId      String
+  topicClusterId String?
+  title          String
+  intent         String?
+  volume         Int?
+  difficulty     Int?
+  priority       Int      @default(0)
+  status         String   @default("backlog")
+  locale         String   @default("ja")
+  metadata       Json?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  project      Project       @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  topicCluster TopicCluster? @relation(fields: [topicClusterId], references: [id])
+  contentBrief ContentBrief?
+}
+
+// ─── Content Pipeline ───────────────────────────────────────────────
+
+enum BriefStatus {
+  DRAFT
+  READY
+  IN_PROGRESS
+  COMPLETED
+}
+
+model ContentBrief {
+  id          String      @id @default(cuid())
+  projectId   String
+  topicId     String      @unique
+  entityId    String?
+  title       String
+  targetAudience String?  @db.Text
+  searchIntent   String?
+  outline     Json?
+  angle       String?     @db.Text
+  evidenceReqs String?    @db.Text
+  style       String?
+  status      BriefStatus @default(DRAFT)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  project       Project        @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  topic         Topic          @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  entity        Entity?        @relation(fields: [entityId], references: [id])
+  contentAssets ContentAsset[]
+}
+
+enum AssetStatus {
+  DRAFT
+  REVIEW
+  APPROVED
+  PUBLISHED
+  ARCHIVED
+}
+
+enum AssetType {
+  ARTICLE
+  FAQ
+  GLOSSARY
+  LANDING
+  COMPARISON
+  KNOWLEDGE
+}
+
+model ContentAsset {
+  id        String      @id @default(cuid())
+  projectId String
+  briefId   String?
+  entityId  String?
+  type      AssetType   @default(ARTICLE)
+  title     String
+  slug      String?
+  locale    String      @default("ja")
+  status    AssetStatus @default(DRAFT)
+  metadata  Json?
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+
+  project          Project           @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  brief            ContentBrief?     @relation(fields: [briefId], references: [id])
+  entity           Entity?           @relation(fields: [entityId], references: [id])
+  versions         ContentVersion[]
+  evidenceItems    EvidenceItem[]
+  publishTargets   PublishTarget[]
+  approvalRequests ApprovalRequest[]
+  riskFlags        RiskFlag[]
+  generatedArtifacts GeneratedArtifact[]
+}
+
+model ContentVersion {
+  id        String   @id @default(cuid())
+  assetId   String
+  version   Int      @default(1)
+  body      String   @db.Text
+  bodyHtml  String?  @db.Text
+  changelog String?  @db.Text
+  schemaOrg Json?
+  metadata  Json?
+  createdAt DateTime @default(now())
+
+  asset ContentAsset @relation(fields: [assetId], references: [id], onDelete: Cascade)
+}
+
+model EvidenceItem {
+  id        String   @id @default(cuid())
+  assetId   String
+  claim     String   @db.Text
+  source    String?  @db.Text
+  url       String?
+  verified  Boolean  @default(false)
+  notes     String?  @db.Text
+  createdAt DateTime @default(now())
+
+  asset ContentAsset @relation(fields: [assetId], references: [id], onDelete: Cascade)
+}
+
+// ─── Channels & Publishing ──────────────────────────────────────────
+
+model Channel {
+  id          String   @id @default(cuid())
+  workspaceId String
+  projectId   String?
+  name        String
+  type        String
+  config      Json?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  workspace   Workspace           @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  project     Project?            @relation(fields: [projectId], references: [id])
+  credentials ChannelCredential[]
+  publishTargets PublishTarget[]
+}
+
+model ChannelCredential {
+  id        String   @id @default(cuid())
+  channelId String
+  key       String
+  value     String   @db.Text
+  createdAt DateTime @default(now())
+
+  channel Channel @relation(fields: [channelId], references: [id], onDelete: Cascade)
+}
+
+model PublishTarget {
+  id        String   @id @default(cuid())
+  assetId   String
+  channelId String
+  status    String   @default("pending")
+  publishAt DateTime?
+  publishedUrl String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  asset   ContentAsset @relation(fields: [assetId], references: [id], onDelete: Cascade)
+  channel Channel      @relation(fields: [channelId], references: [id], onDelete: Cascade)
+  jobs    PublishJob[]
+}
+
+model PublishJob {
+  id              String   @id @default(cuid())
+  publishTargetId String
+  status          String   @default("queued")
+  attempts        Int      @default(0)
+  lastError       String?  @db.Text
+  completedAt     DateTime?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  publishTarget PublishTarget @relation(fields: [publishTargetId], references: [id], onDelete: Cascade)
+}
+
+// ─── Approval & Review ──────────────────────────────────────────────
+
+enum ApprovalStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  NEEDS_REVISION
+}
+
+model ApprovalRequest {
+  id        String         @id @default(cuid())
+  assetId   String
+  requesterId String
+  status    ApprovalStatus @default(PENDING)
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+
+  asset     ContentAsset    @relation(fields: [assetId], references: [id], onDelete: Cascade)
+  requester User            @relation(fields: [requesterId], references: [id])
+  comments  ReviewComment[]
+}
+
+model ReviewComment {
+  id                String   @id @default(cuid())
+  approvalRequestId String
+  authorId          String
+  body              String   @db.Text
+  createdAt         DateTime @default(now())
+
+  approvalRequest ApprovalRequest @relation(fields: [approvalRequestId], references: [id], onDelete: Cascade)
+  author          User            @relation(fields: [authorId], references: [id])
+}
+
+// ─── Monitoring & Metrics ───────────────────────────────────────────
+
+model MetricSnapshot {
+  id        String   @id @default(cuid())
+  projectId String
+  type      String
+  data      Json
+  createdAt DateTime @default(now())
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+}
+
+model Mention {
+  id        String   @id @default(cuid())
+  projectId String
+  entityId  String?
+  source    String
+  url       String?
+  snippet   String?  @db.Text
+  sentiment String?
+  createdAt DateTime @default(now())
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  entity  Entity? @relation(fields: [entityId], references: [id])
+}
+
+// ─── Reports ────────────────────────────────────────────────────────
+
+model Report {
+  id        String   @id @default(cuid())
+  projectId String
+  type      String
+  title     String
+  body      String   @db.Text
+  data      Json?
+  createdAt DateTime @default(now())
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+}
+
+// ─── System ─────────────────────────────────────────────────────────
+
+model AuditLog {
+  id          String   @id @default(cuid())
+  workspaceId String
+  userId      String?
+  action      String
+  resource    String
+  resourceId  String?
+  meta        Json?
+  createdAt   DateTime @default(now())
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  user      User?     @relation(fields: [userId], references: [id])
+}
+
+model ScheduledTask {
+  id        String   @id @default(cuid())
+  projectId String
+  type      String
+  cron      String?
+  config    Json?
+  enabled   Boolean  @default(true)
+  lastRunAt DateTime?
+  nextRunAt DateTime?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+}
+
+model RiskFlag {
+  id        String   @id @default(cuid())
+  assetId   String
+  type      String
+  severity  String   @default("medium")
+  message   String   @db.Text
+  resolved  Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  asset ContentAsset @relation(fields: [assetId], references: [id], onDelete: Cascade)
+}
+
+model PromptTemplate {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  agent     String
+  template  String   @db.Text
+  variables Json?
+  version   Int      @default(1)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model GeneratedArtifact {
+  id        String   @id @default(cuid())
+  assetId   String?
+  agent     String
+  type      String
+  content   String   @db.Text
+  metadata  Json?
+  createdAt DateTime @default(now())
+
+  asset ContentAsset? @relation(fields: [assetId], references: [id])
+}

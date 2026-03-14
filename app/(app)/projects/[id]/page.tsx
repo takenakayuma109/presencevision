@@ -1,170 +1,630 @@
 "use client";
 
-import { useState } from "react";
-import { useParams } from "next/navigation";
-import { buttonVariants } from "@/components/ui/button";
-import { Badge, Card, CardHeader, CardTitle, CardContent, TechTerm } from "@/components/ui";
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui";
-import { cn } from "@/lib/utils";
-import { ArrowLeft, BarChart3, Box, FileText } from "lucide-react";
+import { use, useState, useMemo } from "react";
+import { useStore, statusLabels, goalLabels, methodLabels, taskStatusLabels, availableCountries, durationLabels, countryLanguageMap, expandPresenceCountries } from "@/lib/store";
+import type { TaskExecution, ExecutionArtifact, ReportConfig } from "@/lib/store";
+import { useEngineActivities } from "@/lib/hooks/use-engine";
+import { Button, Badge, Card, CardContent, CardHeader, CardTitle, Input } from "@/components/ui";
+import { TaskDetailModal } from "@/components/wizard/task-detail-modal";
+import {
+  ArrowLeft, Globe, Building2, Target, BarChart3, Clock, TrendingUp, FileText,
+  Pause, Play, Mail, Repeat, ChevronRight, Activity, CheckCircle2, AlertTriangle,
+  History, Plus, X, Pencil, Image, Code2, Database, Eye, FolderOpen, Radio,
+} from "lucide-react";
 import Link from "next/link";
-import { useStore } from "@/lib/store";
-import { useT } from "@/lib/i18n";
+import { cn } from "@/lib/utils";
 
-type Tab = "overview" | "entities" | "topics";
-
-const tabLabels: Record<Tab, string> = {
-  overview: "概要",
-  entities: "エンティティ",
-  topics: "トピック",
+const statusBg: Record<string, string> = {
+  running: "bg-green-500", waiting: "bg-yellow-500", completed: "bg-blue-500", error: "bg-red-500",
 };
 
-const statusVariant: Record<string, "secondary" | "warning" | "success"> = {
-  backlog: "secondary",
-  in_progress: "warning",
-  completed: "success",
+const artifactIcons: Record<string, typeof Image> = {
+  screenshot: Image, link: Globe, content: FileText, code: Code2, data: Database,
+};
+const artifactColors: Record<string, string> = {
+  screenshot: "text-pink-500 bg-pink-500/10 border-pink-500/20",
+  link: "text-blue-500 bg-blue-500/10 border-blue-500/20",
+  content: "text-green-500 bg-green-500/10 border-green-500/20",
+  code: "text-amber-500 bg-amber-500/10 border-amber-500/20",
+  data: "text-purple-500 bg-purple-500/10 border-purple-500/20",
+};
+const artifactTypeLabels: Record<string, string> = {
+  screenshot: "スクリーンショット", link: "リンク", content: "コンテンツ", code: "コード", data: "データ",
 };
 
-const statusLabel: Record<string, string> = {
-  backlog: "未着手",
-  in_progress: "進行中",
-  completed: "完了",
-};
+type TabId = "overview" | "work" | "timeline";
 
-export default function ProjectDetailPage() {
-  const params = useParams();
-  const t = useT();
-  const { projects, entities, topics } = useStore();
-  const [activeTab, setActiveTab] = useState<Tab>("overview");
+// ---------------------------------------------------------------------------
+// Artifact full card (for gallery view)
+// ---------------------------------------------------------------------------
+function ArtifactCard({ artifact, taskTitle, region, completedAt }: {
+  artifact: ExecutionArtifact; taskTitle: string; region: string; completedAt: Date;
+}) {
+  const [expanded, setExpanded] = useState(false);
+  const Icon = artifactIcons[artifact.type] ?? FileText;
+  const cc = availableCountries.find((c) => c.code === region);
 
-  const project = projects.find((p) => p.id === params.id);
+  return (
+    <div className={cn("rounded-lg border overflow-hidden transition-all", artifactColors[artifact.type])}>
+      {/* Thumbnail / Preview header */}
+      {artifact.type === "screenshot" && artifact.thumbnailUrl && (
+        <div className="bg-black/10 relative">
+          <img src={artifact.thumbnailUrl} alt={artifact.title} className="w-full h-36 object-cover" />
+          <div className="absolute top-2 right-2">
+            <Badge variant="secondary" className="text-[10px] bg-black/60 text-white border-0">{cc?.flag} {cc?.name}</Badge>
+          </div>
+        </div>
+      )}
+      {artifact.type === "code" && artifact.content && (
+        <div className="bg-gray-900 p-3 max-h-32 overflow-hidden relative">
+          <pre className="text-[10px] text-gray-300 font-mono leading-relaxed whitespace-pre-wrap">{artifact.content.slice(0, 300)}</pre>
+          <div className="absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-gray-900 to-transparent" />
+          <div className="absolute top-2 right-2">
+            <Badge variant="secondary" className="text-[10px] bg-black/60 text-white border-0">{cc?.flag}</Badge>
+          </div>
+        </div>
+      )}
+      {(artifact.type === "content" || artifact.type === "data") && artifact.content && !expanded && (
+        <div className="bg-muted/30 p-3 max-h-28 overflow-hidden relative">
+          <p className="text-[11px] text-muted-foreground leading-relaxed whitespace-pre-wrap">{artifact.content.slice(0, 250)}</p>
+          <div className="absolute bottom-0 left-0 right-0 h-6 bg-gradient-to-t from-muted/80 to-transparent" />
+          <div className="absolute top-2 right-2">
+            <Badge variant="secondary" className="text-[10px] bg-black/60 text-white border-0">{cc?.flag}</Badge>
+          </div>
+        </div>
+      )}
+
+      {/* Info */}
+      <div className="p-3 space-y-1.5">
+        <div className="flex items-start gap-2">
+          <div className={cn("flex h-6 w-6 shrink-0 items-center justify-center rounded", artifactColors[artifact.type])}>
+            <Icon className="h-3 w-3" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-xs font-semibold leading-tight">{artifact.title}</p>
+            {artifact.description && <p className="text-[10px] text-muted-foreground mt-0.5">{artifact.description}</p>}
+          </div>
+        </div>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Badge variant="outline" className="text-[9px] px-1.5 py-0">{artifactTypeLabels[artifact.type]}</Badge>
+            <span className="text-[10px] text-muted-foreground">{taskTitle}</span>
+          </div>
+          <span className="text-[10px] text-muted-foreground">
+            {completedAt.toLocaleString("ja-JP", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}
+          </span>
+        </div>
+
+        {/* Expand button for content */}
+        {(artifact.content && (artifact.type === "content" || artifact.type === "data" || artifact.type === "code")) && (
+          <button onClick={() => setExpanded(!expanded)} className="text-[10px] text-blue-500 hover:underline flex items-center gap-1 pt-1">
+            <Eye className="h-3 w-3" /> {expanded ? "閉じる" : "全文を表示"}
+          </button>
+        )}
+      </div>
+
+      {/* Expanded content */}
+      {expanded && artifact.content && (
+        <div className="border-t p-3">
+          <pre className={cn(
+            "text-xs leading-relaxed whitespace-pre-wrap rounded-lg p-3 max-h-80 overflow-y-auto",
+            artifact.type === "code" ? "bg-gray-900 text-gray-100 font-mono" : "bg-muted/50",
+          )}>
+            {artifact.content}
+          </pre>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Report config editor
+// ---------------------------------------------------------------------------
+function ReportConfigCard({ config, onUpdate }: { config: ReportConfig; onUpdate: (c: Partial<ReportConfig>) => void }) {
+  const [editing, setEditing] = useState(false);
+  const [emailInput, setEmailInput] = useState("");
+
+  const addEmail = () => {
+    const email = emailInput.trim();
+    if (email && email.includes("@") && !config.emailAddresses.includes(email)) {
+      onUpdate({ emailAddresses: [...config.emailAddresses, email] });
+      setEmailInput("");
+    }
+  };
+  const removeEmail = (email: string) => {
+    onUpdate({ emailAddresses: config.emailAddresses.filter((e) => e !== email) });
+  };
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter") { e.preventDefault(); addEmail(); }
+  };
+
+  return (
+    <Card>
+      <CardHeader className="pb-3">
+        <div className="flex items-center justify-between">
+          <CardTitle className="text-sm font-semibold flex items-center gap-2"><Mail className="h-4 w-4" /> レポート設定</CardTitle>
+          <button onClick={() => setEditing(!editing)} className="text-xs text-blue-500 hover:underline flex items-center gap-1">
+            <Pencil className="h-3 w-3" /> {editing ? "完了" : "編集"}
+          </button>
+        </div>
+      </CardHeader>
+      <CardContent className="space-y-3">
+        <div>
+          <p className="text-xs text-muted-foreground mb-1.5">送信先</p>
+          <div className="flex flex-wrap gap-1.5">
+            {config.emailAddresses.map((email) => (
+              <Badge key={email} variant="secondary" className="text-xs py-1 px-2 gap-1">
+                {email}
+                {editing && (
+                  <button onClick={() => removeEmail(email)} className="ml-0.5 hover:text-red-500 transition-colors"><X className="h-3 w-3" /></button>
+                )}
+              </Badge>
+            ))}
+            {config.emailAddresses.length === 0 && <p className="text-xs text-muted-foreground">未設定</p>}
+          </div>
+          {editing && (
+            <div className="flex gap-2 mt-2">
+              <Input type="email" value={emailInput} onChange={(e) => setEmailInput(e.target.value)} onKeyDown={handleKeyDown} placeholder="email@example.com" className="h-8 text-xs flex-1" />
+              <Button type="button" variant="outline" size="sm" onClick={addEmail} className="h-8 gap-1 text-xs px-2"><Plus className="h-3 w-3" /> 追加</Button>
+            </div>
+          )}
+        </div>
+        <div>
+          <p className="text-xs text-muted-foreground mb-1.5">送信時刻</p>
+          {editing ? (
+            <div className="grid grid-cols-2 gap-2">
+              <div>
+                <label className="text-[10px] text-muted-foreground mb-0.5 block">朝</label>
+                <Input type="time" value={config.morningTime} onChange={(e) => onUpdate({ morningTime: e.target.value })} className="h-8 text-xs" />
+              </div>
+              <div>
+                <label className="text-[10px] text-muted-foreground mb-0.5 block">夕</label>
+                <Input type="time" value={config.eveningTime} onChange={(e) => onUpdate({ eveningTime: e.target.value })} className="h-8 text-xs" />
+              </div>
+            </div>
+          ) : (
+            <p className="text-sm">{config.morningTime}（朝） / {config.eveningTime}（夕）</p>
+          )}
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Main page
+// ---------------------------------------------------------------------------
+export default function ProjectDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = use(params);
+  const { projects, updateProjectStatus, updateProjectReportConfig, selectTask } = useStore();
+  const project = projects.find((p) => p.id === id);
+
+  const [activeTab, setActiveTab] = useState<TabId>("overview");
+  const [showFullTimeline, setShowFullTimeline] = useState(false);
+  const [workFilter, setWorkFilter] = useState<string>("all");
+
+  // リアルタイムエンジンデータ
+  const engine = useEngineActivities(id, project?.status === "active");
 
   if (!project) {
     return (
-      <div className="space-y-6">
-        <Link href="/projects" className={cn(buttonVariants({ variant: "ghost", size: "sm" }), "inline-flex")}>
-          <ArrowLeft className="h-4 w-4 mr-1" />
-          戻る
-        </Link>
-        <p className="text-sm text-muted-foreground">プロジェクトが見つかりません。</p>
+      <div className="flex flex-col items-center justify-center py-20">
+        <p className="text-lg font-semibold mb-2">プロジェクトが見つかりません</p>
+        <Link href="/dashboard"><Button variant="outline" className="gap-2"><ArrowLeft className="h-4 w-4" /> 一覧に戻る</Button></Link>
       </div>
     );
   }
 
+  const runningTasks = project.plan.tasks.filter((t) => t.status === "running").length;
+  const totalCycles = project.plan.tasks.reduce((s, t) => s + t.cycleCount, 0);
+  const selectedTask = project.selectedTaskId ? project.plan.tasks.find((t) => t.id === project.selectedTaskId) ?? null : null;
+  const getCountry = (code: string) => availableCountries.find((c) => c.code === code);
+
+  // Collect all executions — ライブデータがあればそちらを優先、なければモック
+  const allExecutions: (TaskExecution & { taskTitle: string; taskMethod: string })[] = [];
+  if (engine.isLive && engine.executions.length > 0) {
+    for (const exec of engine.executions) {
+      allExecutions.push({ ...exec, taskTitle: exec.actions[0] ?? "Engine Task", taskMethod: "Engine" });
+    }
+  } else {
+    for (const task of project.plan.tasks) {
+      for (const exec of task.executions) {
+        allExecutions.push({ ...exec, taskTitle: task.title, taskMethod: methodLabels[task.method] });
+      }
+    }
+  }
+  allExecutions.sort((a, b) => b.completedAt.getTime() - a.completedAt.getTime());
+  const timelineToShow = showFullTimeline ? allExecutions : allExecutions.slice(0, 20);
+
+  // Collect ALL artifacts across all executions for the gallery
+  const allArtifacts: { artifact: ExecutionArtifact; taskTitle: string; region: string; completedAt: Date }[] = [];
+  for (const exec of allExecutions) {
+    for (const art of exec.artifacts) {
+      allArtifacts.push({ artifact: art, taskTitle: exec.taskTitle, region: exec.targetRegion, completedAt: exec.completedAt });
+    }
+  }
+  const filteredArtifacts = workFilter === "all" ? allArtifacts : allArtifacts.filter((a) => a.artifact.type === workFilter);
+
+  // Region coverage
+  const expandedRegions = expandPresenceCountries(project.presenceCountries);
+  const regionExecCounts = new Map<string, number>();
+  for (const exec of allExecutions) {
+    regionExecCounts.set(exec.targetRegion, (regionExecCounts.get(exec.targetRegion) ?? 0) + 1);
+  }
+
+  // Artifact type counts
+  const artifactTypeCounts = new Map<string, number>();
+  for (const a of allArtifacts) {
+    artifactTypeCounts.set(a.artifact.type, (artifactTypeCounts.get(a.artifact.type) ?? 0) + 1);
+  }
+
+  const tabs: { id: TabId; label: string; icon: typeof Activity }[] = [
+    { id: "overview", label: "概要", icon: Activity },
+    { id: "work", label: `全ワーク (${allArtifacts.length})`, icon: FolderOpen },
+    { id: "timeline", label: `タイムライン (${allExecutions.length})`, icon: History },
+  ];
+
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-4">
-        <Link href="/projects" className={cn(buttonVariants({ variant: "ghost", size: "sm" }), "inline-flex")}>
-          <ArrowLeft className="h-4 w-4 mr-1" />
-          戻る
-        </Link>
+      {/* Header */}
+      <div className="flex items-start justify-between">
+        <div className="flex items-start gap-3">
+          <Link href="/dashboard" className="mt-1"><Button variant="ghost" size="icon" className="h-8 w-8"><ArrowLeft className="h-4 w-4" /></Button></Link>
+          <div>
+            <div className="flex items-center gap-3 mb-1">
+              {project.siteInfo.favicon && <img src={project.siteInfo.favicon} alt="" className="h-5 w-5 rounded" />}
+              <h2 className="text-xl font-bold">{project.name}</h2>
+              <Badge variant={project.status === "active" ? "success" : project.status === "paused" ? "secondary" : "info"}>
+                {statusLabels[project.status]}
+              </Badge>
+              {engine.isLive ? (
+                <Badge variant="outline" className="text-[10px] text-green-500 border-green-500/30 gap-1">
+                  <Radio className="h-3 w-3 animate-pulse" /> LIVE
+                </Badge>
+              ) : (
+                <Badge variant="outline" className="text-[10px] text-amber-500 border-amber-500/30">デモデータ</Badge>
+              )}
+            </div>
+            <p className="text-sm text-muted-foreground">{project.url}</p>
+          </div>
+        </div>
+        <div className="flex gap-2">
+          {project.status === "active" && (
+            <Button variant="outline" size="sm" onClick={() => updateProjectStatus(project.id, "paused")} className="gap-1.5"><Pause className="h-3.5 w-3.5" /> 一時停止</Button>
+          )}
+          {project.status === "paused" && (
+            <Button size="sm" onClick={() => updateProjectStatus(project.id, "active")} className="gap-1.5"><Play className="h-3.5 w-3.5" /> 再開</Button>
+          )}
+        </div>
       </div>
 
-      <div>
-        <h2 className="text-lg font-semibold">{project.name}</h2>
-        <p className="text-sm text-muted-foreground mt-1">{project.description}</p>
+      {/* Stats */}
+      <div className="grid gap-3 grid-cols-2 lg:grid-cols-4">
+        {[
+          {
+            icon: Activity, label: "稼働タスク",
+            value: engine.isLive && engine.stats ? `${engine.stats.running}/${engine.stats.total}` : `${runningTasks}/${project.plan.tasks.length}`,
+            color: "text-green-600 dark:text-green-400", bg: "bg-green-50 dark:bg-green-950",
+          },
+          {
+            icon: Repeat, label: "総実行回数",
+            value: engine.isLive && engine.stats ? String(engine.stats.completed) : String(totalCycles),
+            color: "text-purple-600 dark:text-purple-400", bg: "bg-purple-50 dark:bg-purple-950",
+          },
+          { icon: FolderOpen, label: "成果物", value: String(allArtifacts.length), color: "text-orange-600 dark:text-orange-400", bg: "bg-orange-50 dark:bg-orange-950" },
+          { icon: Clock, label: "期間", value: durationLabels[project.duration] ?? project.duration, color: "text-amber-600 dark:text-amber-400", bg: "bg-amber-50 dark:bg-amber-950" },
+        ].map((s) => (
+          <Card key={s.label}>
+            <CardContent className="p-4 flex items-center gap-3">
+              <div className={cn("flex h-9 w-9 shrink-0 items-center justify-center rounded-lg", s.bg)}>
+                <s.icon className={cn("h-4 w-4", s.color)} />
+              </div>
+              <div>
+                <p className="text-xl font-bold">{s.value}</p>
+                <p className="text-xs text-muted-foreground">{s.label}</p>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
       </div>
 
-      <div className="flex gap-2 border-b">
-        {(["overview", "entities", "topics"] as const).map((tab) => (
+      {/* Tabs */}
+      <div className="flex gap-1 border-b">
+        {tabs.map((tab) => (
           <button
-            key={tab}
-            onClick={() => setActiveTab(tab)}
+            key={tab.id}
+            onClick={() => setActiveTab(tab.id)}
             className={cn(
-              "px-4 py-2 text-sm font-medium border-b-2 -mb-px transition-colors",
-              activeTab === tab ? "border-foreground text-foreground" : "border-transparent text-muted-foreground hover:text-foreground"
+              "flex items-center gap-1.5 px-4 py-2.5 text-sm font-medium border-b-2 transition-colors",
+              activeTab === tab.id
+                ? "border-blue-500 text-blue-600 dark:text-blue-400"
+                : "border-transparent text-muted-foreground hover:text-foreground",
             )}
           >
-            {tabLabels[tab]}
+            <tab.icon className="h-4 w-4" />
+            {tab.label}
           </button>
         ))}
       </div>
 
+      {/* ============ TAB: Overview ============ */}
       {activeTab === "overview" && (
-        <div className="grid gap-4 md:grid-cols-3">
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium flex items-center gap-2">
-                <BarChart3 className="h-4 w-4" /> 統計
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground"><TechTerm term="エンティティ">エンティティ</TechTerm></span>
-                  <span className="font-medium">{project.entities}</span>
+        <div className="grid gap-6 lg:grid-cols-5">
+          <div className="lg:col-span-3 space-y-4">
+            {/* Tasks */}
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm font-semibold flex items-center gap-2">
+                  <Activity className="h-4 w-4" /> タスク一覧
+                  <Badge variant="success" className="text-xs">同時実行中</Badge>
+                </CardTitle>
+                <p className="text-xs text-muted-foreground">クリックで詳細を確認できます</p>
+              </CardHeader>
+              <CardContent className="space-y-1.5">
+                {project.plan.tasks.map((task) => {
+                  const taskArtifactCount = task.executions.reduce((s, e) => s + e.artifacts.length, 0);
+                  return (
+                    <button
+                      key={task.id}
+                      onClick={() => selectTask(project.id, task.id)}
+                      className="w-full flex items-center gap-3 rounded-lg border p-3 text-left transition-all hover:bg-muted/50 hover:border-foreground/20"
+                    >
+                      <div className={cn("h-2.5 w-2.5 rounded-full shrink-0", statusBg[task.status], task.status === "running" && "animate-pulse")} />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium">{task.title}</p>
+                        <div className="flex items-center gap-3 mt-0.5">
+                          <span className="text-xs text-muted-foreground">{taskStatusLabels[task.status]}</span>
+                          <span className="text-xs text-muted-foreground">{task.cycleCount}回実行</span>
+                          <span className="text-xs text-muted-foreground">{taskArtifactCount}件の成果物</span>
+                        </div>
+                      </div>
+                      <Badge variant="outline" className="text-xs shrink-0">{methodLabels[task.method]}</Badge>
+                      <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0" />
+                    </button>
+                  );
+                })}
+              </CardContent>
+            </Card>
+
+            {/* Latest work preview (top 6 artifacts) */}
+            <Card>
+              <CardHeader className="pb-3">
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-sm font-semibold flex items-center gap-2">
+                    <FolderOpen className="h-4 w-4" /> 最新の成果物
+                  </CardTitle>
+                  <button onClick={() => setActiveTab("work")} className="text-xs text-blue-500 hover:underline">
+                    全て表示 ({allArtifacts.length}件)
+                  </button>
                 </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">トピック</span>
-                  <span className="font-medium">{project.topics}</span>
+              </CardHeader>
+              <CardContent>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  {allArtifacts.slice(0, 6).map((a, i) => (
+                    <ArtifactCard key={`${a.artifact.id}-${i}`} artifact={a.artifact} taskTitle={a.taskTitle} region={a.region} completedAt={a.completedAt} />
+                  ))}
                 </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">コンテンツ</span>
-                  <span className="font-medium">{project.content}</span>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Sidebar */}
+          <div className="lg:col-span-2 space-y-4">
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm font-semibold flex items-center gap-2"><Building2 className="h-4 w-4" /> 事業ターゲット / 拡散先</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div>
+                  <p className="text-xs text-muted-foreground mb-1">事業ターゲット国</p>
+                  <div className="flex flex-wrap gap-1">
+                    {project.businessCountries.map((c) => { const cc = getCountry(c); return <Badge key={c} variant="secondary">{cc?.flag} {cc?.name}</Badge>; })}
+                  </div>
                 </div>
-              </div>
-            </CardContent>
-          </Card>
+                <div>
+                  <p className="text-xs text-muted-foreground mb-1">プレゼンス拡散国</p>
+                  <div className="flex flex-wrap gap-1">
+                    {project.presenceCountries.map((c) => { const cc = getCountry(c); return <Badge key={c} variant="info">{cc?.flag} {cc?.name}</Badge>; })}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="pb-3"><CardTitle className="text-sm font-semibold flex items-center gap-2"><Target className="h-4 w-4" /> 目的・手段</CardTitle></CardHeader>
+              <CardContent className="space-y-2">
+                <div className="flex flex-wrap gap-1">{project.goals.map((g) => <Badge key={g} variant="info" className="text-xs">{goalLabels[g]}</Badge>)}</div>
+                <div className="flex flex-wrap gap-1">{project.methods.map((m) => <Badge key={m} variant="outline" className="text-xs">{methodLabels[m]}</Badge>)}</div>
+              </CardContent>
+            </Card>
+
+            <ReportConfigCard config={project.reportConfig} onUpdate={(config) => updateProjectReportConfig(project.id, config)} />
+
+            <Card>
+              <CardHeader className="pb-3"><CardTitle className="text-sm font-semibold flex items-center gap-2"><BarChart3 className="h-4 w-4" /> 直近のレポート</CardTitle></CardHeader>
+              <CardContent>
+                {project.reports.length > 0 ? (
+                  <div className="space-y-3">
+                    {project.reports.slice(0, 2).map((r) => (
+                      <div key={r.id} className="rounded-lg border p-3 space-y-2">
+                        <div className="flex items-center justify-between">
+                          <p className="text-sm font-medium">{r.title}</p>
+                          <Badge variant={r.type === "morning" ? "info" : "secondary"} className="text-xs">{r.type === "morning" ? "朝" : "夕"}</Badge>
+                        </div>
+                        <p className="text-xs text-muted-foreground">{r.summary}</p>
+                        <div className="grid grid-cols-3 gap-2 pt-1">
+                          <div className="text-center rounded bg-muted/50 p-1">
+                            <div className="flex items-center justify-center gap-1"><TrendingUp className="h-3 w-3 text-blue-500" /><p className="text-sm font-bold">{r.metrics.visibilityScore}</p></div>
+                            <p className="text-xs text-muted-foreground">可視性</p>
+                          </div>
+                          <div className="text-center rounded bg-muted/50 p-1"><p className="text-sm font-bold">{r.metrics.contentGenerated}</p><p className="text-xs text-muted-foreground">生成数</p></div>
+                          <div className="text-center rounded bg-muted/50 p-1"><p className="text-sm font-bold">{r.metrics.llmCitations}</p><p className="text-xs text-muted-foreground">LLM引用</p></div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-sm text-muted-foreground text-center py-4">作業開始後にレポートが自動生成されます</p>
+                )}
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="pb-3"><CardTitle className="text-sm font-semibold flex items-center gap-2"><Globe className="h-4 w-4" /> 予測インパクト</CardTitle></CardHeader>
+              <CardContent><p className="text-sm text-blue-600 dark:text-blue-400 font-medium">{project.plan.estimatedImpact}</p></CardContent>
+            </Card>
+          </div>
         </div>
       )}
 
-      {activeTab === "entities" && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base"><TechTerm term="エンティティ">エンティティ</TechTerm></CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>名前</TableHead>
-                  <TableHead>タイプ</TableHead>
-                  <TableHead>ステータス</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {entities.map((e) => (
-                  <TableRow key={e.id}>
-                    <TableCell className="font-medium">{e.name}</TableCell>
-                    <TableCell>{e.type}</TableCell>
-                    <TableCell><Badge variant="success">アクティブ</Badge></TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </CardContent>
-        </Card>
+      {/* ============ TAB: All Work (Gallery) ============ */}
+      {activeTab === "work" && (
+        <div className="space-y-4">
+          {/* Filter bar */}
+          <div className="flex items-center gap-2 flex-wrap">
+            <button
+              onClick={() => setWorkFilter("all")}
+              className={cn("px-3 py-1.5 rounded-full text-xs font-medium border transition-colors",
+                workFilter === "all" ? "bg-foreground text-background border-foreground" : "border-border hover:bg-muted")}
+            >
+              全て ({allArtifacts.length})
+            </button>
+            {Array.from(artifactTypeCounts.entries()).map(([type, count]) => {
+              const Icon = artifactIcons[type] ?? FileText;
+              return (
+                <button
+                  key={type}
+                  onClick={() => setWorkFilter(type)}
+                  className={cn("px-3 py-1.5 rounded-full text-xs font-medium border transition-colors flex items-center gap-1.5",
+                    workFilter === type ? "bg-foreground text-background border-foreground" : "border-border hover:bg-muted")}
+                >
+                  <Icon className="h-3 w-3" /> {artifactTypeLabels[type]} ({count})
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Region coverage */}
+          <div className="p-3 rounded-lg bg-muted/30 border">
+            <p className="text-xs font-semibold mb-2 flex items-center gap-1.5">
+              <Globe className="h-3.5 w-3.5 text-cyan-500" />
+              リージョン別カバレッジ ({expandedRegions.length}リージョン)
+            </p>
+            <div className="flex flex-wrap gap-1.5">
+              {expandedRegions.map((region) => {
+                const cc = getCountry(region);
+                const count = regionExecCounts.get(region) ?? 0;
+                const langInfo = countryLanguageMap[region];
+                return (
+                  <Badge key={region} variant={count > 0 ? "info" : "outline"} className={cn("text-xs gap-1", count === 0 && "opacity-50")}>
+                    {cc?.flag} {cc?.name} <span className="text-muted-foreground">{langInfo?.langName} {count}回</span>
+                  </Badge>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Gallery grid */}
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {filteredArtifacts.map((a, i) => (
+              <ArtifactCard key={`${a.artifact.id}-${i}`} artifact={a.artifact} taskTitle={a.taskTitle} region={a.region} completedAt={a.completedAt} />
+            ))}
+          </div>
+
+          {filteredArtifacts.length === 0 && (
+            <div className="text-center py-12 text-muted-foreground">
+              <FolderOpen className="h-10 w-10 mx-auto mb-3 opacity-50" />
+              <p className="text-sm">該当する成果物はありません</p>
+            </div>
+          )}
+        </div>
       )}
 
-      {activeTab === "topics" && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">トピック</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>タイトル</TableHead>
-                  <TableHead>意図</TableHead>
-                  <TableHead>クラスター</TableHead>
-                  <TableHead>ステータス</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {topics.map((tp) => (
-                  <TableRow key={tp.id}>
-                    <TableCell className="font-medium">{tp.title}</TableCell>
-                    <TableCell>{tp.intent}</TableCell>
-                    <TableCell>{tp.cluster}</TableCell>
-                    <TableCell><Badge variant={statusVariant[tp.status]}>{statusLabel[tp.status] ?? tp.status}</Badge></TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </CardContent>
-        </Card>
+      {/* ============ TAB: Timeline ============ */}
+      {activeTab === "timeline" && (
+        <div className="space-y-4">
+          <div className="p-3 rounded-lg bg-muted/30 border">
+            <p className="text-xs font-semibold mb-2 flex items-center gap-1.5">
+              <Globe className="h-3.5 w-3.5 text-cyan-500" /> リージョン別カバレッジ
+            </p>
+            <div className="flex flex-wrap gap-1.5">
+              {expandedRegions.map((region) => {
+                const cc = getCountry(region);
+                const count = regionExecCounts.get(region) ?? 0;
+                const langInfo = countryLanguageMap[region];
+                return (
+                  <Badge key={region} variant={count > 0 ? "info" : "outline"} className={cn("text-xs gap-1", count === 0 && "opacity-50")}>
+                    {cc?.flag} {cc?.name} <span className="text-muted-foreground">{langInfo?.langName} {count}回</span>
+                  </Badge>
+                );
+              })}
+            </div>
+          </div>
+
+          <div className="flex items-center justify-between">
+            <p className="text-sm font-semibold">{allExecutions.length}件の実行</p>
+            {allExecutions.length > 20 && (
+              <button onClick={() => setShowFullTimeline(!showFullTimeline)} className="text-xs text-blue-500 hover:underline">
+                {showFullTimeline ? "最新20件のみ" : `全て表示 (${allExecutions.length}件)`}
+              </button>
+            )}
+          </div>
+
+          <div className="space-y-1.5">
+            {timelineToShow.map((exec, i) => {
+              const cc = getCountry(exec.targetRegion);
+              const langInfo = countryLanguageMap[exec.targetRegion];
+              return (
+                <div key={`${exec.id}-${i}`} className="flex items-start gap-2.5 rounded-lg border p-3 hover:bg-muted/30 transition-colors">
+                  {exec.status === "success" ? (
+                    <CheckCircle2 className="h-4 w-4 text-green-500 shrink-0 mt-0.5" />
+                  ) : (
+                    <AlertTriangle className="h-4 w-4 text-yellow-500 shrink-0 mt-0.5" />
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="text-sm font-medium">{exec.taskTitle}</span>
+                      <Badge variant="outline" className="text-[10px] px-1.5 py-0">{exec.taskMethod}</Badge>
+                      {exec.artifacts.length > 0 && (
+                        <Badge variant="info" className="text-[10px] px-1.5 py-0 gap-0.5"><FolderOpen className="h-2.5 w-2.5" /> {exec.artifacts.length}件</Badge>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-2 mt-0.5">
+                      <span className="text-xs">{cc?.flag} {cc?.name}</span>
+                      <span className="text-[10px] text-muted-foreground">{langInfo?.langName}</span>
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-0.5">{exec.results[0]}</p>
+                    {/* Inline artifact previews */}
+                    {exec.artifacts.length > 0 && (
+                      <div className="flex gap-2 mt-2 flex-wrap">
+                        {exec.artifacts.map((art) => {
+                          const Icon = artifactIcons[art.type] ?? FileText;
+                          return (
+                            <div key={art.id} className={cn("flex items-center gap-1 rounded px-2 py-1 text-[10px] border", artifactColors[art.type])}>
+                              <Icon className="h-3 w-3" /> {art.title}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                  <span className="text-[10px] text-muted-foreground shrink-0">
+                    {exec.completedAt.toLocaleString("ja-JP", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
       )}
+
+      {/* Task detail modal */}
+      <TaskDetailModal
+        task={selectedTask}
+        open={selectedTask !== null}
+        onClose={() => selectTask(project.id, null)}
+      />
     </div>
   );
 }

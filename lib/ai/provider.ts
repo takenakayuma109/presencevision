@@ -1,4 +1,9 @@
-import Anthropic from "@anthropic-ai/sdk";
+/**
+ * AI Provider — Ollama (local LLM) first, Anthropic as optional fallback
+ *
+ * Ollama runs locally or on a self-hosted server.
+ * Zero per-request cost. Supports any GGUF model.
+ */
 
 export interface AIMessage {
   role: "user" | "assistant";
@@ -17,25 +22,47 @@ export interface AIProvider {
   completeJSON<T>(messages: AIMessage[], options?: AICompletionOptions): Promise<T>;
 }
 
-class ClaudeProvider implements AIProvider {
-  private client: Anthropic;
+// ---------------------------------------------------------------------------
+// Ollama Provider — local LLM, no API cost
+// ---------------------------------------------------------------------------
+class OllamaProvider implements AIProvider {
+  private baseUrl: string;
+  private defaultModel: string;
 
   constructor() {
-    this.client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+    this.baseUrl = process.env.OLLAMA_BASE_URL ?? "http://localhost:11434";
+    this.defaultModel = process.env.OLLAMA_MODEL ?? "llama3.1";
   }
 
   async complete(messages: AIMessage[], options?: AICompletionOptions): Promise<string> {
-    const response = await this.client.messages.create({
-      model: options?.model ?? "claude-sonnet-4-20250514",
-      max_tokens: options?.maxTokens ?? 4096,
-      temperature: options?.temperature ?? 0.3,
-      system: options?.system,
-      messages: messages.map((m) => ({ role: m.role, content: m.content })),
+    const model = options?.model ?? this.defaultModel;
+
+    const ollamaMessages = [
+      ...(options?.system ? [{ role: "system" as const, content: options.system }] : []),
+      ...messages.map((m) => ({ role: m.role as string, content: m.content })),
+    ];
+
+    const response = await fetch(`${this.baseUrl}/api/chat`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model,
+        messages: ollamaMessages,
+        stream: false,
+        options: {
+          temperature: options?.temperature ?? 0.3,
+          num_predict: options?.maxTokens ?? 4096,
+        },
+      }),
     });
 
-    const block = response.content[0];
-    if (block.type === "text") return block.text;
-    throw new Error("Unexpected response type");
+    if (!response.ok) {
+      const text = await response.text();
+      throw new Error(`Ollama error (${response.status}): ${text}`);
+    }
+
+    const data = await response.json();
+    return data.message?.content ?? "";
   }
 
   async completeJSON<T>(messages: AIMessage[], options?: AICompletionOptions): Promise<T> {
@@ -46,17 +73,48 @@ class ClaudeProvider implements AIProvider {
       .filter(Boolean)
       .join("\n\n");
 
-    const raw = await this.complete(messages, { ...options, system: systemPrompt });
+    const model = options?.model ?? this.defaultModel;
+
+    const ollamaMessages = [
+      { role: "system" as const, content: systemPrompt },
+      ...messages.map((m) => ({ role: m.role as string, content: m.content })),
+    ];
+
+    const response = await fetch(`${this.baseUrl}/api/chat`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model,
+        messages: ollamaMessages,
+        stream: false,
+        format: "json",
+        options: {
+          temperature: options?.temperature ?? 0.3,
+          num_predict: options?.maxTokens ?? 4096,
+        },
+      }),
+    });
+
+    if (!response.ok) {
+      const text = await response.text();
+      throw new Error(`Ollama error (${response.status}): ${text}`);
+    }
+
+    const data = await response.json();
+    const raw = data.message?.content ?? "{}";
     const cleaned = raw.replace(/^```(?:json)?\n?/, "").replace(/\n?```$/, "");
     return JSON.parse(cleaned) as T;
   }
 }
 
+// ---------------------------------------------------------------------------
+// Singleton
+// ---------------------------------------------------------------------------
 let providerInstance: AIProvider | null = null;
 
 export function getAIProvider(): AIProvider {
   if (!providerInstance) {
-    providerInstance = new ClaudeProvider();
+    providerInstance = new OllamaProvider();
   }
   return providerInstance;
 }

@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils";
 import { useT } from "@/lib/i18n";
 
 interface StatCardProps {
-  title: string;
+  title: React.ReactNode;
   value: string | number;
   subtitle?: string;
   icon: LucideIcon;

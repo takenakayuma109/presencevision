@@ -53,7 +53,7 @@ export function Dialog({ open, onClose, title, children }: DialogProps) {
         role="dialog"
         aria-modal="true"
         aria-label={title}
-        className="relative z-10 w-full max-w-lg mx-4 rounded-lg border bg-background shadow-lg transition-all duration-200"
+        className="relative z-10 w-full max-w-3xl mx-4 rounded-lg border bg-background shadow-lg transition-all duration-200 max-h-[90vh] overflow-y-auto"
       >
         {/* Header */}
         {title && (

@@ -1,6 +1,6 @@
 "use client";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui";
+import { Card, CardContent, CardHeader, CardTitle, TechTerm } from "@/components/ui";
 import { useT } from "@/lib/i18n";
 
 interface PipelineChartProps {
@@ -20,7 +20,7 @@ export function PipelineChart({ data }: PipelineChartProps) {
   return (
     <Card>
       <CardHeader className="pb-3">
-        <CardTitle className="text-sm font-medium">{t("dashboard.contentPipeline")}</CardTitle>
+        <CardTitle className="text-sm font-medium"><TechTerm term="コンテンツパイプライン">{t("dashboard.contentPipeline")}</TechTerm></CardTitle>
       </CardHeader>
       <CardContent>
         {total > 0 ? (

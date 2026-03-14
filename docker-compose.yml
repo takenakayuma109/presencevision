@@ -1,0 +1,53 @@
+version: '3.8'
+
+services:
+  engine:
+    build: ./engine-server
+    ports:
+      - "4000:4000"
+    environment:
+      - ENGINE_PORT=4000
+      - ENGINE_API_KEY=${ENGINE_API_KEY}
+      - FRONTEND_URL=${FRONTEND_URL:-https://presencevision-rho.vercel.app}
+      - OLLAMA_BASE_URL=http://ollama:11434
+      - OLLAMA_MODEL=${OLLAMA_MODEL:-llama3.1}
+      - BROWSER_CONCURRENCY=${BROWSER_CONCURRENCY:-5}
+      - BROWSER_HEADLESS=true
+      - ENGINE_CYCLE_INTERVAL_MS=${ENGINE_CYCLE_INTERVAL_MS:-21600000}
+    depends_on:
+      - ollama
+      - postgres
+    restart: unless-stopped
+    volumes:
+      - engine-data:/app/data
+
+  ollama:
+    image: ollama/ollama:latest
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama-data:/root/.ollama
+    restart: unless-stopped
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - capabilities: [gpu]
+              count: all
+
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: presencevision
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-presencevision}
+      POSTGRES_DB: presencevision
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    restart: unless-stopped
+
+volumes:
+  engine-data:
+  ollama-data:
+  postgres-data:

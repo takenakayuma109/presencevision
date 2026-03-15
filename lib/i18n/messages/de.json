@@ -79,7 +79,13 @@
     "mentions": "Erwähnungen",
     "llmCitations": "LLM-Zitate",
     "close": "Schließen",
-    "showFullText": "Volltext anzeigen"
+    "showFullText": "Volltext anzeigen",
+    "artifactSource": "Erstellt mit",
+    "artifactDest": "Veröffentlicht auf",
+    "statusPublished": "Veröffentlicht",
+    "statusVerified": "Verifiziert",
+    "statusDraft": "Entwurf",
+    "statusError": "Fehler"
   },
   "reports": {
     "title": "Berichte",

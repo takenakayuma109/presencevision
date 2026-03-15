@@ -79,7 +79,13 @@
     "mentions": "उल्लेख",
     "llmCitations": "LLM उद्धरण",
     "close": "बंद करें",
-    "showFullText": "पूरा पाठ दिखाएं"
+    "showFullText": "पूरा पाठ दिखाएं",
+    "artifactSource": "द्वारा निर्मित",
+    "artifactDest": "प्रकाशित स्थान",
+    "statusPublished": "प्रकाशित",
+    "statusVerified": "सत्यापित",
+    "statusDraft": "ड्राफ्ट",
+    "statusError": "त्रुटि"
   },
   "reports": {
     "title": "रिपोर्ट",

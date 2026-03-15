@@ -79,7 +79,13 @@
     "mentions": "Упоминания",
     "llmCitations": "Цитаты LLM",
     "close": "Закрыть",
-    "showFullText": "Показать полный текст"
+    "showFullText": "Показать полный текст",
+    "artifactSource": "Создано с помощью",
+    "artifactDest": "Опубликовано на",
+    "statusPublished": "Опубликовано",
+    "statusVerified": "Проверено",
+    "statusDraft": "Черновик",
+    "statusError": "Ошибка"
   },
   "reports": {
     "title": "Отчёты",

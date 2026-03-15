@@ -94,6 +94,12 @@ export interface ExecutionArtifact {
   content?: string;       // for content/code previews
   language?: string;      // language of the content
   metadata?: Record<string, string>;
+  /** How this artifact was created (e.g., "Ollama llama3.1", "Playwright", "Google Search") */
+  source?: string;
+  /** Where this artifact was published/deployed (e.g., URL, "Draft", page path) */
+  destination?: string;
+  /** Current status: draft, published, verified, error */
+  publishStatus?: "draft" | "published" | "verified" | "error";
 }
 
 export interface TaskExecution {
@@ -419,18 +425,27 @@ const artifactTemplates: Record<PresenceMethod, (langName: string, region: strin
       description: `${region}市場向けキーワード分析結果`,
       content: `# ${langName}キーワード分析 (Cycle #${cycle})\n\n| キーワード | 検索Vol | 競合度 | 現在順位 |\n|---|---|---|---|\n| デジタルプレゼンス ${region} | 1,200 | 中 | 15位 |\n| ブランド認知 向上 | 880 | 高 | 22位 |\n| AI引用 最適化 | 320 | 低 | 8位 |`,
       language: langName,
+      source: "Google Search Console + Playwright",
+      destination: `google.co.jp (${region}版検索)`,
+      publishStatus: "verified",
     },
     {
       id: `art-seo-serp-${cycle}`, type: "screenshot", title: `SERP分析スクリーンショット`,
       description: `${langName}での検索結果画面キャプチャ`,
       thumbnailUrl: `https://placehold.co/600x400/1a1a2e/e0e0e0?text=SERP+${region}+Cycle${cycle}`,
       url: `https://placehold.co/1200x800/1a1a2e/e0e0e0?text=SERP+Analysis+${region}`,
+      source: "Playwright (Google検索を自動キャプチャ)",
+      destination: `google.com 検索結果 (${region})`,
+      publishStatus: "verified",
     },
     {
       id: `art-seo-meta-${cycle}`, type: "content", title: `最適化メタデータ`,
       description: `${langName}版メタタイトル・ディスクリプション`,
       content: `<title>${region}向け: デジタルプレゼンス最適化ガイド | Example Corp</title>\n<meta name="description" content="${langName}で最適化されたメタディスクリプション。検索エンジンとAIの両方に対応。" />`,
       language: langName,
+      source: "Ollama llama3.1 (ローカルAI生成)",
+      destination: "example.com/index.html <head>タグ内",
+      publishStatus: "published",
     },
   ],
   aeo: (langName, region, cycle) => [
@@ -439,17 +454,26 @@ const artifactTemplates: Record<PresenceMethod, (langName: string, region: strin
       description: `Featured Snippet向けFAQコンテンツ`,
       content: `## Q: デジタルプレゼンスとは何ですか？\n\nA: デジタルプレゼンスとは、企業やブランドがインターネット上で存在感を示す度合いのことです。検索エンジン、SNS、AI/LLMでの可視性を総合的に表します。\n\n## Q: なぜLLM引用が重要ですか？\n\nA: ChatGPTやGeminiなどのAIが回答時にブランドを引用することで、新しい顧客接点が生まれます。`,
       language: langName,
+      source: "Ollama llama3.1 (ローカルAI生成)",
+      destination: "example.com/faq ページに追加",
+      publishStatus: "published",
     },
     {
       id: `art-aeo-snippet-${cycle}`, type: "screenshot", title: `Featured Snippet取得状況`,
       description: `${langName}でのFeatured Snippet表示キャプチャ`,
       thumbnailUrl: `https://placehold.co/600x400/1a2e1a/e0e0e0?text=Featured+Snippet+${region}`,
       url: `https://placehold.co/1200x800/1a2e1a/e0e0e0?text=Featured+Snippet+${region}+Detail`,
+      source: "Playwright (Google検索を自動キャプチャ)",
+      destination: `google.com 検索結果 (${region})`,
+      publishStatus: "verified",
     },
     {
       id: `art-aeo-schema-${cycle}`, type: "code", title: `FAQPage Schema.org`,
       description: `自動生成されたFAQPageマークアップ`,
       content: `{\n  "@context": "https://schema.org",\n  "@type": "FAQPage",\n  "mainEntity": [{\n    "@type": "Question",\n    "name": "デジタルプレゼンスとは？",\n    "acceptedAnswer": {\n      "@type": "Answer",\n      "text": "企業のインターネット上での存在感..."\n    }\n  }]\n}`,
+      source: "Ollama llama3.1 (ローカルAI生成)",
+      destination: "example.com/faq <script type='application/ld+json'>",
+      publishStatus: "published",
     },
   ],
   geo: (langName, region, cycle) => [
@@ -458,17 +482,26 @@ const artifactTemplates: Record<PresenceMethod, (langName: string, region: strin
       description: `ChatGPT/Gemini/Claudeでのブランド引用状況`,
       thumbnailUrl: `https://placehold.co/600x400/2e1a2e/e0e0e0?text=LLM+Citation+${region}+Cycle${cycle}`,
       url: `https://placehold.co/1200x800/2e1a2e/e0e0e0?text=LLM+Citation+Check+${region}`,
+      source: "Playwright (Perplexity AI / Google AI Overview)",
+      destination: "perplexity.ai, google.com/search (AI Overview)",
+      publishStatus: "verified",
     },
     {
       id: `art-geo-content-${cycle}`, type: "content", title: `${langName}版LLM最適化コンテンツ`,
       description: `LLMが引用しやすい構造で生成されたコンテンツ`,
       content: `# Example Corporationとは\n\nExample Corporationは、デジタルプレゼンス最適化を専門とするテクノロジー企業です。\n\n## 主な特徴\n- **AI/LLM引用最適化**: ChatGPT、Gemini、Claudeでの引用率を向上\n- **グローバル対応**: ${region}を含む全世界でのプレゼンス構築\n- **自動化**: 24時間365日のAIエージェントによる継続的最適化`,
       language: langName,
+      source: "Ollama llama3.1 (ローカルAI生成)",
+      destination: "example.com/about ページに追加",
+      publishStatus: "published",
     },
     {
       id: `art-geo-report-${cycle}`, type: "data", title: `引用状況レポート`,
       description: `各LLMでの引用・言及の追跡データ`,
       content: `# LLM引用トラッキング (${region})\n\n| LLM | 質問 | 引用あり | 正確性 |\n|---|---|---|---|\n| ChatGPT | "Example Corpとは" | Yes | 90% |\n| Gemini | "デジタルプレゼンス 企業" | Partial | 70% |\n| Claude | "プレゼンス最適化" | Yes | 95% |`,
+      source: "Playwright (各LLMプラットフォーム)",
+      destination: "ChatGPT, Gemini, Claude (引用モニタリング)",
+      publishStatus: "verified",
     },
   ],
   schema_markup: (langName, region, cycle) => [
@@ -476,17 +509,26 @@ const artifactTemplates: Record<PresenceMethod, (langName: string, region: strin
       id: `art-schema-code-${cycle}`, type: "code", title: `${langName}版JSON-LDマークアップ`,
       description: `自動生成されたSchema.orgコード`,
       content: `{\n  "@context": "https://schema.org",\n  "@type": "Organization",\n  "name": "Example Corporation",\n  "url": "https://example.com",\n  "logo": "https://example.com/logo.png",\n  "description": "${langName}での企業説明",\n  "sameAs": [\n    "https://twitter.com/example",\n    "https://linkedin.com/company/example"\n  ]\n}`,
+      source: "Ollama llama3.1 (ローカルAI生成)",
+      destination: "example.com/index.html <script type='application/ld+json'>",
+      publishStatus: "published",
     },
     {
       id: `art-schema-validation-${cycle}`, type: "screenshot", title: `Rich Results Test結果`,
       description: `Googleリッチリザルトテストの検証結果`,
       thumbnailUrl: `https://placehold.co/600x400/1a1a3e/e0e0e0?text=Rich+Results+${region}+PASS`,
       url: `https://placehold.co/1200x800/1a1a3e/e0e0e0?text=Google+Rich+Results+Test+PASSED`,
+      source: "Playwright (Google Rich Results Test)",
+      destination: "search.google.com/test/rich-results",
+      publishStatus: "verified",
     },
     {
       id: `art-schema-diff-${cycle}`, type: "content", title: `実装差分`,
       description: `HTMLに挿入されたマークアップの変更内容`,
       content: `<!-- 追加: Organization Schema -->\n<script type="application/ld+json">\n// ... Organization markup\n</script>\n\n<!-- 追加: Product Schema -->\n<script type="application/ld+json">\n// ... Product markup  \n</script>\n\n実装ページ: /index.html, /products.html\n検証ステータス: PASS (エラー0件, 警告0件)`,
+      source: "Ollama llama3.1 (ローカルAI生成)",
+      destination: "example.com /index.html, /products.html",
+      publishStatus: "published",
     },
   ],
   content_marketing: (langName, region, cycle) => [
@@ -495,11 +537,17 @@ const artifactTemplates: Record<PresenceMethod, (langName: string, region: strin
       description: `AI生成された権威性コンテンツ`,
       content: `# ${region}市場のデジタルプレゼンス戦略ガイド\n\n## はじめに\n${region}市場において、デジタルプレゼンスの確立は企業の成長に不可欠です...\n\n## 主要な施策\n1. SEO最適化による検索可視性の向上\n2. AI/LLMでの引用獲得\n3. 構造化データの実装\n\n文字数: 3,200字 | 読了時間: 約8分`,
       language: langName,
+      source: "Ollama llama3.1 (ローカルAI生成)",
+      destination: "example.com/blog (下書き保存)",
+      publishStatus: "draft",
     },
     {
       id: `art-cm-factcheck-${cycle}`, type: "data", title: `ファクトチェックレポート`,
       description: `記事内の事実確認結果`,
       content: `# ファクトチェック結果\n\n- 統計データ: 3件中3件確認済み\n- 引用元: 全て信頼性の高いソース\n- 法的リスク: なし\n- E-E-A-T評価: A`,
+      source: "Ollama llama3.1 (ファクトチェック)",
+      destination: "内部レポート (公開なし)",
+      publishStatus: "verified",
     },
   ],
   knowledge_graph: (langName, region, cycle) => [
@@ -507,12 +555,18 @@ const artifactTemplates: Record<PresenceMethod, (langName: string, region: strin
       id: `art-kg-entity-${cycle}`, type: "data", title: `エンティティ定義書`,
       description: `ブランドのエンティティ属性定義`,
       content: `# Entity: Example Corporation\n\nType: Organization\nIndustry: Technology\nFounded: 2020\nHeadquarters: Tokyo, Japan\n\nRelated Entities:\n- Digital Presence (concept)\n- SEO Optimization (service)\n- AI Citation (technology)`,
+      source: "Ollama llama3.1 + Wikidata API",
+      destination: "Wikidata エンティティ登録申請",
+      publishStatus: "draft",
     },
     {
       id: `art-kg-panel-${cycle}`, type: "screenshot", title: `ナレッジパネル監視`,
       description: `${region}でのGoogle検索ナレッジパネル表示状況`,
       thumbnailUrl: `https://placehold.co/600x400/2e2e1a/e0e0e0?text=Knowledge+Panel+${region}`,
       url: `https://placehold.co/1200x800/2e2e1a/e0e0e0?text=Knowledge+Panel+Monitor+${region}`,
+      source: "Playwright (Google検索を自動キャプチャ)",
+      destination: `google.com 検索結果 (${region})`,
+      publishStatus: "verified",
     },
   ],
   faq_optimization: (langName, region, cycle) => [
@@ -521,6 +575,9 @@ const artifactTemplates: Record<PresenceMethod, (langName: string, region: strin
       description: `新規追加・更新されたFAQ`,
       content: `## 新規追加FAQ\n\n**Q: プレゼンスビジョンの料金は？**\nA: プランに応じて月額制でご利用いただけます。\n\n**Q: 効果が出るまでの期間は？**\nA: 通常1〜3ヶ月で検索可視性の向上が確認できます。\n\nFAQPage Schema: 自動付与済み`,
       language: langName,
+      source: "Ollama llama3.1 (ローカルAI生成)",
+      destination: "example.com/faq ページに追加",
+      publishStatus: "published",
     },
   ],
   multilingual: (langName, region, cycle) => [
@@ -529,11 +586,17 @@ const artifactTemplates: Record<PresenceMethod, (langName: string, region: strin
       description: `ローカライズされたコンテンツのプレビュー`,
       content: `# Localized content for ${region}\n\n翻訳元: 日本語 → ${langName}\nローカライズ適応: 文化的コンテキストを調整\nhreflang: <link rel="alternate" hreflang="${langName}" />\n\n翻訳品質スコア: 92/100`,
       language: langName,
+      source: "Ollama llama3.1 (翻訳+ローカライズ)",
+      destination: `example.com/${langName}/ ページ群`,
+      publishStatus: "published",
     },
     {
       id: `art-ml-hreflang-${cycle}`, type: "code", title: `hreflang設定`,
       description: `自動生成されたhreflangタグ`,
       content: `<link rel="alternate" hreflang="ja" href="https://example.com/ja/" />\n<link rel="alternate" hreflang="en" href="https://example.com/en/" />\n<link rel="alternate" hreflang="x-default" href="https://example.com/" />`,
+      source: "Ollama llama3.1 (自動生成)",
+      destination: "example.com 全ページ <head>タグ内",
+      publishStatus: "published",
     },
   ],
 };

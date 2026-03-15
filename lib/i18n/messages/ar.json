@@ -79,7 +79,13 @@
     "mentions": "الإشارات",
     "llmCitations": "اقتباسات LLM",
     "close": "إغلاق",
-    "showFullText": "عرض النص الكامل"
+    "showFullText": "عرض النص الكامل",
+    "artifactSource": "أُنشئ بواسطة",
+    "artifactDest": "نُشر في",
+    "statusPublished": "منشور",
+    "statusVerified": "تم التحقق",
+    "statusDraft": "مسودة",
+    "statusError": "خطأ"
   },
   "reports": {
     "title": "التقارير",

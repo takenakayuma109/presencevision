@@ -79,7 +79,13 @@
     "mentions": "言及",
     "llmCitations": "LLM引用",
     "close": "閉じる",
-    "showFullText": "全文を表示"
+    "showFullText": "全文を表示",
+    "artifactSource": "生成元",
+    "artifactDest": "公開先",
+    "statusPublished": "公開済み",
+    "statusVerified": "検証済み",
+    "statusDraft": "下書き",
+    "statusError": "エラー"
   },
   "reports": {
     "title": "レポート",

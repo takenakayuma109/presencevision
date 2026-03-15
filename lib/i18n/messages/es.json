@@ -79,7 +79,13 @@
     "mentions": "Menciones",
     "llmCitations": "Citas LLM",
     "close": "Cerrar",
-    "showFullText": "Mostrar texto completo"
+    "showFullText": "Mostrar texto completo",
+    "artifactSource": "Generado por",
+    "artifactDest": "Publicado en",
+    "statusPublished": "Publicado",
+    "statusVerified": "Verificado",
+    "statusDraft": "Borrador",
+    "statusError": "Error"
   },
   "reports": {
     "title": "Informes",

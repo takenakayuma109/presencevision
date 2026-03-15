@@ -11,7 +11,7 @@ import {
   ArrowLeft, Globe, Building2, Target, BarChart3, Clock, TrendingUp, FileText,
   Pause, Play, Mail, Repeat, ChevronRight, Activity, CheckCircle2, AlertTriangle,
   History, Plus, X, Pencil, Image, Code2, Database, Eye, FolderOpen, Radio,
-  Search, Swords, Users, Wrench, Settings, Maximize2, ExternalLink,
+  Search, Swords, Users, Wrench, Settings, Maximize2, ExternalLink, Cpu, Upload, CircleDot,
 } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
@@ -104,6 +104,32 @@ function ArtifactCard({ artifact, taskTitle, region, completedAt }: {
             {completedAt.toLocaleString("ja-JP", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}
           </span>
         </div>
+
+        {/* Source / Destination / Status */}
+        {(artifact.source || artifact.destination) && (
+          <div className="rounded bg-muted/50 p-2 space-y-1 text-[10px]">
+            {artifact.source && (
+              <div className="flex items-start gap-1.5">
+                <Cpu className="h-3 w-3 text-muted-foreground shrink-0 mt-0.5" />
+                <div><span className="text-muted-foreground">{t("project.artifactSource")}: </span><span>{artifact.source}</span></div>
+              </div>
+            )}
+            {artifact.destination && (
+              <div className="flex items-start gap-1.5">
+                <Upload className="h-3 w-3 text-muted-foreground shrink-0 mt-0.5" />
+                <div><span className="text-muted-foreground">{t("project.artifactDest")}: </span><span>{artifact.destination}</span></div>
+              </div>
+            )}
+            {artifact.publishStatus && (
+              <div className="flex items-center gap-1.5">
+                <CircleDot className="h-3 w-3 shrink-0" style={{ color: artifact.publishStatus === "published" ? "#22c55e" : artifact.publishStatus === "verified" ? "#3b82f6" : artifact.publishStatus === "error" ? "#ef4444" : "#f59e0b" }} />
+                <span className={cn("font-medium", artifact.publishStatus === "published" ? "text-green-500" : artifact.publishStatus === "verified" ? "text-blue-500" : artifact.publishStatus === "error" ? "text-red-500" : "text-yellow-500")}>
+                  {artifact.publishStatus === "published" ? t("project.statusPublished") : artifact.publishStatus === "verified" ? t("project.statusVerified") : artifact.publishStatus === "draft" ? t("project.statusDraft") : t("project.statusError")}
+                </span>
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Action buttons */}
         <div className="flex items-center gap-2 pt-0.5">

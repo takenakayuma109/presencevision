@@ -79,7 +79,13 @@
     "mentions": "提及",
     "llmCitations": "LLM引用",
     "close": "关闭",
-    "showFullText": "显示全文"
+    "showFullText": "显示全文",
+    "artifactSource": "生成来源",
+    "artifactDest": "发布位置",
+    "statusPublished": "已发布",
+    "statusVerified": "已验证",
+    "statusDraft": "草稿",
+    "statusError": "错误"
   },
   "reports": {
     "title": "报告",

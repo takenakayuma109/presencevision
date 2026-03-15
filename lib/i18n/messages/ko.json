@@ -79,7 +79,13 @@
     "mentions": "언급",
     "llmCitations": "LLM 인용",
     "close": "닫기",
-    "showFullText": "전문 보기"
+    "showFullText": "전문 보기",
+    "artifactSource": "생성 도구",
+    "artifactDest": "게시 위치",
+    "statusPublished": "게시됨",
+    "statusVerified": "검증됨",
+    "statusDraft": "초안",
+    "statusError": "오류"
   },
   "reports": {
     "title": "리포트",

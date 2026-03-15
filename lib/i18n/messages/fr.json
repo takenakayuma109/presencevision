@@ -98,7 +98,20 @@
     "cmsTestConnection": "Tester la connexion",
     "cmsTesting": "Test en cours...",
     "cmsConnected": "Connexion réussie",
-    "cmsFailed": "Échec de la connexion"
+    "cmsFailed": "Échec de la connexion",
+    "channelManagement": "Gestion des canaux de distribution",
+    "channelManagementDesc": "Configurer les plateformes de distribution de contenu",
+    "enabledChannels": "Canaux activés",
+    "channelSocial": "Réseaux sociaux",
+    "channelBlog": "Plateformes de blog",
+    "channelQA": "Q&R / Forums",
+    "channelDirectory": "Annuaires professionnels",
+    "channelEnabled": "Activé",
+    "channelDisabled": "Désactivé",
+    "channelCredentials": "Identifiants",
+    "channelUsername": "Nom d'utilisateur",
+    "channelPassword": "Mot de passe",
+    "channelsCount": "canaux activés"
   },
   "reports": {
     "title": "Rapports",

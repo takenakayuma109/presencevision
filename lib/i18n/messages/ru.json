@@ -98,7 +98,20 @@
     "cmsTestConnection": "Тест подключения",
     "cmsTesting": "Тестирование...",
     "cmsConnected": "Подключение успешно",
-    "cmsFailed": "Ошибка подключения"
+    "cmsFailed": "Ошибка подключения",
+    "channelManagement": "Управление каналами распространения",
+    "channelManagementDesc": "Настройка платформ для распространения контента",
+    "enabledChannels": "Активные каналы",
+    "channelSocial": "Социальные сети",
+    "channelBlog": "Блог-платформы",
+    "channelQA": "Вопросы и ответы / Форумы",
+    "channelDirectory": "Бизнес-каталоги",
+    "channelEnabled": "Активен",
+    "channelDisabled": "Отключён",
+    "channelCredentials": "Учётные данные",
+    "channelUsername": "Имя пользователя",
+    "channelPassword": "Пароль",
+    "channelsCount": "каналов активно"
   },
   "reports": {
     "title": "Отчёты",

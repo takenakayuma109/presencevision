@@ -9,7 +9,7 @@ import { Button, Badge, Card, CardContent, CardHeader, CardTitle, Input, Textare
 import { TaskDetailModal } from "@/components/wizard/task-detail-modal";
 import {
   ArrowLeft, Globe, Building2, Target, BarChart3, Clock, TrendingUp, FileText,
-  Pause, Play, Mail, Repeat, ChevronRight, Activity, CheckCircle2, AlertTriangle,
+  Pause, Play, Mail, Repeat, ChevronRight, ChevronDown, Activity, CheckCircle2, AlertTriangle,
   History, Plus, X, Pencil, Image, Code2, Database, Eye, FolderOpen, Radio,
   Search, Swords, Users, Wrench, Settings, Maximize2, ExternalLink, Cpu, Upload, CircleDot, Loader2, Link2,
 } from "lucide-react";
@@ -506,6 +506,168 @@ function ProjectSettingsCard({ project, onUpdate }: {
 }
 
 // ---------------------------------------------------------------------------
+// Channel management
+// ---------------------------------------------------------------------------
+
+const CHANNELS = [
+  { type: "twitter", name: "X (Twitter)", category: "social" as const, icon: "\ud835\udd4f", regions: ["GLOBAL"] },
+  { type: "linkedin", name: "LinkedIn", category: "social" as const, icon: "in", regions: ["GLOBAL"] },
+  { type: "medium", name: "Medium", category: "blog" as const, icon: "M", regions: ["GLOBAL"] },
+  { type: "note_com", name: "note.com", category: "blog" as const, icon: "\ud83d\udcdd", regions: ["JP"] },
+  { type: "dev_to", name: "dev.to", category: "blog" as const, icon: "DEV", regions: ["GLOBAL"] },
+  { type: "qiita", name: "Qiita", category: "blog" as const, icon: "Q", regions: ["JP"] },
+  { type: "hashnode", name: "Hashnode", category: "blog" as const, icon: "#", regions: ["GLOBAL"] },
+  { type: "reddit", name: "Reddit", category: "qa" as const, icon: "R", regions: ["US", "GB", "AU", "CA"] },
+  { type: "quora", name: "Quora", category: "qa" as const, icon: "Q", regions: ["US", "GB", "IN"] },
+  { type: "yahoo_chiebukuro", name: "Yahoo!\u77e5\u6075\u888b", category: "qa" as const, icon: "Y", regions: ["JP"] },
+  { type: "zhihu", name: "\u77e5\u4e4e (Zhihu)", category: "qa" as const, icon: "\u77e5", regions: ["CN"] },
+  { type: "naver_blog", name: "Naver Blog", category: "blog" as const, icon: "N", regions: ["KR"] },
+  { type: "tistory", name: "Tistory", category: "blog" as const, icon: "T", regions: ["KR"] },
+  { type: "csdn", name: "CSDN", category: "blog" as const, icon: "C", regions: ["CN"] },
+  { type: "xing", name: "Xing", category: "social" as const, icon: "X", regions: ["DE"] },
+];
+
+type ChannelCategory = "social" | "blog" | "qa" | "directory";
+
+const CATEGORY_ORDER: ChannelCategory[] = ["social", "blog", "qa", "directory"];
+
+const CATEGORY_LABEL_KEYS: Record<ChannelCategory, string> = {
+  social: "project.channelSocial",
+  blog: "project.channelBlog",
+  qa: "project.channelQA",
+  directory: "project.channelDirectory",
+};
+
+function regionFlags(regions: string[]): string {
+  return regions.map((r) => {
+    const c = availableCountries.find((x) => x.code === r);
+    return c?.flag ?? r;
+  }).join(" ");
+}
+
+function ChannelManagementCard({ project, onUpdate }: {
+  project: {
+    enabledChannels?: string[];
+    channelCredentials?: Record<string, { username?: string; password?: string }>;
+  };
+  onUpdate: (settings: Partial<Pick<import("@/lib/store").Project, 'enabledChannels' | 'channelCredentials'>>) => void;
+}) {
+  const [editing, setEditing] = useState(false);
+  const [expandedCred, setExpandedCred] = useState<string | null>(null);
+  const { t } = useTranslation();
+
+  const enabled = project.enabledChannels ?? [];
+  const credentials = project.channelCredentials ?? {};
+
+  const toggleChannel = (type: string) => {
+    const next = enabled.includes(type) ? enabled.filter((c) => c !== type) : [...enabled, type];
+    onUpdate({ enabledChannels: next });
+  };
+
+  const updateCredential = (type: string, field: "username" | "password", value: string) => {
+    const cur = credentials[type] ?? {};
+    onUpdate({ channelCredentials: { ...credentials, [type]: { ...cur, [field]: value } } });
+  };
+
+  const grouped = CATEGORY_ORDER.map((cat) => ({
+    category: cat,
+    channels: CHANNELS.filter((ch) => ch.category === cat),
+  })).filter((g) => g.channels.length > 0);
+
+  return (
+    <Card>
+      <CardHeader className="pb-3">
+        <div className="flex items-center justify-between">
+          <CardTitle className="text-sm font-semibold flex items-center gap-2"><Radio className="h-4 w-4" /> {t("project.channelManagement")}</CardTitle>
+          <button onClick={() => setEditing(!editing)} className="text-xs text-blue-500 hover:underline flex items-center gap-1">
+            <Pencil className="h-3 w-3" /> {editing ? t("project.complete") : t("project.edit")}
+          </button>
+        </div>
+        <p className="text-xs text-muted-foreground">{t("project.channelManagementDesc")}</p>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        {!editing && (
+          <div className="flex items-center gap-2 mb-2">
+            <Badge variant="info" className="text-xs">{enabled.length} {t("project.channelsCount")}</Badge>
+          </div>
+        )}
+
+        {grouped.map(({ category, channels }) => (
+          <div key={category}>
+            <p className="text-xs font-semibold text-muted-foreground mb-2">{t(CATEGORY_LABEL_KEYS[category])}</p>
+            <div className={editing ? "space-y-2" : "flex flex-wrap gap-1"}>
+              {channels.map((ch) => {
+                const isEnabled = enabled.includes(ch.type);
+                if (editing) {
+                  return (
+                    <div key={ch.type} className="rounded-lg border p-2 space-y-1">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm font-mono w-8 text-center shrink-0">{ch.icon}</span>
+                          <span className="text-sm font-medium">{ch.name}</span>
+                          <span className="text-xs text-muted-foreground">{regionFlags(ch.regions)}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={() => toggleChannel(ch.type)}
+                            className={cn(
+                              "text-xs px-2 py-0.5 rounded-full border transition-colors",
+                              isEnabled ? "bg-green-500/10 border-green-500/30 text-green-600" : "bg-muted border-border text-muted-foreground"
+                            )}
+                          >
+                            {isEnabled ? t("project.channelEnabled") : t("project.channelDisabled")}
+                          </button>
+                          {isEnabled && (
+                            <button
+                              onClick={() => setExpandedCred(expandedCred === ch.type ? null : ch.type)}
+                              className="text-xs text-muted-foreground hover:text-foreground"
+                            >
+                              {expandedCred === ch.type ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                      {isEnabled && expandedCred === ch.type && (
+                        <div className="pl-10 space-y-1 pt-1">
+                          <p className="text-xs text-muted-foreground">{t("project.channelCredentials")}</p>
+                          <Input
+                            value={credentials[ch.type]?.username ?? ""}
+                            onChange={(e) => updateCredential(ch.type, "username", e.target.value)}
+                            placeholder={t("project.channelUsername")}
+                            className="h-7 text-xs"
+                          />
+                          <Input
+                            type="password"
+                            value={credentials[ch.type]?.password ?? ""}
+                            onChange={(e) => updateCredential(ch.type, "password", e.target.value)}
+                            placeholder={t("project.channelPassword")}
+                            className="h-7 text-xs"
+                          />
+                        </div>
+                      )}
+                    </div>
+                  );
+                }
+                // View mode: only show enabled channels as compact badges
+                if (!isEnabled) return null;
+                return (
+                  <Badge key={ch.type} variant="outline" className="text-xs gap-1">
+                    <span className="font-mono">{ch.icon}</span> {ch.name} <span className="text-muted-foreground">{regionFlags(ch.regions)}</span>
+                  </Badge>
+                );
+              })}
+              {!editing && channels.every((ch) => !enabled.includes(ch.type)) && (
+                <p className="text-xs text-muted-foreground">{t("project.none")}</p>
+              )}
+            </div>
+          </div>
+        ))}
+      </CardContent>
+    </Card>
+  );
+}
+
+// ---------------------------------------------------------------------------
 // Report config editor
 // ---------------------------------------------------------------------------
 function ReportConfigCard({ config, onUpdate }: { config: ReportConfig; onUpdate: (c: Partial<ReportConfig>) => void }) {
@@ -801,6 +963,11 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
           {/* Sidebar */}
           <div className="lg:col-span-2 space-y-4">
             <ProjectSettingsCard
+              project={project}
+              onUpdate={(settings) => updateProjectSettings(project.id, settings)}
+            />
+
+            <ChannelManagementCard
               project={project}
               onUpdate={(settings) => updateProjectSettings(project.id, settings)}
             />

@@ -98,7 +98,20 @@
     "cmsTestConnection": "Test Connection",
     "cmsTesting": "Testing...",
     "cmsConnected": "Connection successful",
-    "cmsFailed": "Connection failed"
+    "cmsFailed": "Connection failed",
+    "channelManagement": "Distribution Channel Management",
+    "channelManagementDesc": "Configure platforms for content distribution",
+    "enabledChannels": "Enabled Channels",
+    "channelSocial": "Social Media",
+    "channelBlog": "Blog Platforms",
+    "channelQA": "Q&A / Forums",
+    "channelDirectory": "Business Directories",
+    "channelEnabled": "Enabled",
+    "channelDisabled": "Disabled",
+    "channelCredentials": "Credentials",
+    "channelUsername": "Username",
+    "channelPassword": "Password",
+    "channelsCount": "channels enabled"
   },
   "reports": {
     "title": "Reports",

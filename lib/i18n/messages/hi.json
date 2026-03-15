@@ -98,7 +98,20 @@
     "cmsTestConnection": "कनेक्शन टेस्ट",
     "cmsTesting": "परीक्षण हो रहा है...",
     "cmsConnected": "कनेक्शन सफल",
-    "cmsFailed": "कनेक्शन विफल"
+    "cmsFailed": "कनेक्शन विफल",
+    "channelManagement": "वितरण चैनल प्रबंधन",
+    "channelManagementDesc": "सामग्री वितरण प्लेटफ़ॉर्म कॉन्फ़िगर करें",
+    "enabledChannels": "सक्रिय चैनल",
+    "channelSocial": "सोशल मीडिया",
+    "channelBlog": "ब्लॉग प्लेटफ़ॉर्म",
+    "channelQA": "प्रश्नोत्तर / फ़ोरम",
+    "channelDirectory": "व्यापार निर्देशिकाएँ",
+    "channelEnabled": "सक्रिय",
+    "channelDisabled": "निष्क्रिय",
+    "channelCredentials": "प्रमाणीकरण जानकारी",
+    "channelUsername": "उपयोगकर्ता नाम",
+    "channelPassword": "पासवर्ड",
+    "channelsCount": "चैनल सक्रिय"
   },
   "reports": {
     "title": "रिपोर्ट",

@@ -192,6 +192,19 @@ export interface ReportMetrics {
 
 export type { CmsConfig };
 
+export type ChannelCategory = "social" | "blog" | "qa" | "directory" | "press" | "forum";
+
+export interface DistributionChannelConfig {
+  type: string;
+  name: string;
+  category: ChannelCategory;
+  regions: string[];
+  languages: string[];
+  requiresAuth: boolean;
+  enabled: boolean;
+  rateLimit: { maxPerHour: number; cooldownMs: number };
+}
+
 export interface Project {
   id: string;
   name: string;
@@ -209,6 +222,9 @@ export interface Project {
   brandName: string;
   reportConfig: ReportConfig;
   cmsConfig?: CmsConfig;
+  channels?: DistributionChannelConfig[];
+  enabledChannels?: string[];
+  channelCredentials?: Record<string, { username?: string; password?: string }>;
   plan: GeneratedPlan;
   status: ProjectStatus;
   createdAt: Date;
@@ -828,6 +844,20 @@ const demoProject: Project = {
   competitors: ["https://competitor-a.com", "https://competitor-b.com"],
   brandName: "Example Corporation",
   reportConfig: { morningTime: "07:00", eveningTime: "19:00", emailAddresses: ["user@example.com", "team@example.com"], enabled: true },
+  channels: [
+    { type: "twitter", name: "Twitter / X", category: "social", regions: ["JP", "US", "GB"], languages: ["en", "ja"], requiresAuth: true, enabled: true, rateLimit: { maxPerHour: 5, cooldownMs: 15000 } },
+    { type: "linkedin", name: "LinkedIn", category: "social", regions: ["JP", "US", "GB"], languages: ["en", "ja"], requiresAuth: true, enabled: true, rateLimit: { maxPerHour: 3, cooldownMs: 30000 } },
+    { type: "medium", name: "Medium", category: "blog", regions: ["JP", "US", "GB"], languages: ["en", "ja"], requiresAuth: true, enabled: true, rateLimit: { maxPerHour: 2, cooldownMs: 60000 } },
+    { type: "dev_to", name: "DEV.to", category: "blog", regions: ["US", "GB"], languages: ["en"], requiresAuth: true, enabled: true, rateLimit: { maxPerHour: 3, cooldownMs: 30000 } },
+    { type: "note_com", name: "note.com", category: "blog", regions: ["JP"], languages: ["ja"], requiresAuth: true, enabled: true, rateLimit: { maxPerHour: 2, cooldownMs: 60000 } },
+    { type: "qiita", name: "Qiita", category: "blog", regions: ["JP"], languages: ["ja"], requiresAuth: true, enabled: true, rateLimit: { maxPerHour: 2, cooldownMs: 60000 } },
+    { type: "reddit", name: "Reddit", category: "qa", regions: ["US", "GB", "AU", "CA"], languages: ["en"], requiresAuth: true, enabled: true, rateLimit: { maxPerHour: 2, cooldownMs: 120000 } },
+    { type: "quora", name: "Quora", category: "qa", regions: ["US", "GB", "IN"], languages: ["en"], requiresAuth: true, enabled: true, rateLimit: { maxPerHour: 2, cooldownMs: 120000 } },
+    { type: "yahoo_chiebukuro", name: "Yahoo! Chiebukuro", category: "qa", regions: ["JP"], languages: ["ja"], requiresAuth: true, enabled: true, rateLimit: { maxPerHour: 1, cooldownMs: 300000 } },
+    { type: "hashnode", name: "Hashnode", category: "blog", regions: ["US", "GB"], languages: ["en"], requiresAuth: true, enabled: true, rateLimit: { maxPerHour: 3, cooldownMs: 30000 } },
+  ],
+  enabledChannels: ["twitter", "medium", "reddit", "linkedin"],
+  channelCredentials: {},
   plan: {
     summary: "SEO・AEO・GEO・Schema.orgの4軸を同時並行で3ヶ月間実行。全タスクが独立して24時間稼働し、リサーチ→生成→検証→最適化のループを継続的に回します。",
     tasks: generateMockTasks(demoMethods, ["JP", "US", "GLOBAL"]),
@@ -897,7 +927,8 @@ interface StoreActions {
   updateProjectReportConfig: (id: string, config: Partial<ReportConfig>) => void;
   updateProjectSettings: (id: string, settings: Partial<Pick<Project,
     'goals' | 'businessCountries' | 'presenceCountries' | 'audiences' |
-    'methods' | 'duration' | 'additionalNotes' | 'keywords' | 'competitors' | 'brandName' | 'cmsConfig'
+    'methods' | 'duration' | 'additionalNotes' | 'keywords' | 'competitors' | 'brandName' | 'cmsConfig' |
+    'enabledChannels' | 'channelCredentials'
   >>) => void;
   selectTask: (projectId: string, taskId: string | null) => void;
 }
@@ -1024,7 +1055,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   }, []);
   const updateProjectSettings = useCallback((id: string, settings: Partial<Pick<Project,
     'goals' | 'businessCountries' | 'presenceCountries' | 'audiences' |
-    'methods' | 'duration' | 'additionalNotes' | 'keywords' | 'competitors' | 'brandName' | 'cmsConfig'
+    'methods' | 'duration' | 'additionalNotes' | 'keywords' | 'competitors' | 'brandName' | 'cmsConfig' |
+    'enabledChannels' | 'channelCredentials'
   >>) => {
     setProjects((p) => p.map((x) => (x.id === id ? { ...x, ...settings } : x)));
   }, []);

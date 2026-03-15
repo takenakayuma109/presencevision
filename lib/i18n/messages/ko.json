@@ -98,7 +98,20 @@
     "cmsTestConnection": "연결 테스트",
     "cmsTesting": "테스트 중...",
     "cmsConnected": "연결 성공",
-    "cmsFailed": "연결 실패"
+    "cmsFailed": "연결 실패",
+    "channelManagement": "배포 채널 관리",
+    "channelManagementDesc": "콘텐츠를 배포할 플랫폼을 설정",
+    "enabledChannels": "활성화된 채널",
+    "channelSocial": "소셜 미디어",
+    "channelBlog": "블로그 플랫폼",
+    "channelQA": "Q&A / 포럼",
+    "channelDirectory": "비즈니스 디렉토리",
+    "channelEnabled": "활성",
+    "channelDisabled": "비활성",
+    "channelCredentials": "인증 정보",
+    "channelUsername": "사용자 이름",
+    "channelPassword": "비밀번호",
+    "channelsCount": "개 채널 활성화"
   },
   "reports": {
     "title": "리포트",

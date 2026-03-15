@@ -29,6 +29,11 @@ import {
   type CmsConfig,
 } from "./tasks/cms-publisher.js";
 import {
+  distributeContent,
+  type DistributionResult,
+} from "./tasks/presence-distributor.js";
+import { getChannelsForCountry } from "./channels/channel-registry.js";
+import {
   getActivities,
   getActivityStats,
   type ActivityEntry,
@@ -81,6 +86,7 @@ interface CycleResult {
     serpResults: SerpResult[];
     llmResults: LlmCheckResult[];
     contentGenerated: GeneratedContent[];
+    distributionResults: DistributionResult[];
   };
 }
 
@@ -138,6 +144,7 @@ async function runCycle(project: PresenceProject): Promise<CycleResult> {
   const serpResults: SerpResult[] = [];
   const llmResults: LlmCheckResult[] = [];
   const contentGenerated: GeneratedContent[] = [];
+  const distributionResults: DistributionResult[] = [];
 
   console.log(`[Engine] Cycle ${cycleId} starting for project "${project.name}"`);
 
@@ -395,6 +402,54 @@ async function runCycle(project: PresenceProject): Promise<CycleResult> {
         }
       }
     }
+
+    // --- Distributed Presence: 各プラットフォームへ配信 ---
+    if (contentGenerated.length > 0) {
+      const channels = getChannelsForCountry(country);
+      const enabledChannels = channels.filter((c) => c.enabled);
+
+      if (enabledChannels.length > 0) {
+        // サイクルあたり最大2コンテンツまで配信（レート制限回避）
+        const contentsToDistribute = contentGenerated
+          .filter((c) => c.type === "article")
+          .slice(0, 2);
+
+        for (const content of contentsToDistribute) {
+          try {
+            const distResult = await distributeContent({
+              projectId: project.id,
+              taskId: `${cycleId}-distribute-${country}`,
+              content: {
+                article: {
+                  title: content.title,
+                  body: content.body,
+                  tags: (content.metadata?.keywords as string[]) ?? project.keywords.slice(0, 5),
+                },
+                keyword: project.keywords[0] ?? project.brandName,
+                language,
+              },
+              channels: enabledChannels,
+              brandName: project.brandName,
+              targetUrl: project.targetUrl,
+              country,
+            });
+
+            distributionResults.push(distResult);
+            tasksExecuted++;
+
+            console.log(
+              `[Engine] Distribution for ${country}: ${distResult.totalSucceeded}/${distResult.totalAttempted} channels succeeded`,
+            );
+          } catch (error) {
+            console.error(`[Engine] Distribution failed (${country}):`, error);
+            tasksFailed++;
+          }
+
+          // レート制限回避
+          await sleep(5000);
+        }
+      }
+    }
   }
 
   const completedAt = new Date();
@@ -411,7 +466,7 @@ async function runCycle(project: PresenceProject): Promise<CycleResult> {
     tasksFailed,
     tasksSkipped,
     countries: project.targetCountries,
-    results: { serpResults, llmResults, contentGenerated },
+    results: { serpResults, llmResults, contentGenerated, distributionResults },
   };
 }
 

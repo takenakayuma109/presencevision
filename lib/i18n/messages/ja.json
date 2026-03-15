@@ -98,7 +98,20 @@
     "cmsTestConnection": "接続テスト",
     "cmsTesting": "テスト中...",
     "cmsConnected": "接続成功",
-    "cmsFailed": "接続失敗"
+    "cmsFailed": "接続失敗",
+    "channelManagement": "配信チャネル管理",
+    "channelManagementDesc": "コンテンツを配信するプラットフォームを設定",
+    "enabledChannels": "有効なチャネル",
+    "channelSocial": "SNS",
+    "channelBlog": "ブログプラットフォーム",
+    "channelQA": "Q&A・フォーラム",
+    "channelDirectory": "ビジネスディレクトリ",
+    "channelEnabled": "有効",
+    "channelDisabled": "無効",
+    "channelCredentials": "認証情報",
+    "channelUsername": "ユーザー名",
+    "channelPassword": "パスワード",
+    "channelsCount": "チャネル有効"
   },
   "reports": {
     "title": "レポート",

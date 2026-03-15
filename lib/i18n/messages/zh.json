@@ -98,7 +98,20 @@
     "cmsTestConnection": "测试连接",
     "cmsTesting": "测试中...",
     "cmsConnected": "连接成功",
-    "cmsFailed": "连接失败"
+    "cmsFailed": "连接失败",
+    "channelManagement": "分发渠道管理",
+    "channelManagementDesc": "配置内容分发平台",
+    "enabledChannels": "已启用渠道",
+    "channelSocial": "社交媒体",
+    "channelBlog": "博客平台",
+    "channelQA": "问答/论坛",
+    "channelDirectory": "商业目录",
+    "channelEnabled": "已启用",
+    "channelDisabled": "已禁用",
+    "channelCredentials": "认证信息",
+    "channelUsername": "用户名",
+    "channelPassword": "密码",
+    "channelsCount": "个渠道已启用"
   },
   "reports": {
     "title": "报告",

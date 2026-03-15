@@ -98,7 +98,20 @@
     "cmsTestConnection": "اختبار الاتصال",
     "cmsTesting": "جارٍ الاختبار...",
     "cmsConnected": "تم الاتصال بنجاح",
-    "cmsFailed": "فشل الاتصال"
+    "cmsFailed": "فشل الاتصال",
+    "channelManagement": "إدارة قنوات التوزيع",
+    "channelManagementDesc": "تكوين منصات توزيع المحتوى",
+    "enabledChannels": "القنوات المفعّلة",
+    "channelSocial": "وسائل التواصل الاجتماعي",
+    "channelBlog": "منصات المدونات",
+    "channelQA": "أسئلة وأجوبة / منتديات",
+    "channelDirectory": "أدلة الأعمال",
+    "channelEnabled": "مفعّل",
+    "channelDisabled": "معطّل",
+    "channelCredentials": "بيانات الاعتماد",
+    "channelUsername": "اسم المستخدم",
+    "channelPassword": "كلمة المرور",
+    "channelsCount": "قنوات مفعّلة"
   },
   "reports": {
     "title": "التقارير",

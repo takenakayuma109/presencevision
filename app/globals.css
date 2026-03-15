@@ -105,6 +105,9 @@ input[type="submit"],
 input[type="button"],
 input[type="reset"],
 select,
-summary {
-  cursor: pointer;
+summary,
+[onclick],
+[tabindex]:not([tabindex="-1"]),
+label[for] {
+  cursor: pointer !important;
 }

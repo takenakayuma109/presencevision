@@ -22,6 +22,7 @@ export interface SiteInfo {
   favicon?: string;
   language?: string;
   industry?: string;
+  suggestedKeywords?: string[];
 }
 
 export type PresenceGoal =
@@ -143,6 +144,9 @@ export interface ReportConfig {
 export interface WizardState {
   step: 1 | 2 | 3 | 4;
   siteInfo: SiteInfo | null;
+  keywords: string[];
+  competitors: string[];
+  brandName: string;
   goals: PresenceGoal[];
   businessCountries: string[];
   presenceCountries: string[];
@@ -190,6 +194,9 @@ export interface Project {
   methods: PresenceMethod[];
   duration: string;
   additionalNotes: string;
+  keywords: string[];
+  competitors: string[];
+  brandName: string;
   reportConfig: ReportConfig;
   plan: GeneratedPlan;
   status: ProjectStatus;
@@ -285,6 +292,9 @@ function initialWizardState(): WizardState {
   return {
     step: 1,
     siteInfo: null,
+    keywords: [],
+    competitors: [],
+    brandName: "",
     goals: [],
     businessCountries: [],
     presenceCountries: [],
@@ -690,13 +700,21 @@ async function mockFetchSiteInfo(url: string): Promise<SiteInfo> {
   } catch {
     hostname = url;
   }
+  const brand = hostname.replace("www.", "").split(".")[0].charAt(0).toUpperCase() + hostname.replace("www.", "").split(".")[0].slice(1);
   return {
     url: url.startsWith("http") ? url : `https://${url}`,
-    title: hostname.replace("www.", "").split(".")[0].charAt(0).toUpperCase() + hostname.replace("www.", "").split(".")[0].slice(1),
+    title: brand,
     description: `${hostname} のウェブサイト。コンテンツと構造を分析しました。`,
     favicon: `https://www.google.com/s2/favicons?domain=${hostname}&sz=64`,
     language: "ja",
     industry: "テクノロジー",
+    suggestedKeywords: [
+      brand,
+      `${brand} サービス`,
+      `${brand} 評判`,
+      `${brand} 料金`,
+      `${brand} 使い方`,
+    ],
   };
 }
 
@@ -738,6 +756,9 @@ const demoProject: Project = {
   methods: demoMethods,
   duration: "3months",
   additionalNotes: "",
+  keywords: ["デジタルプレゼンス", "SEO最適化", "AI引用", "ブランド認知", "オンライン可視性"],
+  competitors: ["https://competitor-a.com", "https://competitor-b.com"],
+  brandName: "Example Corporation",
   reportConfig: { morningTime: "07:00", eveningTime: "19:00", emailAddresses: ["user@example.com", "team@example.com"], enabled: true },
   plan: {
     summary: "SEO・AEO・GEO・Schema.orgの4軸を同時並行で3ヶ月間実行。全タスクが独立して24時間稼働し、リサーチ→生成→検証→最適化のループを継続的に回します。",
@@ -796,12 +817,19 @@ interface StoreActions {
   setWizardDuration: (duration: WizardState["duration"]) => void;
   setWizardNotes: (notes: string) => void;
   setWizardReportConfig: (config: Partial<ReportConfig>) => void;
+  setWizardKeywords: (keywords: string[]) => void;
+  setWizardCompetitors: (competitors: string[]) => void;
+  setWizardBrandName: (brandName: string) => void;
   analyzeSiteUrl: (url: string) => Promise<void>;
   generatePlan: () => Promise<void>;
   confirmAndStartProject: () => void;
   removeProject: (id: string) => void;
   updateProjectStatus: (id: string, status: ProjectStatus) => void;
   updateProjectReportConfig: (id: string, config: Partial<ReportConfig>) => void;
+  updateProjectSettings: (id: string, settings: Partial<Pick<Project,
+    'goals' | 'businessCountries' | 'presenceCountries' | 'audiences' |
+    'methods' | 'duration' | 'additionalNotes' | 'keywords' | 'competitors' | 'brandName'
+  >>) => void;
   selectTask: (projectId: string, taskId: string | null) => void;
 }
 
@@ -829,12 +857,21 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const setWizardReportConfig = useCallback((config: Partial<ReportConfig>) => {
     setWizard((p) => ({ ...p, reportConfig: { ...p.reportConfig, ...config } }));
   }, []);
+  const setWizardKeywords = useCallback((keywords: string[]) => setWizard((p) => ({ ...p, keywords })), []);
+  const setWizardCompetitors = useCallback((competitors: string[]) => setWizard((p) => ({ ...p, competitors })), []);
+  const setWizardBrandName = useCallback((brandName: string) => setWizard((p) => ({ ...p, brandName })), []);
 
   const analyzeSiteUrl = useCallback(async (url: string) => {
     setWizard((p) => ({ ...p, isAnalyzing: true }));
     try {
       const info = await mockFetchSiteInfo(url);
-      setWizard((p) => ({ ...p, siteInfo: info, isAnalyzing: false }));
+      setWizard((p) => ({
+        ...p,
+        siteInfo: info,
+        brandName: p.brandName || info.title || "",
+        keywords: p.keywords.length > 0 ? p.keywords : (info.suggestedKeywords ?? []),
+        isAnalyzing: false,
+      }));
     } catch { setWizard((p) => ({ ...p, isAnalyzing: false })); }
   }, []);
 
@@ -861,6 +898,9 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       methods: w.methods,
       duration: w.duration,
       additionalNotes: w.additionalNotes,
+      keywords: w.keywords,
+      competitors: w.competitors,
+      brandName: w.brandName || w.siteInfo.title || w.siteInfo.url,
       reportConfig: w.reportConfig,
       plan: w.generatedPlan,
       status: "active",
@@ -878,7 +918,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       name: proj.name,
       url: proj.url,
       brandName: proj.siteInfo.title || proj.name,
-      keywords: [], // TODO: wizard にキーワード入力を追加
+      keywords: w.keywords,
       targetCountries: expandPresenceCountries(proj.presenceCountries),
       methods: proj.methods,
     }).catch((err) => console.error("[Engine] Failed to start:", err));
@@ -899,7 +939,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
           name: proj.name,
           url: proj.url,
           brandName: proj.siteInfo.title || proj.name,
-          keywords: [],
+          keywords: proj.keywords ?? [],
           targetCountries: expandPresenceCountries(proj.presenceCountries),
           methods: proj.methods,
         }).catch((err) => console.error("[Engine] Failed to restart:", err));
@@ -909,6 +949,13 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const updateProjectReportConfig = useCallback((id: string, config: Partial<ReportConfig>) => {
     setProjects((p) => p.map((x) => (x.id === id ? { ...x, reportConfig: { ...x.reportConfig, ...config } } : x)));
   }, []);
+  const updateProjectSettings = useCallback((id: string, settings: Partial<Pick<Project,
+    'goals' | 'businessCountries' | 'presenceCountries' | 'audiences' |
+    'methods' | 'duration' | 'additionalNotes' | 'keywords' | 'competitors' | 'brandName'
+  >>) => {
+    setProjects((p) => p.map((x) => (x.id === id ? { ...x, ...settings } : x)));
+  }, []);
+
   const selectTask = useCallback((projectId: string, taskId: string | null) => {
     setProjects((p) => p.map((x) => (x.id === projectId ? { ...x, selectedTaskId: taskId } : x)));
   }, []);
@@ -918,8 +965,9 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     openWizard, closeWizard, setWizardStep, setWizardSiteInfo,
     setWizardGoals, setWizardBusinessCountries, setWizardPresenceCountries,
     setWizardAudiences, setWizardMethods, setWizardDuration, setWizardNotes,
-    setWizardReportConfig, analyzeSiteUrl, generatePlan, confirmAndStartProject,
-    removeProject, updateProjectStatus, updateProjectReportConfig, selectTask,
+    setWizardReportConfig, setWizardKeywords, setWizardCompetitors, setWizardBrandName,
+    analyzeSiteUrl, generatePlan, confirmAndStartProject,
+    removeProject, updateProjectStatus, updateProjectReportConfig, updateProjectSettings, selectTask,
   };
 
   return React.createElement(StoreContext.Provider, { value }, children);

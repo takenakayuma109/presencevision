@@ -2,7 +2,7 @@
 
 import { Button, Badge, Card, CardContent } from "@/components/ui";
 import { useStore, methodLabels, availableCountries } from "@/lib/store";
-import { ArrowLeft, Rocket, CheckCircle2, Zap, Repeat, Mail } from "lucide-react";
+import { ArrowLeft, Rocket, CheckCircle2, Zap, Repeat, Mail, Search, Swords, Building2 } from "lucide-react";
 
 export function StepPlan() {
   const { wizard, setWizardStep, confirmAndStartProject } = useStore();
@@ -56,6 +56,39 @@ export function StepPlan() {
             <div className="flex flex-wrap gap-1">
               {wizard.presenceCountries.map((c) => { const cc = getCountryName(c); return <Badge key={c} variant="info">{cc?.flag} {cc?.name}</Badge>; })}
             </div>
+          </div>
+        </div>
+
+        {/* Brand, Keywords, Competitors */}
+        <div className="space-y-2">
+          <div className="rounded-lg border p-3">
+            <div className="flex items-center gap-2 mb-2">
+              <Building2 className="h-3.5 w-3.5 text-muted-foreground" />
+              <span className="text-xs text-muted-foreground">ブランド名:</span>
+              <span className="text-sm font-medium">{wizard.brandName}</span>
+            </div>
+            {wizard.keywords.length > 0 && (
+              <div className="flex items-start gap-2 mb-2">
+                <Search className="h-3.5 w-3.5 text-muted-foreground mt-0.5" />
+                <div>
+                  <span className="text-xs text-muted-foreground">キーワード: </span>
+                  <div className="flex flex-wrap gap-1 mt-1">
+                    {wizard.keywords.map((kw) => <Badge key={kw} variant="info" className="text-xs">{kw}</Badge>)}
+                  </div>
+                </div>
+              </div>
+            )}
+            {wizard.competitors.length > 0 && (
+              <div className="flex items-start gap-2">
+                <Swords className="h-3.5 w-3.5 text-muted-foreground mt-0.5" />
+                <div>
+                  <span className="text-xs text-muted-foreground">競合: </span>
+                  <div className="flex flex-wrap gap-1 mt-1">
+                    {wizard.competitors.map((c) => <Badge key={c} variant="secondary" className="text-xs">{c}</Badge>)}
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </div>
 

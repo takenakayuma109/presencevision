@@ -1,15 +1,16 @@
 "use client";
 
 import { use, useState, useMemo } from "react";
-import { useStore, statusLabels, goalLabels, methodLabels, taskStatusLabels, availableCountries, durationLabels, countryLanguageMap, expandPresenceCountries } from "@/lib/store";
-import type { TaskExecution, ExecutionArtifact, ReportConfig } from "@/lib/store";
+import { useStore, statusLabels, goalLabels, methodLabels, taskStatusLabels, availableCountries, durationLabels, countryLanguageMap, expandPresenceCountries, audienceLabels } from "@/lib/store";
+import type { TaskExecution, ExecutionArtifact, ReportConfig, PresenceGoal, PresenceMethod, TargetAudience } from "@/lib/store";
 import { useEngineActivities } from "@/lib/hooks/use-engine";
-import { Button, Badge, Card, CardContent, CardHeader, CardTitle, Input } from "@/components/ui";
+import { Button, Badge, Card, CardContent, CardHeader, CardTitle, Input, Textarea } from "@/components/ui";
 import { TaskDetailModal } from "@/components/wizard/task-detail-modal";
 import {
   ArrowLeft, Globe, Building2, Target, BarChart3, Clock, TrendingUp, FileText,
   Pause, Play, Mail, Repeat, ChevronRight, Activity, CheckCircle2, AlertTriangle,
   History, Plus, X, Pencil, Image, Code2, Database, Eye, FolderOpen, Radio,
+  Search, Swords, Users, Wrench, Settings,
 } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
@@ -119,6 +120,240 @@ function ArtifactCard({ artifact, taskTitle, region, completedAt }: {
 }
 
 // ---------------------------------------------------------------------------
+// Shared ToggleChip for editing
+// ---------------------------------------------------------------------------
+function ToggleChip({ label, selected, onClick }: { label: string; selected: boolean; onClick: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={cn(
+        "rounded-full border px-3 py-1 text-xs font-medium transition-all",
+        selected
+          ? "border-blue-500 bg-blue-50 text-blue-700 dark:border-blue-400 dark:bg-blue-950 dark:text-blue-300"
+          : "border-border bg-background text-muted-foreground hover:border-foreground/30 hover:text-foreground",
+      )}
+    >
+      {label}
+    </button>
+  );
+}
+
+function toggle<T>(arr: T[], item: T): T[] {
+  return arr.includes(item) ? arr.filter((i) => i !== item) : [...arr, item];
+}
+
+// ---------------------------------------------------------------------------
+// Editable tag input (keywords, competitors)
+// ---------------------------------------------------------------------------
+function TagInput({ tags, onUpdate, placeholder, variant = "info" }: {
+  tags: string[]; onUpdate: (tags: string[]) => void; placeholder: string; variant?: "info" | "secondary";
+}) {
+  const [input, setInput] = useState("");
+  const add = () => {
+    const v = input.trim();
+    if (v && !tags.includes(v)) { onUpdate([...tags, v]); setInput(""); }
+  };
+  return (
+    <div className="space-y-1.5">
+      {tags.length > 0 && (
+        <div className="flex flex-wrap gap-1">
+          {tags.map((t) => (
+            <Badge key={t} variant={variant} className="gap-1 text-xs py-0.5 px-2">
+              {t}
+              <button onClick={() => onUpdate(tags.filter((x) => x !== t))} className="ml-0.5 hover:text-red-500 transition-colors">
+                <X className="h-2.5 w-2.5" />
+              </button>
+            </Badge>
+          ))}
+        </div>
+      )}
+      <div className="flex gap-1.5">
+        <Input value={input} onChange={(e) => setInput(e.target.value)}
+          onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); add(); } }}
+          placeholder={placeholder} className="h-7 text-xs flex-1" />
+        <Button type="button" variant="outline" size="sm" onClick={add} className="h-7 text-xs px-2">
+          <Plus className="h-3 w-3" />
+        </Button>
+      </div>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Project settings card (editable)
+// ---------------------------------------------------------------------------
+function ProjectSettingsCard({ project, onUpdate }: {
+  project: { id: string; keywords: string[]; competitors: string[]; brandName: string;
+    goals: PresenceGoal[]; businessCountries: string[]; presenceCountries: string[];
+    audiences: TargetAudience[]; methods: PresenceMethod[]; duration: string; additionalNotes: string };
+  onUpdate: (settings: Partial<Pick<import("@/lib/store").Project,
+    'goals' | 'businessCountries' | 'presenceCountries' | 'audiences' |
+    'methods' | 'duration' | 'additionalNotes' | 'keywords' | 'competitors' | 'brandName'
+  >>) => void;
+}) {
+  const [editing, setEditing] = useState(false);
+
+  return (
+    <Card>
+      <CardHeader className="pb-3">
+        <div className="flex items-center justify-between">
+          <CardTitle className="text-sm font-semibold flex items-center gap-2"><Settings className="h-4 w-4" /> プロジェクト設定</CardTitle>
+          <button onClick={() => setEditing(!editing)} className="text-xs text-blue-500 hover:underline flex items-center gap-1">
+            <Pencil className="h-3 w-3" /> {editing ? "完了" : "編集"}
+          </button>
+        </div>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        {/* Brand name */}
+        <div>
+          <p className="text-xs text-muted-foreground mb-1 flex items-center gap-1"><Building2 className="h-3 w-3" /> ブランド名</p>
+          {editing ? (
+            <Input value={project.brandName} onChange={(e) => onUpdate({ brandName: e.target.value })} className="h-8 text-sm" />
+          ) : (
+            <p className="text-sm font-medium">{project.brandName}</p>
+          )}
+        </div>
+
+        {/* Keywords */}
+        <div>
+          <p className="text-xs text-muted-foreground mb-1 flex items-center gap-1"><Search className="h-3 w-3" /> キーワード</p>
+          {editing ? (
+            <TagInput tags={project.keywords} onUpdate={(keywords) => onUpdate({ keywords })} placeholder="キーワードを追加..." />
+          ) : (
+            <div className="flex flex-wrap gap-1">
+              {project.keywords.length > 0
+                ? project.keywords.map((kw) => <Badge key={kw} variant="info" className="text-xs">{kw}</Badge>)
+                : <p className="text-xs text-muted-foreground">未設定</p>}
+            </div>
+          )}
+        </div>
+
+        {/* Competitors */}
+        <div>
+          <p className="text-xs text-muted-foreground mb-1 flex items-center gap-1"><Swords className="h-3 w-3" /> 競合サイト</p>
+          {editing ? (
+            <TagInput tags={project.competitors} onUpdate={(competitors) => onUpdate({ competitors })} placeholder="https://competitor.com" variant="secondary" />
+          ) : (
+            <div className="flex flex-wrap gap-1">
+              {project.competitors.length > 0
+                ? project.competitors.map((c) => <Badge key={c} variant="secondary" className="text-xs">{c}</Badge>)
+                : <p className="text-xs text-muted-foreground">未設定</p>}
+            </div>
+          )}
+        </div>
+
+        {/* Goals */}
+        <div>
+          <p className="text-xs text-muted-foreground mb-1 flex items-center gap-1"><Target className="h-3 w-3" /> 目的</p>
+          {editing ? (
+            <div className="flex flex-wrap gap-1">
+              {(Object.entries(goalLabels) as [PresenceGoal, string][]).map(([k, v]) => (
+                <ToggleChip key={k} label={v} selected={project.goals.includes(k)} onClick={() => onUpdate({ goals: toggle(project.goals, k) })} />
+              ))}
+            </div>
+          ) : (
+            <div className="flex flex-wrap gap-1">
+              {project.goals.map((g) => <Badge key={g} variant="info" className="text-xs">{goalLabels[g]}</Badge>)}
+            </div>
+          )}
+        </div>
+
+        {/* Methods */}
+        <div>
+          <p className="text-xs text-muted-foreground mb-1 flex items-center gap-1"><Wrench className="h-3 w-3" /> プレゼンス強化手段</p>
+          {editing ? (
+            <div className="flex flex-wrap gap-1">
+              {(Object.entries(methodLabels) as [PresenceMethod, string][]).map(([k, v]) => (
+                <ToggleChip key={k} label={v} selected={project.methods.includes(k)} onClick={() => onUpdate({ methods: toggle(project.methods, k) })} />
+              ))}
+            </div>
+          ) : (
+            <div className="flex flex-wrap gap-1">
+              {project.methods.map((m) => <Badge key={m} variant="outline" className="text-xs">{methodLabels[m]}</Badge>)}
+            </div>
+          )}
+        </div>
+
+        {/* Business countries */}
+        <div>
+          <p className="text-xs text-muted-foreground mb-1 flex items-center gap-1"><Building2 className="h-3 w-3" /> 事業ターゲット国</p>
+          {editing ? (
+            <div className="flex flex-wrap gap-1">
+              {availableCountries.filter((c) => c.code !== "GLOBAL").map((c) => (
+                <ToggleChip key={c.code} label={`${c.flag} ${c.name}`} selected={project.businessCountries.includes(c.code)} onClick={() => onUpdate({ businessCountries: toggle(project.businessCountries, c.code) })} />
+              ))}
+            </div>
+          ) : (
+            <div className="flex flex-wrap gap-1">
+              {project.businessCountries.map((c) => { const cc = availableCountries.find((x) => x.code === c); return <Badge key={c} variant="secondary" className="text-xs">{cc?.flag} {cc?.name}</Badge>; })}
+            </div>
+          )}
+        </div>
+
+        {/* Presence countries */}
+        <div>
+          <p className="text-xs text-muted-foreground mb-1 flex items-center gap-1"><Globe className="h-3 w-3" /> プレゼンス拡散国</p>
+          {editing ? (
+            <div className="flex flex-wrap gap-1">
+              {availableCountries.map((c) => (
+                <ToggleChip key={c.code} label={`${c.flag} ${c.name}`} selected={project.presenceCountries.includes(c.code)} onClick={() => onUpdate({ presenceCountries: toggle(project.presenceCountries, c.code) })} />
+              ))}
+            </div>
+          ) : (
+            <div className="flex flex-wrap gap-1">
+              {project.presenceCountries.map((c) => { const cc = availableCountries.find((x) => x.code === c); return <Badge key={c} variant="info" className="text-xs">{cc?.flag} {cc?.name}</Badge>; })}
+            </div>
+          )}
+        </div>
+
+        {/* Audiences */}
+        <div>
+          <p className="text-xs text-muted-foreground mb-1 flex items-center gap-1"><Users className="h-3 w-3" /> ターゲットオーディエンス</p>
+          {editing ? (
+            <div className="flex flex-wrap gap-1">
+              {(Object.entries(audienceLabels) as [TargetAudience, string][]).map(([k, v]) => (
+                <ToggleChip key={k} label={v} selected={project.audiences.includes(k)} onClick={() => onUpdate({ audiences: toggle(project.audiences, k) })} />
+              ))}
+            </div>
+          ) : (
+            <div className="flex flex-wrap gap-1">
+              {project.audiences.length > 0
+                ? project.audiences.map((a) => <Badge key={a} variant="outline" className="text-xs">{audienceLabels[a]}</Badge>)
+                : <p className="text-xs text-muted-foreground">未設定</p>}
+            </div>
+          )}
+        </div>
+
+        {/* Duration */}
+        <div>
+          <p className="text-xs text-muted-foreground mb-1 flex items-center gap-1"><Clock className="h-3 w-3" /> 実施期間</p>
+          {editing ? (
+            <div className="flex flex-wrap gap-1">
+              {(Object.entries(durationLabels) as [string, string][]).map(([k, v]) => (
+                <ToggleChip key={k} label={v} selected={project.duration === k} onClick={() => onUpdate({ duration: k })} />
+              ))}
+            </div>
+          ) : (
+            <p className="text-sm font-medium">{durationLabels[project.duration] ?? project.duration}</p>
+          )}
+        </div>
+
+        {/* Additional notes */}
+        <div>
+          <p className="text-xs text-muted-foreground mb-1">その他のご要望</p>
+          {editing ? (
+            <Textarea value={project.additionalNotes} onChange={(e) => onUpdate({ additionalNotes: e.target.value })} rows={3} className="text-xs" placeholder="競合より上位に表示したい等..." />
+          ) : (
+            <p className="text-xs text-muted-foreground">{project.additionalNotes || "なし"}</p>
+          )}
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+// ---------------------------------------------------------------------------
 // Report config editor
 // ---------------------------------------------------------------------------
 function ReportConfigCard({ config, onUpdate }: { config: ReportConfig; onUpdate: (c: Partial<ReportConfig>) => void }) {
@@ -197,7 +432,7 @@ function ReportConfigCard({ config, onUpdate }: { config: ReportConfig; onUpdate
 // ---------------------------------------------------------------------------
 export default function ProjectDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
-  const { projects, updateProjectStatus, updateProjectReportConfig, selectTask } = useStore();
+  const { projects, updateProjectStatus, updateProjectReportConfig, updateProjectSettings, selectTask } = useStore();
   const project = projects.find((p) => p.id === id);
 
   const [activeTab, setActiveTab] = useState<TabId>("overview");
@@ -411,33 +646,10 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
 
           {/* Sidebar */}
           <div className="lg:col-span-2 space-y-4">
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-semibold flex items-center gap-2"><Building2 className="h-4 w-4" /> 事業ターゲット / 拡散先</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <div>
-                  <p className="text-xs text-muted-foreground mb-1">事業ターゲット国</p>
-                  <div className="flex flex-wrap gap-1">
-                    {project.businessCountries.map((c) => { const cc = getCountry(c); return <Badge key={c} variant="secondary">{cc?.flag} {cc?.name}</Badge>; })}
-                  </div>
-                </div>
-                <div>
-                  <p className="text-xs text-muted-foreground mb-1">プレゼンス拡散国</p>
-                  <div className="flex flex-wrap gap-1">
-                    {project.presenceCountries.map((c) => { const cc = getCountry(c); return <Badge key={c} variant="info">{cc?.flag} {cc?.name}</Badge>; })}
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader className="pb-3"><CardTitle className="text-sm font-semibold flex items-center gap-2"><Target className="h-4 w-4" /> 目的・手段</CardTitle></CardHeader>
-              <CardContent className="space-y-2">
-                <div className="flex flex-wrap gap-1">{project.goals.map((g) => <Badge key={g} variant="info" className="text-xs">{goalLabels[g]}</Badge>)}</div>
-                <div className="flex flex-wrap gap-1">{project.methods.map((m) => <Badge key={m} variant="outline" className="text-xs">{methodLabels[m]}</Badge>)}</div>
-              </CardContent>
-            </Card>
+            <ProjectSettingsCard
+              project={project}
+              onUpdate={(settings) => updateProjectSettings(project.id, settings)}
+            />
 
             <ReportConfigCard config={project.reportConfig} onUpdate={(config) => updateProjectReportConfig(project.id, config)} />
 

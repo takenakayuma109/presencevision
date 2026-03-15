@@ -1,4 +1,7 @@
 {
+  "header": {
+    "projectDetail": "프로젝트 상세"
+  },
   "nav": {
     "projects": "프로젝트",
     "reports": "리포트",
@@ -188,7 +191,12 @@
     "reportSend": " 발송",
     "concurrentTasks": "동시 실행 태스크 목록",
     "allTasksConcurrent": "전체 태스크 동시 가동",
-    "startWork": "작업 시작"
+    "startWork": "작업 시작",
+    "stepUrl": "URL 입력",
+    "stepConfig": "설정",
+    "stepNotes": "요청사항",
+    "stepPlan": "플랜 확인",
+    "newProject": "새 프로젝트"
   },
   "taskDetail": {
     "executedTimes": "회 실행 완료",

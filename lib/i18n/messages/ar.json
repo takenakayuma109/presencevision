@@ -1,4 +1,7 @@
 {
+  "header": {
+    "projectDetail": "تفاصيل المشروع"
+  },
   "nav": {
     "projects": "المشاريع",
     "reports": "التقارير",
@@ -188,7 +191,12 @@
     "reportSend": "",
     "concurrentTasks": "قائمة المهام المتزامنة",
     "allTasksConcurrent": "جميع المهام تعمل في وقت واحد",
-    "startWork": "بدء العمل"
+    "startWork": "بدء العمل",
+    "stepUrl": "إدخال URL",
+    "stepConfig": "الإعدادات",
+    "stepNotes": "الطلبات",
+    "stepPlan": "مراجعة الخطة",
+    "newProject": "مشروع جديد"
   },
   "taskDetail": {
     "executedTimes": " تنفيذات مكتملة",

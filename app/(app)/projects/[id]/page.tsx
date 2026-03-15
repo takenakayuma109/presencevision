@@ -1,9 +1,10 @@
 "use client";
 
 import { use, useState, useMemo } from "react";
-import { useStore, statusLabels, goalLabels, methodLabels, taskStatusLabels, availableCountries, durationLabels, countryLanguageMap, expandPresenceCountries, audienceLabels } from "@/lib/store";
+import { useStore, availableCountries, countryLanguageMap, expandPresenceCountries } from "@/lib/store";
 import type { TaskExecution, ExecutionArtifact, ReportConfig, PresenceGoal, PresenceMethod, TargetAudience } from "@/lib/store";
 import { useEngineActivities } from "@/lib/hooks/use-engine";
+import { useTranslation, useLabels } from "@/lib/hooks/use-translation";
 import { Button, Badge, Card, CardContent, CardHeader, CardTitle, Input, Textarea } from "@/components/ui";
 import { TaskDetailModal } from "@/components/wizard/task-detail-modal";
 import {
@@ -29,9 +30,6 @@ const artifactColors: Record<string, string> = {
   code: "text-amber-500 bg-amber-500/10 border-amber-500/20",
   data: "text-purple-500 bg-purple-500/10 border-purple-500/20",
 };
-const artifactTypeLabels: Record<string, string> = {
-  screenshot: "スクリーンショット", link: "リンク", content: "コンテンツ", code: "コード", data: "データ",
-};
 
 type TabId = "overview" | "work" | "timeline";
 
@@ -44,6 +42,8 @@ function ArtifactCard({ artifact, taskTitle, region, completedAt }: {
   const [expanded, setExpanded] = useState(false);
   const Icon = artifactIcons[artifact.type] ?? FileText;
   const cc = availableCountries.find((c) => c.code === region);
+  const { t } = useTranslation();
+  const { artifactTypeLabels } = useLabels();
 
   return (
     <div className={cn("rounded-lg border overflow-hidden transition-all", artifactColors[artifact.type])}>
@@ -99,7 +99,7 @@ function ArtifactCard({ artifact, taskTitle, region, completedAt }: {
         {/* Expand button for content */}
         {(artifact.content && (artifact.type === "content" || artifact.type === "data" || artifact.type === "code")) && (
           <button onClick={() => setExpanded(!expanded)} className="text-[10px] text-blue-500 hover:underline flex items-center gap-1 pt-1">
-            <Eye className="h-3 w-3" /> {expanded ? "閉じる" : "全文を表示"}
+            <Eye className="h-3 w-3" /> {expanded ? t("project.close") : t("project.showFullText")}
           </button>
         )}
       </div>
@@ -193,21 +193,23 @@ function ProjectSettingsCard({ project, onUpdate }: {
   >>) => void;
 }) {
   const [editing, setEditing] = useState(false);
+  const { t } = useTranslation();
+  const { goalLabels, methodLabels, audienceLabels, durationLabels } = useLabels();
 
   return (
     <Card>
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
-          <CardTitle className="text-sm font-semibold flex items-center gap-2"><Settings className="h-4 w-4" /> プロジェクト設定</CardTitle>
+          <CardTitle className="text-sm font-semibold flex items-center gap-2"><Settings className="h-4 w-4" /> {t("project.projectSettings")}</CardTitle>
           <button onClick={() => setEditing(!editing)} className="text-xs text-blue-500 hover:underline flex items-center gap-1">
-            <Pencil className="h-3 w-3" /> {editing ? "完了" : "編集"}
+            <Pencil className="h-3 w-3" /> {editing ? t("project.complete") : t("project.edit")}
           </button>
         </div>
       </CardHeader>
       <CardContent className="space-y-4">
         {/* Brand name */}
         <div>
-          <p className="text-xs text-muted-foreground mb-1 flex items-center gap-1"><Building2 className="h-3 w-3" /> ブランド名</p>
+          <p className="text-xs text-muted-foreground mb-1 flex items-center gap-1"><Building2 className="h-3 w-3" /> {t("project.brandName")}</p>
           {editing ? (
             <Input value={project.brandName} onChange={(e) => onUpdate({ brandName: e.target.value })} className="h-8 text-sm" />
           ) : (
@@ -217,35 +219,35 @@ function ProjectSettingsCard({ project, onUpdate }: {
 
         {/* Keywords */}
         <div>
-          <p className="text-xs text-muted-foreground mb-1 flex items-center gap-1"><Search className="h-3 w-3" /> キーワード</p>
+          <p className="text-xs text-muted-foreground mb-1 flex items-center gap-1"><Search className="h-3 w-3" /> {t("project.keywords")}</p>
           {editing ? (
-            <TagInput tags={project.keywords} onUpdate={(keywords) => onUpdate({ keywords })} placeholder="キーワードを追加..." />
+            <TagInput tags={project.keywords} onUpdate={(keywords) => onUpdate({ keywords })} placeholder={t("wizard.addKeyword")} />
           ) : (
             <div className="flex flex-wrap gap-1">
               {project.keywords.length > 0
                 ? project.keywords.map((kw) => <Badge key={kw} variant="info" className="text-xs">{kw}</Badge>)
-                : <p className="text-xs text-muted-foreground">未設定</p>}
+                : <p className="text-xs text-muted-foreground">{t("project.notSet")}</p>}
             </div>
           )}
         </div>
 
         {/* Competitors */}
         <div>
-          <p className="text-xs text-muted-foreground mb-1 flex items-center gap-1"><Swords className="h-3 w-3" /> 競合サイト</p>
+          <p className="text-xs text-muted-foreground mb-1 flex items-center gap-1"><Swords className="h-3 w-3" /> {t("project.competitors")}</p>
           {editing ? (
             <TagInput tags={project.competitors} onUpdate={(competitors) => onUpdate({ competitors })} placeholder="https://competitor.com" variant="secondary" />
           ) : (
             <div className="flex flex-wrap gap-1">
               {project.competitors.length > 0
                 ? project.competitors.map((c) => <Badge key={c} variant="secondary" className="text-xs">{c}</Badge>)
-                : <p className="text-xs text-muted-foreground">未設定</p>}
+                : <p className="text-xs text-muted-foreground">{t("project.notSet")}</p>}
             </div>
           )}
         </div>
 
         {/* Goals */}
         <div>
-          <p className="text-xs text-muted-foreground mb-1 flex items-center gap-1"><Target className="h-3 w-3" /> 目的</p>
+          <p className="text-xs text-muted-foreground mb-1 flex items-center gap-1"><Target className="h-3 w-3" /> {t("project.goals")}</p>
           {editing ? (
             <div className="flex flex-wrap gap-1">
               {(Object.entries(goalLabels) as [PresenceGoal, string][]).map(([k, v]) => (
@@ -261,7 +263,7 @@ function ProjectSettingsCard({ project, onUpdate }: {
 
         {/* Methods */}
         <div>
-          <p className="text-xs text-muted-foreground mb-1 flex items-center gap-1"><Wrench className="h-3 w-3" /> プレゼンス強化手段</p>
+          <p className="text-xs text-muted-foreground mb-1 flex items-center gap-1"><Wrench className="h-3 w-3" /> {t("project.methods")}</p>
           {editing ? (
             <div className="flex flex-wrap gap-1">
               {(Object.entries(methodLabels) as [PresenceMethod, string][]).map(([k, v]) => (
@@ -277,7 +279,7 @@ function ProjectSettingsCard({ project, onUpdate }: {
 
         {/* Business countries */}
         <div>
-          <p className="text-xs text-muted-foreground mb-1 flex items-center gap-1"><Building2 className="h-3 w-3" /> 事業ターゲット国</p>
+          <p className="text-xs text-muted-foreground mb-1 flex items-center gap-1"><Building2 className="h-3 w-3" /> {t("project.businessTarget")}</p>
           {editing ? (
             <div className="flex flex-wrap gap-1">
               {availableCountries.filter((c) => c.code !== "GLOBAL").map((c) => (
@@ -293,7 +295,7 @@ function ProjectSettingsCard({ project, onUpdate }: {
 
         {/* Presence countries */}
         <div>
-          <p className="text-xs text-muted-foreground mb-1 flex items-center gap-1"><Globe className="h-3 w-3" /> プレゼンス拡散国</p>
+          <p className="text-xs text-muted-foreground mb-1 flex items-center gap-1"><Globe className="h-3 w-3" /> {t("project.presenceCountries")}</p>
           {editing ? (
             <div className="flex flex-wrap gap-1">
               {availableCountries.map((c) => (
@@ -309,7 +311,7 @@ function ProjectSettingsCard({ project, onUpdate }: {
 
         {/* Audiences */}
         <div>
-          <p className="text-xs text-muted-foreground mb-1 flex items-center gap-1"><Users className="h-3 w-3" /> ターゲットオーディエンス</p>
+          <p className="text-xs text-muted-foreground mb-1 flex items-center gap-1"><Users className="h-3 w-3" /> {t("project.targetAudience")}</p>
           {editing ? (
             <div className="flex flex-wrap gap-1">
               {(Object.entries(audienceLabels) as [TargetAudience, string][]).map(([k, v]) => (
@@ -320,14 +322,14 @@ function ProjectSettingsCard({ project, onUpdate }: {
             <div className="flex flex-wrap gap-1">
               {project.audiences.length > 0
                 ? project.audiences.map((a) => <Badge key={a} variant="outline" className="text-xs">{audienceLabels[a]}</Badge>)
-                : <p className="text-xs text-muted-foreground">未設定</p>}
+                : <p className="text-xs text-muted-foreground">{t("project.notSet")}</p>}
             </div>
           )}
         </div>
 
         {/* Duration */}
         <div>
-          <p className="text-xs text-muted-foreground mb-1 flex items-center gap-1"><Clock className="h-3 w-3" /> 実施期間</p>
+          <p className="text-xs text-muted-foreground mb-1 flex items-center gap-1"><Clock className="h-3 w-3" /> {t("project.implementationPeriod")}</p>
           {editing ? (
             <div className="flex flex-wrap gap-1">
               {(Object.entries(durationLabels) as [string, string][]).map(([k, v]) => (
@@ -341,11 +343,11 @@ function ProjectSettingsCard({ project, onUpdate }: {
 
         {/* Additional notes */}
         <div>
-          <p className="text-xs text-muted-foreground mb-1">その他のご要望</p>
+          <p className="text-xs text-muted-foreground mb-1">{t("project.additionalRequests")}</p>
           {editing ? (
-            <Textarea value={project.additionalNotes} onChange={(e) => onUpdate({ additionalNotes: e.target.value })} rows={3} className="text-xs" placeholder="競合より上位に表示したい等..." />
+            <Textarea value={project.additionalNotes} onChange={(e) => onUpdate({ additionalNotes: e.target.value })} rows={3} className="text-xs" />
           ) : (
-            <p className="text-xs text-muted-foreground">{project.additionalNotes || "なし"}</p>
+            <p className="text-xs text-muted-foreground">{project.additionalNotes || t("project.none")}</p>
           )}
         </div>
       </CardContent>
@@ -359,6 +361,7 @@ function ProjectSettingsCard({ project, onUpdate }: {
 function ReportConfigCard({ config, onUpdate }: { config: ReportConfig; onUpdate: (c: Partial<ReportConfig>) => void }) {
   const [editing, setEditing] = useState(false);
   const [emailInput, setEmailInput] = useState("");
+  const { t } = useTranslation();
 
   const addEmail = () => {
     const email = emailInput.trim();
@@ -378,15 +381,15 @@ function ReportConfigCard({ config, onUpdate }: { config: ReportConfig; onUpdate
     <Card>
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
-          <CardTitle className="text-sm font-semibold flex items-center gap-2"><Mail className="h-4 w-4" /> レポート設定</CardTitle>
+          <CardTitle className="text-sm font-semibold flex items-center gap-2"><Mail className="h-4 w-4" /> {t("project.reportSettings")}</CardTitle>
           <button onClick={() => setEditing(!editing)} className="text-xs text-blue-500 hover:underline flex items-center gap-1">
-            <Pencil className="h-3 w-3" /> {editing ? "完了" : "編集"}
+            <Pencil className="h-3 w-3" /> {editing ? t("project.complete") : t("project.edit")}
           </button>
         </div>
       </CardHeader>
       <CardContent className="space-y-3">
         <div>
-          <p className="text-xs text-muted-foreground mb-1.5">送信先</p>
+          <p className="text-xs text-muted-foreground mb-1.5">{t("project.recipients")}</p>
           <div className="flex flex-wrap gap-1.5">
             {config.emailAddresses.map((email) => (
               <Badge key={email} variant="secondary" className="text-xs py-1 px-2 gap-1">
@@ -396,30 +399,30 @@ function ReportConfigCard({ config, onUpdate }: { config: ReportConfig; onUpdate
                 )}
               </Badge>
             ))}
-            {config.emailAddresses.length === 0 && <p className="text-xs text-muted-foreground">未設定</p>}
+            {config.emailAddresses.length === 0 && <p className="text-xs text-muted-foreground">{t("project.notSet")}</p>}
           </div>
           {editing && (
             <div className="flex gap-2 mt-2">
               <Input type="email" value={emailInput} onChange={(e) => setEmailInput(e.target.value)} onKeyDown={handleKeyDown} placeholder="email@example.com" className="h-8 text-xs flex-1" />
-              <Button type="button" variant="outline" size="sm" onClick={addEmail} className="h-8 gap-1 text-xs px-2"><Plus className="h-3 w-3" /> 追加</Button>
+              <Button type="button" variant="outline" size="sm" onClick={addEmail} className="h-8 gap-1 text-xs px-2"><Plus className="h-3 w-3" /> {t("project.add")}</Button>
             </div>
           )}
         </div>
         <div>
-          <p className="text-xs text-muted-foreground mb-1.5">送信時刻</p>
+          <p className="text-xs text-muted-foreground mb-1.5">{t("project.sendTime")}</p>
           {editing ? (
             <div className="grid grid-cols-2 gap-2">
               <div>
-                <label className="text-[10px] text-muted-foreground mb-0.5 block">朝</label>
+                <label className="text-[10px] text-muted-foreground mb-0.5 block">{t("project.morning")}</label>
                 <Input type="time" value={config.morningTime} onChange={(e) => onUpdate({ morningTime: e.target.value })} className="h-8 text-xs" />
               </div>
               <div>
-                <label className="text-[10px] text-muted-foreground mb-0.5 block">夕</label>
+                <label className="text-[10px] text-muted-foreground mb-0.5 block">{t("project.evening")}</label>
                 <Input type="time" value={config.eveningTime} onChange={(e) => onUpdate({ eveningTime: e.target.value })} className="h-8 text-xs" />
               </div>
             </div>
           ) : (
-            <p className="text-sm">{config.morningTime}（朝） / {config.eveningTime}（夕）</p>
+            <p className="text-sm">{config.morningTime}({t("project.morning")}) / {config.eveningTime}({t("project.evening")})</p>
           )}
         </div>
       </CardContent>
@@ -434,19 +437,20 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
   const { id } = use(params);
   const { projects, updateProjectStatus, updateProjectReportConfig, updateProjectSettings, selectTask } = useStore();
   const project = projects.find((p) => p.id === id);
+  const { t } = useTranslation();
+  const { statusLabels, taskStatusLabels, methodLabels, durationLabels, artifactTypeLabels } = useLabels();
 
   const [activeTab, setActiveTab] = useState<TabId>("overview");
   const [showFullTimeline, setShowFullTimeline] = useState(false);
   const [workFilter, setWorkFilter] = useState<string>("all");
 
-  // リアルタイムエンジンデータ
   const engine = useEngineActivities(id, project?.status === "active");
 
   if (!project) {
     return (
       <div className="flex flex-col items-center justify-center py-20">
-        <p className="text-lg font-semibold mb-2">プロジェクトが見つかりません</p>
-        <Link href="/dashboard"><Button variant="outline" className="gap-2"><ArrowLeft className="h-4 w-4" /> 一覧に戻る</Button></Link>
+        <p className="text-lg font-semibold mb-2">{t("project.notFound")}</p>
+        <Link href="/dashboard"><Button variant="outline" className="gap-2"><ArrowLeft className="h-4 w-4" /> {t("project.backToList")}</Button></Link>
       </div>
     );
   }
@@ -456,7 +460,7 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
   const selectedTask = project.selectedTaskId ? project.plan.tasks.find((t) => t.id === project.selectedTaskId) ?? null : null;
   const getCountry = (code: string) => availableCountries.find((c) => c.code === code);
 
-  // Collect all executions — ライブデータがあればそちらを優先、なければモック
+  // Collect all executions
   const allExecutions: (TaskExecution & { taskTitle: string; taskMethod: string })[] = [];
   if (engine.isLive && engine.executions.length > 0) {
     for (const exec of engine.executions) {
@@ -495,9 +499,9 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
   }
 
   const tabs: { id: TabId; label: string; icon: typeof Activity }[] = [
-    { id: "overview", label: "概要", icon: Activity },
-    { id: "work", label: `全ワーク (${allArtifacts.length})`, icon: FolderOpen },
-    { id: "timeline", label: `タイムライン (${allExecutions.length})`, icon: History },
+    { id: "overview", label: t("project.overview"), icon: Activity },
+    { id: "work", label: `${t("project.allWork")} (${allArtifacts.length})`, icon: FolderOpen },
+    { id: "timeline", label: `${t("project.timeline")} (${allExecutions.length})`, icon: History },
   ];
 
   return (
@@ -518,7 +522,7 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
                   <Radio className="h-3 w-3 animate-pulse" /> LIVE
                 </Badge>
               ) : (
-                <Badge variant="outline" className="text-[10px] text-amber-500 border-amber-500/30">デモデータ</Badge>
+                <Badge variant="outline" className="text-[10px] text-amber-500 border-amber-500/30">{t("project.demoData")}</Badge>
               )}
             </div>
             <p className="text-sm text-muted-foreground">{project.url}</p>
@@ -526,10 +530,10 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
         </div>
         <div className="flex gap-2">
           {project.status === "active" && (
-            <Button variant="outline" size="sm" onClick={() => updateProjectStatus(project.id, "paused")} className="gap-1.5"><Pause className="h-3.5 w-3.5" /> 一時停止</Button>
+            <Button variant="outline" size="sm" onClick={() => updateProjectStatus(project.id, "paused")} className="gap-1.5"><Pause className="h-3.5 w-3.5" /> {t("project.pause")}</Button>
           )}
           {project.status === "paused" && (
-            <Button size="sm" onClick={() => updateProjectStatus(project.id, "active")} className="gap-1.5"><Play className="h-3.5 w-3.5" /> 再開</Button>
+            <Button size="sm" onClick={() => updateProjectStatus(project.id, "active")} className="gap-1.5"><Play className="h-3.5 w-3.5" /> {t("project.resume")}</Button>
           )}
         </div>
       </div>
@@ -538,17 +542,17 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
       <div className="grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
         {[
           {
-            icon: Activity, label: "稼働タスク",
+            icon: Activity, label: t("project.activeTasks"),
             value: engine.isLive && engine.stats ? `${engine.stats.running}/${engine.stats.total}` : `${runningTasks}/${project.plan.tasks.length}`,
             color: "text-green-600 dark:text-green-400", bg: "bg-green-50 dark:bg-green-950",
           },
           {
-            icon: Repeat, label: "総実行回数",
+            icon: Repeat, label: t("project.totalExecutions"),
             value: engine.isLive && engine.stats ? String(engine.stats.completed) : String(totalCycles),
             color: "text-purple-600 dark:text-purple-400", bg: "bg-purple-50 dark:bg-purple-950",
           },
-          { icon: FolderOpen, label: "成果物", value: String(allArtifacts.length), color: "text-orange-600 dark:text-orange-400", bg: "bg-orange-50 dark:bg-orange-950" },
-          { icon: Clock, label: "期間", value: durationLabels[project.duration] ?? project.duration, color: "text-amber-600 dark:text-amber-400", bg: "bg-amber-50 dark:bg-amber-950" },
+          { icon: FolderOpen, label: t("project.artifacts"), value: String(allArtifacts.length), color: "text-orange-600 dark:text-orange-400", bg: "bg-orange-50 dark:bg-orange-950" },
+          { icon: Clock, label: t("project.period"), value: durationLabels[project.duration] ?? project.duration, color: "text-amber-600 dark:text-amber-400", bg: "bg-amber-50 dark:bg-amber-950" },
         ].map((s) => (
           <Card key={s.label}>
             <CardContent className="p-4 flex items-center gap-3">
@@ -591,10 +595,10 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
             <Card>
               <CardHeader className="pb-3">
                 <CardTitle className="text-sm font-semibold flex items-center gap-2">
-                  <Activity className="h-4 w-4" /> タスク一覧
-                  <Badge variant="success" className="text-xs">同時実行中</Badge>
+                  <Activity className="h-4 w-4" /> {t("project.taskList")}
+                  <Badge variant="success" className="text-xs">{t("project.simultaneousExecution")}</Badge>
                 </CardTitle>
-                <p className="text-xs text-muted-foreground">クリックで詳細を確認できます</p>
+                <p className="text-xs text-muted-foreground">{t("project.clickForDetails")}</p>
               </CardHeader>
               <CardContent className="space-y-1.5">
                 {project.plan.tasks.map((task) => {
@@ -610,8 +614,8 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
                         <p className="text-sm font-medium">{task.title}</p>
                         <div className="flex items-center gap-3 mt-0.5">
                           <span className="text-xs text-muted-foreground">{taskStatusLabels[task.status]}</span>
-                          <span className="text-xs text-muted-foreground">{task.cycleCount}回実行</span>
-                          <span className="text-xs text-muted-foreground">{taskArtifactCount}件の成果物</span>
+                          <span className="text-xs text-muted-foreground">{task.cycleCount}{t("project.executed")}</span>
+                          <span className="text-xs text-muted-foreground">{taskArtifactCount}{t("project.artifactCount")}</span>
                         </div>
                       </div>
                       <Badge variant="outline" className="text-xs shrink-0">{methodLabels[task.method]}</Badge>
@@ -627,10 +631,10 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-sm font-semibold flex items-center gap-2">
-                    <FolderOpen className="h-4 w-4" /> 最新の成果物
+                    <FolderOpen className="h-4 w-4" /> {t("project.latestArtifacts")}
                   </CardTitle>
                   <button onClick={() => setActiveTab("work")} className="text-xs text-blue-500 hover:underline">
-                    全て表示 ({allArtifacts.length}件)
+                    {t("project.showAll")} ({allArtifacts.length}{t("project.items")})
                   </button>
                 </div>
               </CardHeader>
@@ -654,7 +658,7 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
             <ReportConfigCard config={project.reportConfig} onUpdate={(config) => updateProjectReportConfig(project.id, config)} />
 
             <Card>
-              <CardHeader className="pb-3"><CardTitle className="text-sm font-semibold flex items-center gap-2"><BarChart3 className="h-4 w-4" /> 直近のレポート</CardTitle></CardHeader>
+              <CardHeader className="pb-3"><CardTitle className="text-sm font-semibold flex items-center gap-2"><BarChart3 className="h-4 w-4" /> {t("project.recentReports")}</CardTitle></CardHeader>
               <CardContent>
                 {project.reports.length > 0 ? (
                   <div className="space-y-3">
@@ -662,28 +666,28 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
                       <div key={r.id} className="rounded-lg border p-3 space-y-2">
                         <div className="flex items-center justify-between">
                           <p className="text-sm font-medium">{r.title}</p>
-                          <Badge variant={r.type === "morning" ? "info" : "secondary"} className="text-xs">{r.type === "morning" ? "朝" : "夕"}</Badge>
+                          <Badge variant={r.type === "morning" ? "info" : "secondary"} className="text-xs">{r.type === "morning" ? t("project.morning") : t("project.evening")}</Badge>
                         </div>
                         <p className="text-xs text-muted-foreground">{r.summary}</p>
                         <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 pt-1">
                           <div className="text-center rounded bg-muted/50 p-1">
                             <div className="flex items-center justify-center gap-1"><TrendingUp className="h-3 w-3 text-blue-500" /><p className="text-sm font-bold">{r.metrics.visibilityScore}</p></div>
-                            <p className="text-xs text-muted-foreground">可視性</p>
+                            <p className="text-xs text-muted-foreground">{t("project.visibility")}</p>
                           </div>
-                          <div className="text-center rounded bg-muted/50 p-1"><p className="text-sm font-bold">{r.metrics.contentGenerated}</p><p className="text-xs text-muted-foreground">生成数</p></div>
-                          <div className="text-center rounded bg-muted/50 p-1"><p className="text-sm font-bold">{r.metrics.llmCitations}</p><p className="text-xs text-muted-foreground">LLM引用</p></div>
+                          <div className="text-center rounded bg-muted/50 p-1"><p className="text-sm font-bold">{r.metrics.contentGenerated}</p><p className="text-xs text-muted-foreground">{t("project.generated")}</p></div>
+                          <div className="text-center rounded bg-muted/50 p-1"><p className="text-sm font-bold">{r.metrics.llmCitations}</p><p className="text-xs text-muted-foreground">{t("project.llmCitations")}</p></div>
                         </div>
                       </div>
                     ))}
                   </div>
                 ) : (
-                  <p className="text-sm text-muted-foreground text-center py-4">作業開始後にレポートが自動生成されます</p>
+                  <p className="text-sm text-muted-foreground text-center py-4">{t("project.reportsAutoGenerated")}</p>
                 )}
               </CardContent>
             </Card>
 
             <Card>
-              <CardHeader className="pb-3"><CardTitle className="text-sm font-semibold flex items-center gap-2"><Globe className="h-4 w-4" /> 予測インパクト</CardTitle></CardHeader>
+              <CardHeader className="pb-3"><CardTitle className="text-sm font-semibold flex items-center gap-2"><Globe className="h-4 w-4" /> {t("project.estimatedImpact")}</CardTitle></CardHeader>
               <CardContent><p className="text-sm text-blue-600 dark:text-blue-400 font-medium">{project.plan.estimatedImpact}</p></CardContent>
             </Card>
           </div>
@@ -700,7 +704,7 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
               className={cn("px-3 py-1.5 rounded-full text-xs font-medium border transition-colors",
                 workFilter === "all" ? "bg-foreground text-background border-foreground" : "border-border hover:bg-muted")}
             >
-              全て ({allArtifacts.length})
+              {t("project.all")} ({allArtifacts.length})
             </button>
             {Array.from(artifactTypeCounts.entries()).map(([type, count]) => {
               const Icon = artifactIcons[type] ?? FileText;
@@ -721,7 +725,7 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
           <div className="p-3 rounded-lg bg-muted/30 border">
             <p className="text-xs font-semibold mb-2 flex items-center gap-1.5">
               <Globe className="h-3.5 w-3.5 text-cyan-500" />
-              リージョン別カバレッジ ({expandedRegions.length}リージョン)
+              {t("project.regionCoverage")} ({expandedRegions.length}{t("project.regions")})
             </p>
             <div className="flex flex-wrap gap-1.5">
               {expandedRegions.map((region) => {
@@ -730,7 +734,7 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
                 const langInfo = countryLanguageMap[region];
                 return (
                   <Badge key={region} variant={count > 0 ? "info" : "outline"} className={cn("text-xs gap-1", count === 0 && "opacity-50")}>
-                    {cc?.flag} {cc?.name} <span className="text-muted-foreground">{langInfo?.langName} {count}回</span>
+                    {cc?.flag} {cc?.name} <span className="text-muted-foreground">{langInfo?.langName} {count}{t("taskDetail.times")}</span>
                   </Badge>
                 );
               })}
@@ -747,7 +751,7 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
           {filteredArtifacts.length === 0 && (
             <div className="text-center py-12 text-muted-foreground">
               <FolderOpen className="h-10 w-10 mx-auto mb-3 opacity-50" />
-              <p className="text-sm">該当する成果物はありません</p>
+              <p className="text-sm">{t("project.noMatchingArtifacts")}</p>
             </div>
           )}
         </div>
@@ -758,7 +762,7 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
         <div className="space-y-4">
           <div className="p-3 rounded-lg bg-muted/30 border">
             <p className="text-xs font-semibold mb-2 flex items-center gap-1.5">
-              <Globe className="h-3.5 w-3.5 text-cyan-500" /> リージョン別カバレッジ
+              <Globe className="h-3.5 w-3.5 text-cyan-500" /> {t("project.regionCoverage")}
             </p>
             <div className="flex flex-wrap gap-1.5">
               {expandedRegions.map((region) => {
@@ -767,7 +771,7 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
                 const langInfo = countryLanguageMap[region];
                 return (
                   <Badge key={region} variant={count > 0 ? "info" : "outline"} className={cn("text-xs gap-1", count === 0 && "opacity-50")}>
-                    {cc?.flag} {cc?.name} <span className="text-muted-foreground">{langInfo?.langName} {count}回</span>
+                    {cc?.flag} {cc?.name} <span className="text-muted-foreground">{langInfo?.langName} {count}{t("taskDetail.times")}</span>
                   </Badge>
                 );
               })}
@@ -775,10 +779,10 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
           </div>
 
           <div className="flex items-center justify-between">
-            <p className="text-sm font-semibold">{allExecutions.length}件の実行</p>
+            <p className="text-sm font-semibold">{allExecutions.length}{t("project.executions")}</p>
             {allExecutions.length > 20 && (
               <button onClick={() => setShowFullTimeline(!showFullTimeline)} className="text-xs text-blue-500 hover:underline">
-                {showFullTimeline ? "最新20件のみ" : `全て表示 (${allExecutions.length}件)`}
+                {showFullTimeline ? t("project.latestOnly") : `${t("project.showAllExec")} (${allExecutions.length}${t("project.items")})`}
               </button>
             )}
           </div>
@@ -799,7 +803,7 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
                       <span className="text-sm font-medium">{exec.taskTitle}</span>
                       <Badge variant="outline" className="text-[10px] px-1.5 py-0">{exec.taskMethod}</Badge>
                       {exec.artifacts.length > 0 && (
-                        <Badge variant="info" className="text-[10px] px-1.5 py-0 gap-0.5"><FolderOpen className="h-2.5 w-2.5" /> {exec.artifacts.length}件</Badge>
+                        <Badge variant="info" className="text-[10px] px-1.5 py-0 gap-0.5"><FolderOpen className="h-2.5 w-2.5" /> {exec.artifacts.length}{t("project.items")}</Badge>
                       )}
                     </div>
                     <div className="flex items-center gap-2 mt-0.5">

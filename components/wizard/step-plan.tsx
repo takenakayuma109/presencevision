@@ -1,12 +1,15 @@
 "use client";
 
 import { Button, Badge, Card, CardContent } from "@/components/ui";
-import { useStore, methodLabels, availableCountries } from "@/lib/store";
+import { useStore, availableCountries } from "@/lib/store";
 import { ArrowLeft, Rocket, CheckCircle2, Zap, Repeat, Mail, Search, Swords, Building2 } from "lucide-react";
+import { useTranslation, useLabels } from "@/lib/hooks/use-translation";
 
 export function StepPlan() {
   const { wizard, setWizardStep, confirmAndStartProject } = useStore();
   const plan = wizard.generatedPlan;
+  const { t } = useTranslation();
+  const { methodLabels } = useLabels();
   if (!plan) return null;
 
   const getCountryName = (code: string) => availableCountries.find((c) => c.code === code);
@@ -17,8 +20,8 @@ export function StepPlan() {
         <div className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-green-50 dark:bg-green-950 mb-2">
           <CheckCircle2 className="h-6 w-6 text-green-600 dark:text-green-400" />
         </div>
-        <h2 className="text-xl font-semibold">AIプランが完成しました</h2>
-        <p className="text-sm text-muted-foreground">確認して「作業を開始する」を押すと、全タスクが同時に稼働開始します</p>
+        <h2 className="text-xl font-semibold">{t("wizard.step4Title")}</h2>
+        <p className="text-sm text-muted-foreground">{t("wizard.step4Subtitle")}</p>
       </div>
 
       <div className="max-w-2xl mx-auto space-y-5">
@@ -26,17 +29,17 @@ export function StepPlan() {
           <CardContent className="p-5 space-y-3">
             <div className="flex items-center gap-2">
               <Zap className="h-4 w-4 text-yellow-500" />
-              <h3 className="text-sm font-semibold">プラン概要</h3>
+              <h3 className="text-sm font-semibold">{t("wizard.planOverview")}</h3>
             </div>
             <p className="text-sm text-muted-foreground leading-relaxed">{plan.summary}</p>
             <div className="flex gap-6 pt-2">
               <div className="text-center">
                 <p className="text-2xl font-bold">{plan.tasks.length}</p>
-                <p className="text-xs text-muted-foreground">タスク（同時実行）</p>
+                <p className="text-xs text-muted-foreground">{t("wizard.tasksConcurrent")}</p>
               </div>
               <div className="text-center">
                 <p className="text-2xl font-bold">{plan.duration}</p>
-                <p className="text-xs text-muted-foreground">期間</p>
+                <p className="text-xs text-muted-foreground">{t("wizard.period")}</p>
               </div>
             </div>
             <p className="text-sm text-blue-600 dark:text-blue-400 font-medium">{plan.estimatedImpact}</p>
@@ -46,13 +49,13 @@ export function StepPlan() {
         {/* Countries */}
         <div className="flex gap-4">
           <div className="flex-1 rounded-lg border p-3">
-            <p className="text-xs text-muted-foreground mb-1.5">事業ターゲット</p>
+            <p className="text-xs text-muted-foreground mb-1.5">{t("wizard.businessTargetLabel")}</p>
             <div className="flex flex-wrap gap-1">
               {wizard.businessCountries.map((c) => { const cc = getCountryName(c); return <Badge key={c} variant="secondary">{cc?.flag} {cc?.name}</Badge>; })}
             </div>
           </div>
           <div className="flex-1 rounded-lg border p-3">
-            <p className="text-xs text-muted-foreground mb-1.5">プレゼンス拡散</p>
+            <p className="text-xs text-muted-foreground mb-1.5">{t("wizard.presenceSpread")}</p>
             <div className="flex flex-wrap gap-1">
               {wizard.presenceCountries.map((c) => { const cc = getCountryName(c); return <Badge key={c} variant="info">{cc?.flag} {cc?.name}</Badge>; })}
             </div>
@@ -64,14 +67,14 @@ export function StepPlan() {
           <div className="rounded-lg border p-3">
             <div className="flex items-center gap-2 mb-2">
               <Building2 className="h-3.5 w-3.5 text-muted-foreground" />
-              <span className="text-xs text-muted-foreground">ブランド名:</span>
+              <span className="text-xs text-muted-foreground">{t("wizard.brandNameLabel")}</span>
               <span className="text-sm font-medium">{wizard.brandName}</span>
             </div>
             {wizard.keywords.length > 0 && (
               <div className="flex items-start gap-2 mb-2">
                 <Search className="h-3.5 w-3.5 text-muted-foreground mt-0.5" />
                 <div>
-                  <span className="text-xs text-muted-foreground">キーワード: </span>
+                  <span className="text-xs text-muted-foreground">{t("wizard.keywordsLabel")}</span>
                   <div className="flex flex-wrap gap-1 mt-1">
                     {wizard.keywords.map((kw) => <Badge key={kw} variant="info" className="text-xs">{kw}</Badge>)}
                   </div>
@@ -82,7 +85,7 @@ export function StepPlan() {
               <div className="flex items-start gap-2">
                 <Swords className="h-3.5 w-3.5 text-muted-foreground mt-0.5" />
                 <div>
-                  <span className="text-xs text-muted-foreground">競合: </span>
+                  <span className="text-xs text-muted-foreground">{t("wizard.competitorsLabel")}</span>
                   <div className="flex flex-wrap gap-1 mt-1">
                     {wizard.competitors.map((c) => <Badge key={c} variant="secondary" className="text-xs">{c}</Badge>)}
                   </div>
@@ -96,13 +99,13 @@ export function StepPlan() {
         <div className="rounded-lg border p-3 flex items-center gap-3">
           <Mail className="h-4 w-4 text-muted-foreground shrink-0" />
           <div className="text-sm">
-            <span className="text-muted-foreground">レポート: </span>
+            <span className="text-muted-foreground">{t("wizard.reportConfig")}</span>
             <span className="font-medium">{wizard.reportConfig.emailAddresses.join(", ")}</span>
-            <span className="text-muted-foreground"> に毎日 </span>
+            <span className="text-muted-foreground">{t("wizard.reportDaily")}</span>
             <span className="font-medium">{wizard.reportConfig.morningTime}</span>
-            <span className="text-muted-foreground"> と </span>
+            <span className="text-muted-foreground">{t("wizard.reportAnd")}</span>
             <span className="font-medium">{wizard.reportConfig.eveningTime}</span>
-            <span className="text-muted-foreground"> に送信</span>
+            <span className="text-muted-foreground">{t("wizard.reportSend")}</span>
           </div>
         </div>
 
@@ -110,8 +113,8 @@ export function StepPlan() {
         <div className="space-y-2">
           <div className="flex items-center gap-2 mb-1">
             <Repeat className="h-4 w-4 text-muted-foreground" />
-            <h3 className="text-sm font-semibold">同時実行タスク一覧</h3>
-            <Badge variant="success" className="text-xs">全タスク同時稼働</Badge>
+            <h3 className="text-sm font-semibold">{t("wizard.concurrentTasks")}</h3>
+            <Badge variant="success" className="text-xs">{t("wizard.allTasksConcurrent")}</Badge>
           </div>
           {plan.tasks.map((task) => (
             <div key={task.id} className="flex items-center gap-3 rounded-lg border p-3">
@@ -128,10 +131,10 @@ export function StepPlan() {
 
       <div className="flex justify-between">
         <Button variant="outline" onClick={() => setWizardStep(3)} className="gap-2">
-          <ArrowLeft className="h-4 w-4" /> 戻る
+          <ArrowLeft className="h-4 w-4" /> {t("wizard.back")}
         </Button>
         <Button onClick={confirmAndStartProject} className="gap-2 bg-green-600 hover:bg-green-700 text-white">
-          <Rocket className="h-4 w-4" /> 作業を開始する
+          <Rocket className="h-4 w-4" /> {t("wizard.startWork")}
         </Button>
       </div>
     </div>

@@ -1,10 +1,11 @@
 "use client";
 
 import { Button } from "@/components/ui";
-import { useStore, goalLabels, methodLabels, audienceLabels, durationLabels, availableCountries } from "@/lib/store";
+import { useStore, availableCountries } from "@/lib/store";
 import type { PresenceGoal, PresenceMethod, TargetAudience } from "@/lib/store";
 import { cn } from "@/lib/utils";
 import { ArrowLeft, ArrowRight, Target, Building2, Globe, Users, Wrench, Clock } from "lucide-react";
+import { useTranslation, useLabels } from "@/lib/hooks/use-translation";
 
 function ToggleChip({ label, selected, onClick }: { label: string; selected: boolean; onClick: () => void }) {
   return (
@@ -41,6 +42,8 @@ export function StepConfig() {
     setWizardGoals, setWizardBusinessCountries, setWizardPresenceCountries,
     setWizardAudiences, setWizardMethods, setWizardDuration,
   } = useStore();
+  const { t } = useTranslation();
+  const { goalLabels, methodLabels, audienceLabels, durationLabels } = useLabels();
 
   function toggle<T>(arr: T[], item: T): T[] {
     return arr.includes(item) ? arr.filter((i) => i !== item) : [...arr, item];
@@ -52,13 +55,13 @@ export function StepConfig() {
   return (
     <div className="space-y-7">
       <div className="text-center space-y-2">
-        <h2 className="text-xl font-semibold">プロジェクトの設定</h2>
-        <p className="text-sm text-muted-foreground">目的・対象国・手段を選択してください</p>
+        <h2 className="text-xl font-semibold">{t("wizard.step2Title")}</h2>
+        <p className="text-sm text-muted-foreground">{t("wizard.step2Subtitle")}</p>
       </div>
 
       <div className="max-w-2xl mx-auto space-y-6">
         <div>
-          <Section icon={Target} title="目的（複数選択可）" />
+          <Section icon={Target} title={t("wizard.goalsTitle")} />
           <div className="flex flex-wrap gap-2">
             {(Object.entries(goalLabels) as [PresenceGoal, string][]).map(([k, v]) => (
               <ToggleChip key={k} label={v} selected={wizard.goals.includes(k)} onClick={() => setWizardGoals(toggle(wizard.goals, k))} />
@@ -67,7 +70,7 @@ export function StepConfig() {
         </div>
 
         <div>
-          <Section icon={Building2} title="事業ターゲット国" subtitle="ビジネスの対象となる国・地域" />
+          <Section icon={Building2} title={t("wizard.businessTarget")} subtitle={t("wizard.businessTargetDesc")} />
           <div className="flex flex-wrap gap-2">
             {availableCountries.filter((c) => c.code !== "GLOBAL").map((c) => (
               <ToggleChip key={c.code} label={`${c.flag} ${c.name}`} selected={wizard.businessCountries.includes(c.code)} onClick={() => setWizardBusinessCountries(toggle(wizard.businessCountries, c.code))} />
@@ -76,7 +79,7 @@ export function StepConfig() {
         </div>
 
         <div>
-          <Section icon={Globe} title="プレゼンス拡散国" subtitle="デジタル存在を高めたい国・地域（事業国以外でもOK）" />
+          <Section icon={Globe} title={t("wizard.presenceCountries")} subtitle={t("wizard.presenceCountriesDesc")} />
           <div className="flex flex-wrap gap-2">
             {availableCountries.map((c) => (
               <ToggleChip key={c.code} label={`${c.flag} ${c.name}`} selected={wizard.presenceCountries.includes(c.code)} onClick={() => setWizardPresenceCountries(toggle(wizard.presenceCountries, c.code))} />
@@ -85,7 +88,7 @@ export function StepConfig() {
         </div>
 
         <div>
-          <Section icon={Users} title="ターゲットオーディエンス" />
+          <Section icon={Users} title={t("wizard.targetAudience")} />
           <div className="flex flex-wrap gap-2">
             {(Object.entries(audienceLabels) as [TargetAudience, string][]).map(([k, v]) => (
               <ToggleChip key={k} label={v} selected={wizard.audiences.includes(k)} onClick={() => setWizardAudiences(toggle(wizard.audiences, k))} />
@@ -94,7 +97,7 @@ export function StepConfig() {
         </div>
 
         <div>
-          <Section icon={Wrench} title="プレゼンス強化手段" />
+          <Section icon={Wrench} title={t("wizard.methods")} />
           <div className="flex flex-wrap gap-2">
             {(Object.entries(methodLabels) as [PresenceMethod, string][]).map(([k, v]) => (
               <ToggleChip key={k} label={v} selected={wizard.methods.includes(k)} onClick={() => setWizardMethods(toggle(wizard.methods, k))} />
@@ -103,7 +106,7 @@ export function StepConfig() {
         </div>
 
         <div>
-          <Section icon={Clock} title="実施期間" />
+          <Section icon={Clock} title={t("wizard.duration")} />
           <div className="flex flex-wrap gap-2">
             {(Object.entries(durationLabels) as [string, string][]).map(([k, v]) => (
               <ToggleChip key={k} label={v} selected={wizard.duration === k} onClick={() => setWizardDuration(k as typeof wizard.duration)} />
@@ -114,10 +117,10 @@ export function StepConfig() {
 
       <div className="flex justify-between">
         <Button variant="outline" onClick={() => setWizardStep(1)} className="gap-2">
-          <ArrowLeft className="h-4 w-4" /> 戻る
+          <ArrowLeft className="h-4 w-4" /> {t("wizard.back")}
         </Button>
         <Button onClick={() => setWizardStep(3)} disabled={!canProceed} className="gap-2">
-          次へ <ArrowRight className="h-4 w-4" />
+          {t("wizard.next")} <ArrowRight className="h-4 w-4" />
         </Button>
       </div>
     </div>

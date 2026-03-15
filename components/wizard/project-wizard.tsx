@@ -7,15 +7,17 @@ import { StepUrl } from "./step-url";
 import { StepConfig } from "./step-config";
 import { StepNotes } from "./step-notes";
 import { StepPlan } from "./step-plan";
-
-const steps = [
-  { num: 1, label: "URL入力" },
-  { num: 2, label: "設定" },
-  { num: 3, label: "要望" },
-  { num: 4, label: "プラン確認" },
-];
+import { useTranslation } from "@/lib/hooks/use-translation";
 
 function StepIndicator({ current }: { current: number }) {
+  const { t } = useTranslation();
+  const steps = [
+    { num: 1, label: t("wizard.stepUrl") },
+    { num: 2, label: t("wizard.stepConfig") },
+    { num: 3, label: t("wizard.stepNotes") },
+    { num: 4, label: t("wizard.stepPlan") },
+  ];
+
   return (
     <div className="flex items-center justify-center gap-2 mb-6">
       {steps.map((s, i) => (
@@ -31,7 +33,7 @@ function StepIndicator({ current }: { current: number }) {
                     : "bg-muted text-muted-foreground",
               )}
             >
-              {s.num < current ? "✓" : s.num}
+              {s.num < current ? "\u2713" : s.num}
             </div>
             <span
               className={cn(
@@ -58,9 +60,10 @@ function StepIndicator({ current }: { current: number }) {
 
 export function ProjectWizard() {
   const { wizard, wizardOpen, closeWizard } = useStore();
+  const { t } = useTranslation();
 
   return (
-    <Dialog open={wizardOpen} onClose={closeWizard} title="新規プロジェクト">
+    <Dialog open={wizardOpen} onClose={closeWizard} title={t("wizard.newProject")}>
       <div className="min-h-[400px]">
         <StepIndicator current={wizard.step} />
         {wizard.step === 1 && <StepUrl />}

@@ -1,4 +1,7 @@
 {
+  "header": {
+    "projectDetail": "Project Detail"
+  },
   "nav": {
     "projects": "Projects",
     "reports": "Reports",
@@ -188,7 +191,12 @@
     "reportSend": "",
     "concurrentTasks": "Concurrent Task List",
     "allTasksConcurrent": "All tasks running simultaneously",
-    "startWork": "Start Work"
+    "startWork": "Start Work",
+    "stepUrl": "URL",
+    "stepConfig": "Config",
+    "stepNotes": "Requests",
+    "stepPlan": "Plan Review",
+    "newProject": "New Project"
   },
   "taskDetail": {
     "executedTimes": " executions completed",

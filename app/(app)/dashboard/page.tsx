@@ -1,6 +1,6 @@
 "use client";
 
-import { useStore, statusLabels, availableCountries } from "@/lib/store";
+import { useStore, availableCountries } from "@/lib/store";
 import { Button, Badge, Card, CardContent } from "@/components/ui";
 import { ProjectWizard } from "@/components/wizard";
 import { Dialog } from "@/components/ui";
@@ -8,6 +8,7 @@ import { Plus, Globe, ArrowRight, Trash2, Activity } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
+import { useTranslation, useLabels } from "@/lib/hooks/use-translation";
 
 const statusStyles: Record<string, string> = {
   active: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200",
@@ -19,15 +20,17 @@ export default function DashboardPage() {
   const { projects, openWizard, removeProject } = useStore();
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const getCountry = (code: string) => availableCountries.find((c) => c.code === code);
+  const { t } = useTranslation();
+  const { statusLabels } = useLabels();
 
   return (
     <div className="space-y-8">
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
         <div>
-          <h2 className="text-2xl font-bold">プロジェクト</h2>
-          <p className="text-sm text-muted-foreground mt-1">デジタルプレゼンスを高めたいサイトを登録してください</p>
+          <h2 className="text-2xl font-bold">{t("dashboard.title")}</h2>
+          <p className="text-sm text-muted-foreground mt-1">{t("dashboard.subtitle")}</p>
         </div>
-        <Button onClick={openWizard} className="gap-2"><Plus className="h-4 w-4" /> 新規プロジェクト</Button>
+        <Button onClick={openWizard} className="gap-2"><Plus className="h-4 w-4" /> {t("dashboard.addNew")}</Button>
       </div>
 
       {projects.length === 0 && (
@@ -35,9 +38,9 @@ export default function DashboardPage() {
           <div className="flex h-16 w-16 items-center justify-center rounded-full bg-muted mb-4">
             <Globe className="h-8 w-8 text-muted-foreground" />
           </div>
-          <h3 className="text-lg font-semibold mb-2">まだプロジェクトがありません</h3>
-          <p className="text-sm text-muted-foreground text-center max-w-sm mb-6">URLを入力するだけで、AIが分析し最適なプランを作成します。</p>
-          <Button onClick={openWizard} className="gap-2"><Plus className="h-4 w-4" /> 最初のプロジェクトを作成</Button>
+          <h3 className="text-lg font-semibold mb-2">{t("dashboard.noProjects")}</h3>
+          <p className="text-sm text-muted-foreground text-center max-w-sm mb-6">{t("dashboard.noProjectsDesc")}</p>
+          <Button onClick={openWizard} className="gap-2"><Plus className="h-4 w-4" /> {t("dashboard.createFirst")}</Button>
         </div>
       )}
 
@@ -67,18 +70,18 @@ export default function DashboardPage() {
                       {project.status === "active" && (
                         <div className="flex items-center gap-2 text-xs">
                           <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
-                          <span className="text-green-700 dark:text-green-300 font-medium">{running}個のタスクが稼働中</span>
+                          <span className="text-green-700 dark:text-green-300 font-medium">{running}{t("dashboard.tasksRunning")}</span>
                         </div>
                       )}
 
                       {/* Countries */}
                       <div className="flex gap-3 text-xs">
                         <div>
-                          <span className="text-muted-foreground">事業: </span>
+                          <span className="text-muted-foreground">{t("dashboard.business")}: </span>
                           {project.businessCountries.map((c) => getCountry(c)?.flag).join(" ")}
                         </div>
                         <div>
-                          <span className="text-muted-foreground">拡散: </span>
+                          <span className="text-muted-foreground">{t("dashboard.presence")}: </span>
                           {project.presenceCountries.slice(0, 4).map((c) => getCountry(c)?.flag).join(" ")}
                           {project.presenceCountries.length > 4 && <span> +{project.presenceCountries.length - 4}</span>}
                         </div>
@@ -93,7 +96,7 @@ export default function DashboardPage() {
                       </div>
 
                       <div className="flex items-center justify-between pt-1">
-                        <p className="text-xs text-muted-foreground">{project.plan.tasks.length}タスク · {project.plan.duration}</p>
+                        <p className="text-xs text-muted-foreground">{project.plan.tasks.length}{t("dashboard.tasks")} · {project.plan.duration}</p>
                         <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:text-foreground transition-colors" />
                       </div>
                     </CardContent>
@@ -111,18 +114,18 @@ export default function DashboardPage() {
 
           <button onClick={openWizard} className="flex flex-col items-center justify-center rounded-lg border border-dashed py-12 text-muted-foreground hover:border-foreground/30 hover:text-foreground transition-colors">
             <Plus className="h-8 w-8 mb-2" />
-            <span className="text-sm font-medium">新しいプロジェクト</span>
+            <span className="text-sm font-medium">{t("dashboard.newProject")}</span>
           </button>
         </div>
       )}
 
       <ProjectWizard />
 
-      <Dialog open={confirmDeleteId !== null} onClose={() => setConfirmDeleteId(null)} title="プロジェクトの削除">
-        <p className="text-sm text-muted-foreground mb-4">このプロジェクトを削除しますか？この操作は取り消せません。</p>
+      <Dialog open={confirmDeleteId !== null} onClose={() => setConfirmDeleteId(null)} title={t("dashboard.deleteProject")}>
+        <p className="text-sm text-muted-foreground mb-4">{t("dashboard.deleteConfirm")}</p>
         <div className="flex justify-end gap-2">
-          <Button variant="outline" onClick={() => setConfirmDeleteId(null)}>キャンセル</Button>
-          <Button variant="destructive" onClick={() => { if (confirmDeleteId) { removeProject(confirmDeleteId); setConfirmDeleteId(null); } }}>削除する</Button>
+          <Button variant="outline" onClick={() => setConfirmDeleteId(null)}>{t("common.cancel")}</Button>
+          <Button variant="destructive" onClick={() => { if (confirmDeleteId) { removeProject(confirmDeleteId); setConfirmDeleteId(null); } }}>{t("common.deleteAction")}</Button>
         </div>
       </Dialog>
     </div>

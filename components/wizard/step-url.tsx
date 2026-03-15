@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Button, Input, Badge } from "@/components/ui";
 import { useStore } from "@/lib/store";
 import { Globe, Loader2, CheckCircle2, ArrowRight, Plus, X, Search, Swords, Building2 } from "lucide-react";
+import { useTranslation } from "@/lib/hooks/use-translation";
 
 export function StepUrl() {
   const {
@@ -13,6 +14,7 @@ export function StepUrl() {
   const [url, setUrl] = useState("");
   const [keywordInput, setKeywordInput] = useState("");
   const [competitorInput, setCompetitorInput] = useState("");
+  const { t } = useTranslation();
 
   const handleAnalyze = async () => {
     if (!url.trim()) return;
@@ -55,9 +57,9 @@ export function StepUrl() {
         <div className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-blue-50 dark:bg-blue-950 mb-2">
           <Globe className="h-6 w-6 text-blue-600 dark:text-blue-400" />
         </div>
-        <h2 className="text-xl font-semibold">プレゼンスを高めたいURLを入力</h2>
+        <h2 className="text-xl font-semibold">{t("wizard.step1Title")}</h2>
         <p className="text-sm text-muted-foreground">
-          ウェブサイトのURLを入力すると、自動的にサイト情報とキーワードを取得します
+          {t("wizard.step1Subtitle")}
         </p>
       </div>
 
@@ -79,7 +81,7 @@ export function StepUrl() {
             {wizard.isAnalyzing ? (
               <Loader2 className="h-4 w-4 animate-spin" />
             ) : (
-              "分析"
+              t("wizard.analyze")
             )}
           </Button>
         </div>
@@ -88,8 +90,8 @@ export function StepUrl() {
           <div className="flex items-center gap-3 rounded-lg border border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-950/50 p-4">
             <Loader2 className="h-5 w-5 animate-spin text-blue-600 dark:text-blue-400" />
             <div>
-              <p className="text-sm font-medium">サイトを分析中...</p>
-              <p className="text-xs text-muted-foreground">構造・コンテンツ・メタデータを取得しています</p>
+              <p className="text-sm font-medium">{t("wizard.analyzing")}</p>
+              <p className="text-xs text-muted-foreground">{t("wizard.analyzingDesc")}</p>
             </div>
           </div>
         )}
@@ -110,8 +112,8 @@ export function StepUrl() {
                   <p className="text-xs text-muted-foreground break-all">{wizard.siteInfo.url}</p>
                   <p className="text-sm text-muted-foreground mt-1">{wizard.siteInfo.description}</p>
                   <div className="flex gap-3 mt-2 text-xs text-muted-foreground">
-                    {wizard.siteInfo.language && <span>言語: {wizard.siteInfo.language}</span>}
-                    {wizard.siteInfo.industry && <span>業界: {wizard.siteInfo.industry}</span>}
+                    {wizard.siteInfo.language && <span>{t("wizard.language")}: {wizard.siteInfo.language}</span>}
+                    {wizard.siteInfo.industry && <span>{t("wizard.industry")}: {wizard.siteInfo.industry}</span>}
                   </div>
                 </div>
               </div>
@@ -121,13 +123,13 @@ export function StepUrl() {
             <div className="space-y-2">
               <div className="flex items-center gap-2">
                 <Building2 className="h-4 w-4 text-muted-foreground" />
-                <h3 className="text-sm font-semibold">ブランド名</h3>
+                <h3 className="text-sm font-semibold">{t("wizard.brandName")}</h3>
               </div>
-              <p className="text-xs text-muted-foreground ml-6">LLM引用チェック・コンテンツ生成で使用されます</p>
+              <p className="text-xs text-muted-foreground ml-6">{t("wizard.brandNameDesc")}</p>
               <Input
                 value={wizard.brandName}
                 onChange={(e) => setWizardBrandName(e.target.value)}
-                placeholder="会社名・サービス名"
+                placeholder={t("wizard.brandNamePlaceholder")}
                 className="h-10"
               />
             </div>
@@ -136,9 +138,9 @@ export function StepUrl() {
             <div className="space-y-2">
               <div className="flex items-center gap-2">
                 <Search className="h-4 w-4 text-muted-foreground" />
-                <h3 className="text-sm font-semibold">キーワード</h3>
+                <h3 className="text-sm font-semibold">{t("wizard.keywords")}</h3>
               </div>
-              <p className="text-xs text-muted-foreground ml-6">SERP順位トラッキング・SEO記事生成に使用されます（自動検出済み・編集可）</p>
+              <p className="text-xs text-muted-foreground ml-6">{t("wizard.keywordsDesc")}</p>
               {wizard.keywords.length > 0 && (
                 <div className="flex flex-wrap gap-1.5">
                   {wizard.keywords.map((kw) => (
@@ -156,11 +158,11 @@ export function StepUrl() {
                   value={keywordInput}
                   onChange={(e) => setKeywordInput(e.target.value)}
                   onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addKeyword(); } }}
-                  placeholder="キーワードを追加..."
+                  placeholder={t("wizard.addKeyword")}
                   className="h-9 text-sm flex-1"
                 />
                 <Button type="button" variant="outline" size="sm" onClick={addKeyword} className="h-9 gap-1 text-xs px-3">
-                  <Plus className="h-3 w-3" /> 追加
+                  <Plus className="h-3 w-3" /> {t("wizard.add")}
                 </Button>
               </div>
             </div>
@@ -169,9 +171,9 @@ export function StepUrl() {
             <div className="space-y-2">
               <div className="flex items-center gap-2">
                 <Swords className="h-4 w-4 text-muted-foreground" />
-                <h3 className="text-sm font-semibold">競合サイト（任意）</h3>
+                <h3 className="text-sm font-semibold">{t("wizard.competitors")}</h3>
               </div>
-              <p className="text-xs text-muted-foreground ml-6">競合との検索順位比較に使用されます</p>
+              <p className="text-xs text-muted-foreground ml-6">{t("wizard.competitorsDesc")}</p>
               {wizard.competitors.length > 0 && (
                 <div className="flex flex-wrap gap-1.5">
                   {wizard.competitors.map((c) => (
@@ -193,7 +195,7 @@ export function StepUrl() {
                   className="h-9 text-sm flex-1"
                 />
                 <Button type="button" variant="outline" size="sm" onClick={addCompetitor} className="h-9 gap-1 text-xs px-3">
-                  <Plus className="h-3 w-3" /> 追加
+                  <Plus className="h-3 w-3" /> {t("wizard.add")}
                 </Button>
               </div>
             </div>
@@ -207,7 +209,7 @@ export function StepUrl() {
           disabled={!canProceed}
           className="gap-2"
         >
-          次へ <ArrowRight className="h-4 w-4" />
+          {t("wizard.next")} <ArrowRight className="h-4 w-4" />
         </Button>
       </div>
     </div>

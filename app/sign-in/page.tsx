@@ -4,11 +4,13 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button, Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui";
 import { Input } from "@/components/ui";
+import { useTranslation } from "@/lib/hooks/use-translation";
 
 export default function SignInPage() {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const { t } = useTranslation();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -23,12 +25,12 @@ export default function SignInPage() {
             PV
           </div>
           <CardTitle className="text-xl">PresenceVision</CardTitle>
-          <CardDescription>アカウントにサインイン</CardDescription>
+          <CardDescription>{t("signIn.signInToAccount")}</CardDescription>
         </CardHeader>
         <form onSubmit={handleSubmit}>
           <CardContent className="space-y-4">
             <div>
-              <label className="text-sm font-medium mb-2 block">メールアドレス</label>
+              <label className="text-sm font-medium mb-2 block">{t("signIn.email")}</label>
               <Input
                 type="email"
                 placeholder="you@example.com"
@@ -37,7 +39,7 @@ export default function SignInPage() {
               />
             </div>
             <div>
-              <label className="text-sm font-medium mb-2 block">パスワード</label>
+              <label className="text-sm font-medium mb-2 block">{t("signIn.password")}</label>
               <Input
                 type="password"
                 placeholder="••••••••"
@@ -45,7 +47,7 @@ export default function SignInPage() {
                 onChange={(e) => setPassword(e.target.value)}
               />
             </div>
-            <Button type="submit" className="w-full">サインイン</Button>
+            <Button type="submit" className="w-full">{t("signIn.signIn")}</Button>
           </CardContent>
         </form>
       </Card>

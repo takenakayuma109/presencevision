@@ -11,7 +11,7 @@ import {
 } from "@/lib/store/locale";
 import { cn } from "@/lib/utils";
 
-export function LanguageSwitch() {
+export function LanguageSwitch({ position = "bottom" }: { position?: "top" | "bottom" }) {
   const { locale, setLocale } = useLocaleStore();
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
@@ -47,7 +47,10 @@ export function LanguageSwitch() {
       </button>
 
       {open && (
-        <div className="absolute bottom-full left-0 mb-1 z-50 w-48 rounded-lg border bg-popover shadow-lg py-1 max-h-80 overflow-y-auto">
+        <div className={cn(
+          "absolute left-0 z-50 w-48 rounded-lg border bg-popover shadow-lg py-1 max-h-80 overflow-y-auto",
+          position === "top" ? "bottom-full mb-1" : "top-full mt-1",
+        )}>
           {SUPPORTED_LOCALES.map((l) => (
             <button
               key={l}

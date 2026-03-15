@@ -1,4 +1,7 @@
 {
+  "header": {
+    "projectDetail": "项目详情"
+  },
   "nav": {
     "projects": "项目",
     "reports": "报告",
@@ -188,7 +191,12 @@
     "reportSend": " 发送",
     "concurrentTasks": "同时执行任务列表",
     "allTasksConcurrent": "所有任务同时运行",
-    "startWork": "开始工作"
+    "startWork": "开始工作",
+    "stepUrl": "URL输入",
+    "stepConfig": "设置",
+    "stepNotes": "需求",
+    "stepPlan": "方案确认",
+    "newProject": "新建项目"
   },
   "taskDetail": {
     "executedTimes": "次执行完成",

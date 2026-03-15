@@ -1,4 +1,7 @@
 {
+  "header": {
+    "projectDetail": "प्रोजेक्ट विवरण"
+  },
   "nav": {
     "projects": "प्रोजेक्ट",
     "reports": "रिपोर्ट",
@@ -188,7 +191,12 @@
     "reportSend": " पर भेजें",
     "concurrentTasks": "समवर्ती कार्य सूची",
     "allTasksConcurrent": "सभी कार्य एक साथ चल रहे हैं",
-    "startWork": "काम शुरू करें"
+    "startWork": "काम शुरू करें",
+    "stepUrl": "URL",
+    "stepConfig": "सेटिंग्स",
+    "stepNotes": "अनुरोध",
+    "stepPlan": "योजना समीक्षा",
+    "newProject": "नया प्रोजेक्ट"
   },
   "taskDetail": {
     "executedTimes": " निष्पादन पूर्ण",

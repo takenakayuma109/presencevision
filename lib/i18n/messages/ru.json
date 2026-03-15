@@ -1,4 +1,7 @@
 {
+  "header": {
+    "projectDetail": "Детали проекта"
+  },
   "nav": {
     "projects": "Проекты",
     "reports": "Отчёты",
@@ -188,7 +191,12 @@
     "reportSend": "",
     "concurrentTasks": "Список параллельных задач",
     "allTasksConcurrent": "Все задачи выполняются параллельно",
-    "startWork": "Начать работу"
+    "startWork": "Начать работу",
+    "stepUrl": "URL",
+    "stepConfig": "Настройка",
+    "stepNotes": "Запросы",
+    "stepPlan": "Обзор плана",
+    "newProject": "Новый проект"
   },
   "taskDetail": {
     "executedTimes": " выполнений завершено",

@@ -4,10 +4,12 @@ import { useState } from "react";
 import { Button, Input, Textarea, Badge } from "@/components/ui";
 import { useStore } from "@/lib/store";
 import { ArrowLeft, Sparkles, Loader2, Mail, Clock, Plus, X } from "lucide-react";
+import { useTranslation } from "@/lib/hooks/use-translation";
 
 export function StepNotes() {
   const { wizard, setWizardStep, setWizardNotes, setWizardReportConfig, generatePlan } = useStore();
   const [emailInput, setEmailInput] = useState("");
+  const { t } = useTranslation();
 
   const addEmail = () => {
     const email = emailInput.trim();
@@ -39,8 +41,8 @@ export function StepNotes() {
         <div className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-purple-50 dark:bg-purple-950 mb-2">
           <Sparkles className="h-6 w-6 text-purple-600 dark:text-purple-400" />
         </div>
-        <h2 className="text-xl font-semibold">レポート設定とご要望</h2>
-        <p className="text-sm text-muted-foreground">レポートの送信先と追加要望を設定してください</p>
+        <h2 className="text-xl font-semibold">{t("wizard.step3Title")}</h2>
+        <p className="text-sm text-muted-foreground">{t("wizard.step3Subtitle")}</p>
       </div>
 
       <div className="max-w-lg mx-auto space-y-6">
@@ -48,7 +50,7 @@ export function StepNotes() {
         <div className="space-y-3">
           <div className="flex items-center gap-2">
             <Mail className="h-4 w-4 text-muted-foreground" />
-            <h3 className="text-sm font-semibold">レポート送信先メール</h3>
+            <h3 className="text-sm font-semibold">{t("wizard.reportEmail")}</h3>
           </div>
           <div className="flex gap-2">
             <Input
@@ -60,7 +62,7 @@ export function StepNotes() {
               className="h-10 flex-1"
             />
             <Button type="button" variant="outline" size="sm" onClick={addEmail} className="h-10 gap-1">
-              <Plus className="h-3.5 w-3.5" /> 追加
+              <Plus className="h-3.5 w-3.5" /> {t("wizard.add")}
             </Button>
           </div>
           {wizard.reportConfig.emailAddresses.length > 0 && (
@@ -75,18 +77,18 @@ export function StepNotes() {
               ))}
             </div>
           )}
-          <p className="text-xs text-muted-foreground">複数のメールアドレスを追加できます</p>
+          <p className="text-xs text-muted-foreground">{t("wizard.multipleEmails")}</p>
         </div>
 
         {/* Report times */}
         <div className="space-y-3">
           <div className="flex items-center gap-2">
             <Clock className="h-4 w-4 text-muted-foreground" />
-            <h3 className="text-sm font-semibold">レポート送信時刻</h3>
+            <h3 className="text-sm font-semibold">{t("wizard.reportTime")}</h3>
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="text-xs text-muted-foreground mb-1 block">モーニングレポート</label>
+              <label className="text-xs text-muted-foreground mb-1 block">{t("wizard.morningReport")}</label>
               <Input
                 type="time"
                 value={wizard.reportConfig.morningTime}
@@ -95,7 +97,7 @@ export function StepNotes() {
               />
             </div>
             <div>
-              <label className="text-xs text-muted-foreground mb-1 block">イブニングレポート</label>
+              <label className="text-xs text-muted-foreground mb-1 block">{t("wizard.eveningReport")}</label>
               <Input
                 type="time"
                 value={wizard.reportConfig.eveningTime}
@@ -104,16 +106,16 @@ export function StepNotes() {
               />
             </div>
           </div>
-          <p className="text-xs text-muted-foreground">毎日上記の時刻にメールでレポートが届きます</p>
+          <p className="text-xs text-muted-foreground">{t("wizard.dailyReport")}</p>
         </div>
 
         {/* Notes */}
         <div className="space-y-3">
-          <h3 className="text-sm font-semibold">その他のご要望（任意）</h3>
+          <h3 className="text-sm font-semibold">{t("wizard.otherRequests")}</h3>
           <Textarea
             value={wizard.additionalNotes}
             onChange={(e) => setWizardNotes(e.target.value)}
-            placeholder={"例:\n・競合の○○社より上位に表示されたい\n・技術ブログのコンテンツを重視したい\n・英語圏でも認知を広げたい"}
+            placeholder={t("wizard.otherRequestsPlaceholder")}
             rows={5}
             className="text-sm"
             disabled={wizard.isGeneratingPlan}
@@ -123,13 +125,13 @@ export function StepNotes() {
 
       <div className="flex justify-between">
         <Button variant="outline" onClick={() => setWizardStep(2)} disabled={wizard.isGeneratingPlan} className="gap-2">
-          <ArrowLeft className="h-4 w-4" /> 戻る
+          <ArrowLeft className="h-4 w-4" /> {t("wizard.back")}
         </Button>
         <Button onClick={handleGenerate} disabled={wizard.isGeneratingPlan || wizard.reportConfig.emailAddresses.length === 0} className="gap-2">
           {wizard.isGeneratingPlan ? (
-            <><Loader2 className="h-4 w-4 animate-spin" /> AIがプランを生成中...</>
+            <><Loader2 className="h-4 w-4 animate-spin" /> {t("wizard.generatingPlan")}</>
           ) : (
-            <><Sparkles className="h-4 w-4" /> プランを生成</>
+            <><Sparkles className="h-4 w-4" /> {t("wizard.generatePlan")}</>
           )}
         </Button>
       </div>

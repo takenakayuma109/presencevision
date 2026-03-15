@@ -1,7 +1,7 @@
 "use client";
 
 import { Dialog, Badge } from "@/components/ui";
-import { methodLabels, taskStatusLabels, availableCountries, countryLanguageMap } from "@/lib/store";
+import { availableCountries, countryLanguageMap } from "@/lib/store";
 import type { PlanTask, TaskExecution, ExecutionArtifact } from "@/lib/store";
 import { cn } from "@/lib/utils";
 import {
@@ -10,6 +10,7 @@ import {
   Image, ExternalLink, FileText, Code2, Database, Eye,
 } from "lucide-react";
 import { useState } from "react";
+import { useTranslation, useLabels } from "@/lib/hooks/use-translation";
 
 const statusColor: Record<string, string> = {
   running: "bg-green-500",
@@ -41,14 +42,6 @@ const artifactColors: Record<string, string> = {
   data: "text-purple-500 bg-purple-50 dark:bg-purple-950",
 };
 
-const artifactTypeLabels: Record<string, string> = {
-  screenshot: "スクリーンショット",
-  link: "リンク",
-  content: "コンテンツ",
-  code: "コード",
-  data: "データ",
-};
-
 function formatTime(d: Date | null) {
   if (!d) return "\u2014";
   return d.toLocaleTimeString("ja-JP", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
@@ -72,6 +65,8 @@ function ArtifactPreview({ artifact }: { artifact: ExecutionArtifact }) {
   const [expanded, setExpanded] = useState(false);
   const Icon = artifactIcons[artifact.type] ?? FileText;
   const colorClass = artifactColors[artifact.type] ?? "text-gray-500 bg-gray-50 dark:bg-gray-950";
+  const { t } = useTranslation();
+  const { artifactTypeLabels } = useLabels();
 
   return (
     <div className="border rounded-lg overflow-hidden">
@@ -105,7 +100,7 @@ function ArtifactPreview({ artifact }: { artifact: ExecutionArtifact }) {
               </div>
               {artifact.url && (
                 <p className="text-[10px] text-blue-500 flex items-center gap-1">
-                  <Eye className="h-3 w-3" /> フルサイズで表示
+                  <Eye className="h-3 w-3" /> {t("taskDetail.fullSizeView")}
                 </p>
               )}
             </div>
@@ -123,7 +118,7 @@ function ArtifactPreview({ artifact }: { artifact: ExecutionArtifact }) {
                 {artifact.content}
               </pre>
               {artifact.language && (
-                <p className="text-[10px] text-muted-foreground mt-1.5">言語: {artifact.language}</p>
+                <p className="text-[10px] text-muted-foreground mt-1.5">{t("taskDetail.language")}: {artifact.language}</p>
               )}
             </div>
           )}
@@ -145,6 +140,7 @@ function ArtifactPreview({ artifact }: { artifact: ExecutionArtifact }) {
 function ExecutionItem({ exec }: { exec: TaskExecution }) {
   const [expanded, setExpanded] = useState(false);
   const langInfo = countryLanguageMap[exec.targetRegion];
+  const { t } = useTranslation();
 
   return (
     <div className="border rounded-lg overflow-hidden">
@@ -177,7 +173,7 @@ function ExecutionItem({ exec }: { exec: TaskExecution }) {
       {expanded && (
         <div className="px-3 pb-3 pt-1 border-t bg-muted/20 space-y-3">
           <div>
-            <p className="text-[10px] font-semibold text-muted-foreground mb-1">実行アクション</p>
+            <p className="text-[10px] font-semibold text-muted-foreground mb-1">{t("taskDetail.executionActions")}</p>
             {exec.actions.map((a, i) => (
               <p key={i} className="text-xs text-muted-foreground flex items-start gap-1.5 mb-0.5">
                 <span className="text-blue-500 shrink-0 mt-0.5">{"\u25b8"}</span> {a}
@@ -185,7 +181,7 @@ function ExecutionItem({ exec }: { exec: TaskExecution }) {
             ))}
           </div>
           <div>
-            <p className="text-[10px] font-semibold text-muted-foreground mb-1">成果</p>
+            <p className="text-[10px] font-semibold text-muted-foreground mb-1">{t("taskDetail.results")}</p>
             {exec.results.map((r, i) => (
               <p key={i} className="text-xs text-muted-foreground flex items-start gap-1.5 mb-0.5">
                 <span className="text-green-500 shrink-0 mt-0.5">{"\u2713"}</span> {r}
@@ -196,7 +192,7 @@ function ExecutionItem({ exec }: { exec: TaskExecution }) {
           {/* Artifacts */}
           {exec.artifacts.length > 0 && (
             <div>
-              <p className="text-[10px] font-semibold text-muted-foreground mb-1.5">成果物・エビデンス</p>
+              <p className="text-[10px] font-semibold text-muted-foreground mb-1.5">{t("taskDetail.artifactsEvidence")}</p>
               <div className="space-y-1.5">
                 {exec.artifacts.map((artifact) => (
                   <ArtifactPreview key={artifact.id} artifact={artifact} />
@@ -209,11 +205,11 @@ function ExecutionItem({ exec }: { exec: TaskExecution }) {
             <div className="flex gap-3 pt-1">
               <div className="text-center rounded bg-muted/50 px-2 py-1">
                 <p className="text-xs font-bold">{exec.metrics.itemsProcessed}</p>
-                <p className="text-[10px] text-muted-foreground">処理数</p>
+                <p className="text-[10px] text-muted-foreground">{t("taskDetail.processed")}</p>
               </div>
               <div className="text-center rounded bg-muted/50 px-2 py-1">
                 <p className="text-xs font-bold">{exec.metrics.itemsGenerated}</p>
-                <p className="text-[10px] text-muted-foreground">生成数</p>
+                <p className="text-[10px] text-muted-foreground">{t("taskDetail.generated")}</p>
               </div>
             </div>
           )}
@@ -228,6 +224,8 @@ function ExecutionItem({ exec }: { exec: TaskExecution }) {
 
 export function TaskDetailModal({ task, open, onClose }: { task: PlanTask | null; open: boolean; onClose: () => void }) {
   const [showAllExecutions, setShowAllExecutions] = useState(false);
+  const { t } = useTranslation();
+  const { taskStatusLabels, methodLabels, artifactTypeLabels } = useLabels();
 
   if (!task) return null;
 
@@ -265,11 +263,11 @@ export function TaskDetailModal({ task, open, onClose }: { task: PlanTask | null
           <Badge variant="outline">{methodLabels[task.method]}</Badge>
           <div className="flex items-center gap-1 text-xs text-muted-foreground">
             <Repeat className="h-3 w-3" />
-            <span>{task.cycleCount}回実行済み</span>
+            <span>{task.cycleCount}{t("taskDetail.executedTimes")}</span>
           </div>
           <div className="flex items-center gap-1 text-xs text-muted-foreground">
             <Clock className="h-3 w-3" />
-            <span>最終: {formatTime(task.lastRunAt)}</span>
+            <span>{t("taskDetail.lastRun")}: {formatTime(task.lastRunAt)}</span>
           </div>
         </div>
 
@@ -278,14 +276,14 @@ export function TaskDetailModal({ task, open, onClose }: { task: PlanTask | null
           <div className="rounded-lg border p-4 space-y-2">
             <div className="flex items-center gap-2">
               <Globe className="h-4 w-4 text-cyan-500" />
-              <h4 className="text-sm font-semibold">対象リージョン・言語</h4>
-              <Badge variant="info" className="text-[10px]">{regionStats.size}リージョン</Badge>
+              <h4 className="text-sm font-semibold">{t("taskDetail.targetRegions")}</h4>
+              <Badge variant="info" className="text-[10px]">{regionStats.size}{t("taskDetail.regionCount")}</Badge>
             </div>
             <div className="flex flex-wrap gap-1.5">
               {Array.from(regionStats.entries()).map(([region, stats]) => (
                 <Badge key={region} variant="outline" className="text-xs gap-1">
                   {getCountryFlag(region)} {getCountryName(region)}
-                  <span className="text-muted-foreground">({stats.count}回)</span>
+                  <span className="text-muted-foreground">({stats.count}{t("taskDetail.times")})</span>
                 </Badge>
               ))}
             </div>
@@ -297,8 +295,8 @@ export function TaskDetailModal({ task, open, onClose }: { task: PlanTask | null
           <div className="rounded-lg border p-4 space-y-2">
             <div className="flex items-center gap-2">
               <FileOutput className="h-4 w-4 text-orange-500" />
-              <h4 className="text-sm font-semibold">生成された成果物</h4>
-              <Badge variant="secondary" className="text-[10px]">{totalArtifacts}件</Badge>
+              <h4 className="text-sm font-semibold">{t("taskDetail.generatedArtifacts")}</h4>
+              <Badge variant="secondary" className="text-[10px]">{totalArtifacts}{t("project.items")}</Badge>
             </div>
             <div className="flex flex-wrap gap-2">
               {Array.from(artifactTypeCounts.entries()).map(([type, count]) => {
@@ -306,7 +304,7 @@ export function TaskDetailModal({ task, open, onClose }: { task: PlanTask | null
                 return (
                   <div key={type} className={cn("flex items-center gap-1.5 rounded-md px-2 py-1 text-xs", artifactColors[type])}>
                     <Icon className="h-3 w-3" />
-                    <span>{artifactTypeLabels[type]} {count}件</span>
+                    <span>{artifactTypeLabels[type]} {count}{t("project.items")}</span>
                   </div>
                 );
               })}
@@ -318,7 +316,7 @@ export function TaskDetailModal({ task, open, onClose }: { task: PlanTask | null
         <div className="rounded-lg border p-4 space-y-2">
           <div className="flex items-center gap-2">
             <Info className="h-4 w-4 text-blue-500" />
-            <h4 className="text-sm font-semibold">何をするか</h4>
+            <h4 className="text-sm font-semibold">{t("taskDetail.whatItDoes")}</h4>
           </div>
           <p className="text-sm text-muted-foreground leading-relaxed">{task.whatItDoes}</p>
         </div>
@@ -327,7 +325,7 @@ export function TaskDetailModal({ task, open, onClose }: { task: PlanTask | null
         <div className="rounded-lg border p-4 space-y-2">
           <div className="flex items-center gap-2">
             <Cog className="h-4 w-4 text-purple-500" />
-            <h4 className="text-sm font-semibold">どうやるか</h4>
+            <h4 className="text-sm font-semibold">{t("taskDetail.howItWorks")}</h4>
           </div>
           <div className="text-sm text-muted-foreground leading-relaxed whitespace-pre-line">{task.howItWorks}</div>
         </div>
@@ -336,7 +334,7 @@ export function TaskDetailModal({ task, open, onClose }: { task: PlanTask | null
         <div className="rounded-lg border p-4 space-y-2">
           <div className="flex items-center gap-2">
             <FileOutput className="h-4 w-4 text-green-500" />
-            <h4 className="text-sm font-semibold">成果物</h4>
+            <h4 className="text-sm font-semibold">{t("taskDetail.expectedOutput")}</h4>
           </div>
           <p className="text-sm text-muted-foreground">{task.expectedOutput}</p>
         </div>
@@ -347,15 +345,15 @@ export function TaskDetailModal({ task, open, onClose }: { task: PlanTask | null
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Activity className="h-4 w-4 text-amber-500" />
-                <h4 className="text-sm font-semibold">実行履歴</h4>
-                <Badge variant="secondary" className="text-[10px]">{task.executions.length}件</Badge>
+                <h4 className="text-sm font-semibold">{t("taskDetail.executionHistory")}</h4>
+                <Badge variant="secondary" className="text-[10px]">{task.executions.length}{t("project.items")}</Badge>
               </div>
               {task.executions.length > 10 && (
                 <button
                   onClick={() => setShowAllExecutions(!showAllExecutions)}
                   className="text-xs text-blue-500 hover:underline"
                 >
-                  {showAllExecutions ? "最新のみ表示" : `全て表示 (${task.executions.length}件)`}
+                  {showAllExecutions ? t("taskDetail.showLatest") : `${t("taskDetail.showAll")} (${task.executions.length}${t("project.items")})`}
                 </button>
               )}
             </div>
@@ -371,7 +369,7 @@ export function TaskDetailModal({ task, open, onClose }: { task: PlanTask | null
         <div className="space-y-2">
           <div className="flex items-center gap-2">
             <Activity className="h-4 w-4 text-muted-foreground" />
-            <h4 className="text-sm font-semibold">システムログ</h4>
+            <h4 className="text-sm font-semibold">{t("taskDetail.systemLog")}</h4>
           </div>
           <div className="rounded-lg border divide-y max-h-32 overflow-y-auto">
             {task.activities.slice().reverse().map((a, i) => (
@@ -389,7 +387,7 @@ export function TaskDetailModal({ task, open, onClose }: { task: PlanTask | null
         {/* Next run */}
         {task.nextRunAt && task.status === "running" && (
           <div className="rounded-lg bg-green-50 dark:bg-green-950/50 border border-green-200 dark:border-green-800 p-3 text-center">
-            <p className="text-xs text-muted-foreground">次回実行予定</p>
+            <p className="text-xs text-muted-foreground">{t("taskDetail.nextExecution")}</p>
             <p className="text-sm font-semibold text-green-700 dark:text-green-300">{formatTime(task.nextRunAt)}</p>
           </div>
         )}

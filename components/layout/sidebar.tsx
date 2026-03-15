@@ -10,7 +10,6 @@ import {
   X,
 } from "lucide-react";
 import { useTranslation } from "@/lib/hooks/use-translation";
-import { LanguageSwitch } from "@/components/ui/language-switch";
 
 export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void }) {
   const pathname = usePathname();
@@ -81,7 +80,6 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
           </ul>
         </nav>
         <div className="border-t p-3 space-y-2">
-          <LanguageSwitch />
           <div className="flex items-center gap-2.5 rounded-md px-3 py-2">
             <div className="h-7 w-7 rounded-full bg-gradient-to-br from-blue-500 to-purple-600" />
             <div className="flex-1 min-w-0">

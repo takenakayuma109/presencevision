@@ -1,4 +1,7 @@
 {
+  "header": {
+    "projectDetail": "プロジェクト詳細"
+  },
   "nav": {
     "projects": "プロジェクト",
     "reports": "レポート",
@@ -188,7 +191,12 @@
     "reportSend": " に送信",
     "concurrentTasks": "同時実行タスク一覧",
     "allTasksConcurrent": "全タスク同時稼働",
-    "startWork": "作業を開始する"
+    "startWork": "作業を開始する",
+    "stepUrl": "URL入力",
+    "stepConfig": "設定",
+    "stepNotes": "要望",
+    "stepPlan": "プラン確認",
+    "newProject": "新規プロジェクト"
   },
   "taskDetail": {
     "executedTimes": "回実行済み",

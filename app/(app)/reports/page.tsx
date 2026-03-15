@@ -1,6 +1,6 @@
 "use client";
 
-import { useStore, statusLabels, methodLabels, durationLabels, availableCountries } from "@/lib/store";
+import { useStore, availableCountries } from "@/lib/store";
 import { Card, CardContent, CardHeader, CardTitle, Badge } from "@/components/ui";
 import {
   BarChart3, TrendingUp, FileText, Eye, Zap, Activity, ChevronRight,
@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
+import { useTranslation, useLabels } from "@/lib/hooks/use-translation";
 
 const statusBg: Record<string, string> = {
   active: "bg-green-500", paused: "bg-yellow-500", completed: "bg-blue-500",
@@ -15,6 +16,8 @@ const statusBg: Record<string, string> = {
 
 export default function ReportsPage() {
   const { projects } = useStore();
+  const { t } = useTranslation();
+  const { statusLabels, methodLabels, durationLabels } = useLabels();
 
   // Aggregate stats across all projects
   const totalTasks = projects.reduce((s, p) => s + p.plan.tasks.length, 0);
@@ -28,17 +31,17 @@ export default function ReportsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-2xl font-bold">レポート</h2>
-        <p className="text-sm text-muted-foreground mt-1">全プロジェクトの現状サマリーとレポート一覧</p>
+        <h2 className="text-2xl font-bold">{t("reports.title")}</h2>
+        <p className="text-sm text-muted-foreground mt-1">{t("reports.subtitle")}</p>
       </div>
 
       {/* Global stats */}
       <div className="grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
         {[
-          { icon: Activity, label: "稼働中プロジェクト", value: `${activeProjects}/${projects.length}`, color: "text-green-600 dark:text-green-400", bg: "bg-green-50 dark:bg-green-950" },
-          { icon: Repeat, label: "総実行数", value: String(totalExecutions), color: "text-purple-600 dark:text-purple-400", bg: "bg-purple-50 dark:bg-purple-950" },
-          { icon: BarChart3, label: "タスク数", value: String(totalTasks), color: "text-blue-600 dark:text-blue-400", bg: "bg-blue-50 dark:bg-blue-950" },
-          { icon: FileText, label: "レポート数", value: String(totalReports), color: "text-amber-600 dark:text-amber-400", bg: "bg-amber-50 dark:bg-amber-950" },
+          { icon: Activity, label: t("reports.activeProjects"), value: `${activeProjects}/${projects.length}`, color: "text-green-600 dark:text-green-400", bg: "bg-green-50 dark:bg-green-950" },
+          { icon: Repeat, label: t("reports.totalExecutions"), value: String(totalExecutions), color: "text-purple-600 dark:text-purple-400", bg: "bg-purple-50 dark:bg-purple-950" },
+          { icon: BarChart3, label: t("reports.taskCount"), value: String(totalTasks), color: "text-blue-600 dark:text-blue-400", bg: "bg-blue-50 dark:bg-blue-950" },
+          { icon: FileText, label: t("reports.reportCount"), value: String(totalReports), color: "text-amber-600 dark:text-amber-400", bg: "bg-amber-50 dark:bg-amber-950" },
         ].map((s) => (
           <Card key={s.label}>
             <CardContent className="p-4 flex items-center gap-3">
@@ -58,12 +61,12 @@ export default function ReportsPage() {
       {projects.length === 0 ? (
         <div className="flex flex-col items-center justify-center rounded-xl border border-dashed py-20">
           <BarChart3 className="h-10 w-10 text-muted-foreground mb-4" />
-          <h3 className="text-lg font-semibold mb-1">プロジェクトはまだありません</h3>
-          <p className="text-sm text-muted-foreground">プロジェクトを作成すると、ここにサマリーが表示されます。</p>
+          <h3 className="text-lg font-semibold mb-1">{t("reports.noProjects")}</h3>
+          <p className="text-sm text-muted-foreground">{t("reports.noProjectsDesc")}</p>
         </div>
       ) : (
         <div className="space-y-4">
-          <h3 className="text-sm font-semibold text-muted-foreground">プロジェクト一覧</h3>
+          <h3 className="text-sm font-semibold text-muted-foreground">{t("reports.projectList")}</h3>
           {projects.map((project) => {
             const runningTasks = project.plan.tasks.filter((t) => t.status === "running").length;
             const totalCycles = project.plan.tasks.reduce((s, t) => s + t.cycleCount, 0);
@@ -100,28 +103,28 @@ export default function ReportsPage() {
                         <Activity className="h-3.5 w-3.5 text-green-500" />
                         <div>
                           <p className="text-sm font-bold">{runningTasks}/{project.plan.tasks.length}</p>
-                          <p className="text-[10px] text-muted-foreground">稼働タスク</p>
+                          <p className="text-[10px] text-muted-foreground">{t("reports.activeTasks")}</p>
                         </div>
                       </div>
                       <div className="flex items-center gap-2">
                         <Repeat className="h-3.5 w-3.5 text-purple-500" />
                         <div>
                           <p className="text-sm font-bold">{projectExecutions}</p>
-                          <p className="text-[10px] text-muted-foreground">実行回数</p>
+                          <p className="text-[10px] text-muted-foreground">{t("reports.executionCount")}</p>
                         </div>
                       </div>
                       <div className="flex items-center gap-2">
                         <Clock className="h-3.5 w-3.5 text-amber-500" />
                         <div>
                           <p className="text-sm font-bold">{durationLabels[project.duration] ?? project.duration}</p>
-                          <p className="text-[10px] text-muted-foreground">期間</p>
+                          <p className="text-[10px] text-muted-foreground">{t("reports.period")}</p>
                         </div>
                       </div>
                       <div className="flex items-center gap-2">
                         <FileText className="h-3.5 w-3.5 text-blue-500" />
                         <div>
                           <p className="text-sm font-bold">{project.reports.length}</p>
-                          <p className="text-[10px] text-muted-foreground">レポート</p>
+                          <p className="text-[10px] text-muted-foreground">{t("reports.report")}</p>
                         </div>
                       </div>
                     </div>
@@ -148,7 +151,7 @@ export default function ReportsPage() {
                         <div className="flex items-center justify-between">
                           <p className="text-xs font-medium">{latestReport.title}</p>
                           <Badge variant={latestReport.type === "morning" ? "info" : "secondary"} className="text-[10px]">
-                            {latestReport.type === "morning" ? "朝" : "夕"}
+                            {latestReport.type === "morning" ? t("reports.morning") : t("reports.evening")}
                           </Badge>
                         </div>
                         <p className="text-xs text-muted-foreground">{latestReport.summary}</p>
@@ -158,25 +161,25 @@ export default function ReportsPage() {
                               <TrendingUp className="h-3 w-3 text-blue-500" />
                               <p className="text-sm font-bold">{latestReport.metrics.visibilityScore}</p>
                             </div>
-                            <p className="text-[10px] text-muted-foreground">可視性</p>
+                            <p className="text-[10px] text-muted-foreground">{t("reports.visibility")}</p>
                           </div>
                           <div className="text-center">
                             <p className="text-sm font-bold">{latestReport.metrics.contentGenerated}</p>
-                            <p className="text-[10px] text-muted-foreground">生成数</p>
+                            <p className="text-[10px] text-muted-foreground">{t("reports.generated")}</p>
                           </div>
                           <div className="text-center">
                             <div className="flex items-center justify-center gap-1">
                               <Eye className="h-3 w-3 text-purple-500" />
                               <p className="text-sm font-bold">{latestReport.metrics.mentionsFound}</p>
                             </div>
-                            <p className="text-[10px] text-muted-foreground">言及</p>
+                            <p className="text-[10px] text-muted-foreground">{t("reports.mentions")}</p>
                           </div>
                           <div className="text-center">
                             <div className="flex items-center justify-center gap-1">
                               <Zap className="h-3 w-3 text-yellow-500" />
                               <p className="text-sm font-bold">{latestReport.metrics.llmCitations}</p>
                             </div>
-                            <p className="text-[10px] text-muted-foreground">LLM引用</p>
+                            <p className="text-[10px] text-muted-foreground">{t("reports.llmCitations")}</p>
                           </div>
                         </div>
                         <p className="text-[10px] text-muted-foreground">{latestReport.date.toLocaleString("ja-JP")}</p>

@@ -85,7 +85,20 @@
     "statusPublished": "प्रकाशित",
     "statusVerified": "सत्यापित",
     "statusDraft": "ड्राफ्ट",
-    "statusError": "त्रुटि"
+    "statusError": "त्रुटि",
+    "cmsSettings": "CMS एकीकरण",
+    "cmsNotConfigured": "कॉन्फ़िगर नहीं — WordPress के ज़रिए स्वचालित प्रकाशन",
+    "cmsConfigured": "WordPress कनेक्ट",
+    "cmsSiteUrl": "WordPress URL",
+    "cmsUsername": "उपयोगकर्ता नाम",
+    "cmsPassword": "एप्लीकेशन पासवर्ड",
+    "cmsStatus": "डिफ़ॉल्ट प्रकाशन स्थिति",
+    "cmsStatusDraft": "ड्राफ्ट",
+    "cmsStatusPublish": "प्रकाशित",
+    "cmsTestConnection": "कनेक्शन टेस्ट",
+    "cmsTesting": "परीक्षण हो रहा है...",
+    "cmsConnected": "कनेक्शन सफल",
+    "cmsFailed": "कनेक्शन विफल"
   },
   "reports": {
     "title": "रिपोर्ट",
@@ -202,7 +215,10 @@
     "stepConfig": "सेटिंग्स",
     "stepNotes": "अनुरोध",
     "stepPlan": "योजना समीक्षा",
-    "newProject": "नया प्रोजेक्ट"
+    "newProject": "नया प्रोजेक्ट",
+    "cmsIntegration": "CMS एकीकरण (वैकल्पिक)",
+    "cmsDesc": "WordPress से जोड़ें और जनरेट की गई सामग्री स्वचालित रूप से प्रकाशित करें",
+    "enableCms": "WordPress एकीकरण सक्षम करें"
   },
   "taskDetail": {
     "executedTimes": " निष्पादन पूर्ण",

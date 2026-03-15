@@ -11,6 +11,10 @@ import {
   isProjectRunning,
   type PresenceProject,
 } from "../engine/presence-engine.js";
+import {
+  verifyWordPressConnection,
+  type CmsConfig,
+} from "../engine/tasks/cms-publisher.js";
 
 const router = Router();
 
@@ -46,6 +50,7 @@ router.post("/start", (req: Request, res: Response) => {
       methods: project.methods || ["SEO"],
       status: "active",
       createdAt: project.createdAt ? new Date(project.createdAt) : new Date(),
+      cmsConfig: project.cmsConfig,
     };
 
     startProject(fullProject);
@@ -56,6 +61,30 @@ router.post("/start", (req: Request, res: Response) => {
     });
   } catch (error) {
     console.error("[Route] /engine/start error:", error);
+    res.status(500).json({
+      error: error instanceof Error ? error.message : "Internal server error",
+    });
+  }
+});
+
+/**
+ * POST /engine/test-cms — WordPress接続テスト
+ */
+router.post("/test-cms", async (req: Request, res: Response) => {
+  try {
+    const cmsConfig = req.body as CmsConfig;
+
+    if (!cmsConfig.siteUrl || !cmsConfig.username || !cmsConfig.applicationPassword) {
+      res.status(400).json({
+        error: "Missing required fields: siteUrl, username, applicationPassword",
+      });
+      return;
+    }
+
+    const result = await verifyWordPressConnection(cmsConfig);
+    res.json(result);
+  } catch (error) {
+    console.error("[Route] /engine/test-cms error:", error);
     res.status(500).json({
       error: error instanceof Error ? error.message : "Internal server error",
     });
@@ -114,6 +143,7 @@ router.post("/run-cycle", async (req: Request, res: Response) => {
       methods: project.methods || ["SEO"],
       status: "active",
       createdAt: project.createdAt ? new Date(project.createdAt) : new Date(),
+      cmsConfig: project.cmsConfig,
     };
 
     // Run cycle asynchronously and return immediately

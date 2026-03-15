@@ -22,7 +22,9 @@ export type ActivityType =
   | "backlink_submission"
   | "directory_submission"
   | "social_posting"
-  | "report_generation";
+  | "report_generation"
+  | "ranking_monitor"
+  | "strategy_adjustment";
 
 export type ActivityStatus = "running" | "completed" | "failed" | "skipped";
 

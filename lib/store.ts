@@ -9,6 +9,7 @@ import {
   getStats,
   activitiesToExecutions,
   activitiesToTaskActivities,
+  type CmsConfig,
 } from "./engine-client";
 
 // ---------------------------------------------------------------------------
@@ -161,6 +162,7 @@ export interface WizardState {
   duration: "1month" | "3months" | "6months" | "12months";
   additionalNotes: string;
   reportConfig: ReportConfig;
+  cmsConfig?: CmsConfig;
   generatedPlan: GeneratedPlan | null;
   isAnalyzing: boolean;
   isGeneratingPlan: boolean;
@@ -188,6 +190,8 @@ export interface ReportMetrics {
   tasksRunning: number;
 }
 
+export type { CmsConfig };
+
 export interface Project {
   id: string;
   name: string;
@@ -204,6 +208,7 @@ export interface Project {
   competitors: string[];
   brandName: string;
   reportConfig: ReportConfig;
+  cmsConfig?: CmsConfig;
   plan: GeneratedPlan;
   status: ProjectStatus;
   createdAt: Date;
@@ -883,6 +888,7 @@ interface StoreActions {
   setWizardKeywords: (keywords: string[]) => void;
   setWizardCompetitors: (competitors: string[]) => void;
   setWizardBrandName: (brandName: string) => void;
+  setWizardCmsConfig: (config: CmsConfig | undefined) => void;
   analyzeSiteUrl: (url: string) => Promise<void>;
   generatePlan: () => Promise<void>;
   confirmAndStartProject: () => void;
@@ -891,7 +897,7 @@ interface StoreActions {
   updateProjectReportConfig: (id: string, config: Partial<ReportConfig>) => void;
   updateProjectSettings: (id: string, settings: Partial<Pick<Project,
     'goals' | 'businessCountries' | 'presenceCountries' | 'audiences' |
-    'methods' | 'duration' | 'additionalNotes' | 'keywords' | 'competitors' | 'brandName'
+    'methods' | 'duration' | 'additionalNotes' | 'keywords' | 'competitors' | 'brandName' | 'cmsConfig'
   >>) => void;
   selectTask: (projectId: string, taskId: string | null) => void;
 }
@@ -923,6 +929,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const setWizardKeywords = useCallback((keywords: string[]) => setWizard((p) => ({ ...p, keywords })), []);
   const setWizardCompetitors = useCallback((competitors: string[]) => setWizard((p) => ({ ...p, competitors })), []);
   const setWizardBrandName = useCallback((brandName: string) => setWizard((p) => ({ ...p, brandName })), []);
+  const setWizardCmsConfig = useCallback((config: CmsConfig | undefined) => setWizard((p) => ({ ...p, cmsConfig: config })), []);
 
   const analyzeSiteUrl = useCallback(async (url: string) => {
     setWizard((p) => ({ ...p, isAnalyzing: true }));
@@ -965,6 +972,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       competitors: w.competitors,
       brandName: w.brandName || w.siteInfo.title || w.siteInfo.url,
       reportConfig: w.reportConfig,
+      cmsConfig: w.cmsConfig,
       plan: w.generatedPlan,
       status: "active",
       createdAt: new Date(),
@@ -984,6 +992,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       keywords: w.keywords,
       targetCountries: expandPresenceCountries(proj.presenceCountries),
       methods: proj.methods,
+      cmsConfig: proj.cmsConfig,
     }).catch((err) => console.error("[Engine] Failed to start:", err));
   }, [wizard]);
 
@@ -1005,6 +1014,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
           keywords: proj.keywords ?? [],
           targetCountries: expandPresenceCountries(proj.presenceCountries),
           methods: proj.methods,
+          cmsConfig: proj.cmsConfig,
         }).catch((err) => console.error("[Engine] Failed to restart:", err));
       }
     }
@@ -1014,7 +1024,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   }, []);
   const updateProjectSettings = useCallback((id: string, settings: Partial<Pick<Project,
     'goals' | 'businessCountries' | 'presenceCountries' | 'audiences' |
-    'methods' | 'duration' | 'additionalNotes' | 'keywords' | 'competitors' | 'brandName'
+    'methods' | 'duration' | 'additionalNotes' | 'keywords' | 'competitors' | 'brandName' | 'cmsConfig'
   >>) => {
     setProjects((p) => p.map((x) => (x.id === id ? { ...x, ...settings } : x)));
   }, []);
@@ -1028,7 +1038,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     openWizard, closeWizard, setWizardStep, setWizardSiteInfo,
     setWizardGoals, setWizardBusinessCountries, setWizardPresenceCountries,
     setWizardAudiences, setWizardMethods, setWizardDuration, setWizardNotes,
-    setWizardReportConfig, setWizardKeywords, setWizardCompetitors, setWizardBrandName,
+    setWizardReportConfig, setWizardKeywords, setWizardCompetitors, setWizardBrandName, setWizardCmsConfig,
     analyzeSiteUrl, generatePlan, confirmAndStartProject,
     removeProject, updateProjectStatus, updateProjectReportConfig, updateProjectSettings, selectTask,
   };

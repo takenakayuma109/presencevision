@@ -85,7 +85,20 @@
     "statusPublished": "게시됨",
     "statusVerified": "검증됨",
     "statusDraft": "초안",
-    "statusError": "오류"
+    "statusError": "오류",
+    "cmsSettings": "CMS 연동",
+    "cmsNotConfigured": "미설정 — WordPress 연동으로 기사를 자동 게시",
+    "cmsConfigured": "WordPress 연동 완료",
+    "cmsSiteUrl": "WordPress URL",
+    "cmsUsername": "사용자 이름",
+    "cmsPassword": "애플리케이션 비밀번호",
+    "cmsStatus": "기본 게시 상태",
+    "cmsStatusDraft": "초안",
+    "cmsStatusPublish": "게시",
+    "cmsTestConnection": "연결 테스트",
+    "cmsTesting": "테스트 중...",
+    "cmsConnected": "연결 성공",
+    "cmsFailed": "연결 실패"
   },
   "reports": {
     "title": "리포트",
@@ -202,7 +215,10 @@
     "stepConfig": "설정",
     "stepNotes": "요청사항",
     "stepPlan": "플랜 확인",
-    "newProject": "새 프로젝트"
+    "newProject": "새 프로젝트",
+    "cmsIntegration": "CMS 연동 (선택사항)",
+    "cmsDesc": "WordPress와 연동하면 생성된 콘텐츠를 자동으로 게시할 수 있습니다",
+    "enableCms": "WordPress 연동 활성화"
   },
   "taskDetail": {
     "executedTimes": "회 실행 완료",

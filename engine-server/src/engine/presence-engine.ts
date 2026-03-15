@@ -25,6 +25,10 @@ import {
   type GeneratedContent,
 } from "./tasks/content-generator.js";
 import {
+  publishToWordPress,
+  type CmsConfig,
+} from "./tasks/cms-publisher.js";
+import {
   getActivities,
   getActivityStats,
   type ActivityEntry,
@@ -50,6 +54,7 @@ export interface PresenceProject {
   methods: PresenceMethod[];
   status: "active" | "paused" | "completed";
   createdAt: Date;
+  cmsConfig?: CmsConfig;
 }
 
 export type PresenceMethod =
@@ -237,6 +242,29 @@ async function runCycle(project: PresenceProject): Promise<CycleResult> {
       if (faq) {
         contentGenerated.push(faq);
         tasksExecuted++;
+
+        // CMS公開
+        if (project.cmsConfig) {
+          try {
+            await publishToWordPress({
+              projectId: project.id,
+              taskId: `${cycleId}-cms-faq-${country}`,
+              content: {
+                title: faq.title,
+                body: faq.body,
+                type: "faq",
+                keyword: project.keywords[0],
+                language,
+              },
+              cmsConfig: project.cmsConfig,
+              country,
+              language,
+            });
+            console.log(`[Engine] FAQ published to WordPress (${country})`);
+          } catch (error) {
+            console.error(`[Engine] FAQ CMS publish failed (${country}):`, error);
+          }
+        }
       } else {
         tasksSkipped++;
       }
@@ -260,6 +288,29 @@ async function runCycle(project: PresenceProject): Promise<CycleResult> {
       if (schema) {
         contentGenerated.push(schema);
         tasksExecuted++;
+
+        // CMS公開（ページとして）
+        if (project.cmsConfig) {
+          try {
+            await publishToWordPress({
+              projectId: project.id,
+              taskId: `${cycleId}-cms-schema-${country}`,
+              content: {
+                title: schema.title,
+                body: schema.body,
+                type: "schema",
+                language,
+                schemaJsonLd: schema.body,
+              },
+              cmsConfig: project.cmsConfig,
+              country,
+              language,
+            });
+            console.log(`[Engine] Schema published to WordPress (${country})`);
+          } catch (error) {
+            console.error(`[Engine] Schema CMS publish failed (${country}):`, error);
+          }
+        }
       } else {
         tasksSkipped++;
       }
@@ -285,6 +336,29 @@ async function runCycle(project: PresenceProject): Promise<CycleResult> {
         if (article) {
           contentGenerated.push(article);
           tasksExecuted++;
+
+          // CMS公開
+          if (project.cmsConfig) {
+            try {
+              await publishToWordPress({
+                projectId: project.id,
+                taskId: `${cycleId}-cms-article-${country}`,
+                content: {
+                  title: article.title,
+                  body: article.body,
+                  type: "article",
+                  keyword,
+                  language,
+                },
+                cmsConfig: project.cmsConfig,
+                country,
+                language,
+              });
+              console.log(`[Engine] Article "${keyword}" published to WordPress (${country})`);
+            } catch (error) {
+              console.error(`[Engine] Article CMS publish failed (${country}):`, error);
+            }
+          }
 
           // --- Multilingual: 他言語への展開 ---
           if (project.methods.includes("Multilingual")) {

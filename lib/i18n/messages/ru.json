@@ -85,7 +85,20 @@
     "statusPublished": "Опубликовано",
     "statusVerified": "Проверено",
     "statusDraft": "Черновик",
-    "statusError": "Ошибка"
+    "statusError": "Ошибка",
+    "cmsSettings": "Интеграция CMS",
+    "cmsNotConfigured": "Не настроено — Автопубликация через WordPress",
+    "cmsConfigured": "WordPress подключён",
+    "cmsSiteUrl": "URL WordPress",
+    "cmsUsername": "Имя пользователя",
+    "cmsPassword": "Пароль приложения",
+    "cmsStatus": "Статус публикации по умолчанию",
+    "cmsStatusDraft": "Черновик",
+    "cmsStatusPublish": "Опубликовать",
+    "cmsTestConnection": "Тест подключения",
+    "cmsTesting": "Тестирование...",
+    "cmsConnected": "Подключение успешно",
+    "cmsFailed": "Ошибка подключения"
   },
   "reports": {
     "title": "Отчёты",
@@ -202,7 +215,10 @@
     "stepConfig": "Настройка",
     "stepNotes": "Запросы",
     "stepPlan": "Обзор плана",
-    "newProject": "Новый проект"
+    "newProject": "Новый проект",
+    "cmsIntegration": "Интеграция CMS (необязательно)",
+    "cmsDesc": "Подключите WordPress для автоматической публикации созданного контента",
+    "enableCms": "Включить интеграцию с WordPress"
   },
   "taskDetail": {
     "executedTimes": " выполнений завершено",

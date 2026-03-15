@@ -2,7 +2,7 @@
 
 import { use, useState, useMemo } from "react";
 import { useStore, availableCountries, countryLanguageMap, expandPresenceCountries } from "@/lib/store";
-import type { TaskExecution, ExecutionArtifact, ReportConfig, PresenceGoal, PresenceMethod, TargetAudience } from "@/lib/store";
+import type { TaskExecution, ExecutionArtifact, ReportConfig, PresenceGoal, PresenceMethod, TargetAudience, CmsConfig } from "@/lib/store";
 import { useEngineActivities } from "@/lib/hooks/use-engine";
 import { useTranslation, useLabels } from "@/lib/hooks/use-translation";
 import { Button, Badge, Card, CardContent, CardHeader, CardTitle, Input, Textarea } from "@/components/ui";
@@ -11,7 +11,7 @@ import {
   ArrowLeft, Globe, Building2, Target, BarChart3, Clock, TrendingUp, FileText,
   Pause, Play, Mail, Repeat, ChevronRight, Activity, CheckCircle2, AlertTriangle,
   History, Plus, X, Pencil, Image, Code2, Database, Eye, FolderOpen, Radio,
-  Search, Swords, Users, Wrench, Settings, Maximize2, ExternalLink, Cpu, Upload, CircleDot,
+  Search, Swords, Users, Wrench, Settings, Maximize2, ExternalLink, Cpu, Upload, CircleDot, Loader2, Link2,
 } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
@@ -246,15 +246,36 @@ function TagInput({ tags, onUpdate, placeholder, variant = "info" }: {
 function ProjectSettingsCard({ project, onUpdate }: {
   project: { id: string; keywords: string[]; competitors: string[]; brandName: string;
     goals: PresenceGoal[]; businessCountries: string[]; presenceCountries: string[];
-    audiences: TargetAudience[]; methods: PresenceMethod[]; duration: string; additionalNotes: string };
+    audiences: TargetAudience[]; methods: PresenceMethod[]; duration: string; additionalNotes: string;
+    cmsConfig?: CmsConfig };
   onUpdate: (settings: Partial<Pick<import("@/lib/store").Project,
     'goals' | 'businessCountries' | 'presenceCountries' | 'audiences' |
-    'methods' | 'duration' | 'additionalNotes' | 'keywords' | 'competitors' | 'brandName'
+    'methods' | 'duration' | 'additionalNotes' | 'keywords' | 'competitors' | 'brandName' | 'cmsConfig'
   >>) => void;
 }) {
   const [editing, setEditing] = useState(false);
+  const [cmsTesting, setCmsTesting] = useState(false);
+  const [cmsTestResult, setCmsTestResult] = useState<"success" | "error" | null>(null);
   const { t } = useTranslation();
   const { goalLabels, methodLabels, audienceLabels, durationLabels } = useLabels();
+
+  const handleTestConnection = async () => {
+    if (!project.cmsConfig?.siteUrl) return;
+    setCmsTesting(true);
+    setCmsTestResult(null);
+    try {
+      const res = await fetch(`/api/cms/test`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(project.cmsConfig),
+      });
+      setCmsTestResult(res.ok ? "success" : "error");
+    } catch {
+      setCmsTestResult("error");
+    } finally {
+      setCmsTesting(false);
+    }
+  };
 
   return (
     <Card>
@@ -398,6 +419,75 @@ function ProjectSettingsCard({ project, onUpdate }: {
             </div>
           ) : (
             <p className="text-sm font-medium">{durationLabels[project.duration] ?? project.duration}</p>
+          )}
+        </div>
+
+        {/* CMS settings */}
+        <div>
+          <p className="text-xs text-muted-foreground mb-1 flex items-center gap-1"><Link2 className="h-3 w-3" /> {t("project.cmsSettings")}</p>
+          {editing ? (
+            <div className="space-y-2">
+              <div className="flex items-center gap-2">
+                <Badge variant="secondary" className="text-xs opacity-60">WordPress</Badge>
+              </div>
+              <Input
+                value={project.cmsConfig?.siteUrl ?? ""}
+                onChange={(e) => onUpdate({ cmsConfig: { type: "wordpress", siteUrl: e.target.value, username: project.cmsConfig?.username ?? "", applicationPassword: project.cmsConfig?.applicationPassword ?? "", defaultStatus: project.cmsConfig?.defaultStatus ?? "draft" } })}
+                placeholder={t("project.cmsSiteUrl")}
+                className="h-8 text-sm"
+              />
+              <Input
+                value={project.cmsConfig?.username ?? ""}
+                onChange={(e) => onUpdate({ cmsConfig: { type: "wordpress", siteUrl: project.cmsConfig?.siteUrl ?? "", username: e.target.value, applicationPassword: project.cmsConfig?.applicationPassword ?? "", defaultStatus: project.cmsConfig?.defaultStatus ?? "draft" } })}
+                placeholder={t("project.cmsUsername")}
+                className="h-8 text-sm"
+              />
+              <Input
+                type="password"
+                value={project.cmsConfig?.applicationPassword ?? ""}
+                onChange={(e) => onUpdate({ cmsConfig: { type: "wordpress", siteUrl: project.cmsConfig?.siteUrl ?? "", username: project.cmsConfig?.username ?? "", applicationPassword: e.target.value, defaultStatus: project.cmsConfig?.defaultStatus ?? "draft" } })}
+                placeholder={t("project.cmsPassword")}
+                className="h-8 text-sm"
+              />
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-muted-foreground">{t("project.cmsStatus")}:</span>
+                <button
+                  type="button"
+                  onClick={() => onUpdate({ cmsConfig: { type: "wordpress", siteUrl: project.cmsConfig?.siteUrl ?? "", username: project.cmsConfig?.username ?? "", applicationPassword: project.cmsConfig?.applicationPassword ?? "", defaultStatus: project.cmsConfig?.defaultStatus === "publish" ? "draft" : "publish" } })}
+                  className="text-xs"
+                >
+                  <Badge variant={project.cmsConfig?.defaultStatus === "publish" ? "info" : "secondary"} className="text-xs cursor-pointer">
+                    {project.cmsConfig?.defaultStatus === "publish" ? t("project.cmsStatusPublish") : t("project.cmsStatusDraft")}
+                  </Badge>
+                </button>
+              </div>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={handleTestConnection}
+                disabled={cmsTesting || !project.cmsConfig?.siteUrl}
+                className="h-7 text-xs gap-1"
+              >
+                {cmsTesting ? (
+                  <><Loader2 className="h-3 w-3 animate-spin" /> {t("project.cmsTesting")}</>
+                ) : (
+                  t("project.cmsTestConnection")
+                )}
+              </Button>
+              {cmsTestResult === "success" && (
+                <p className="text-xs text-green-600 flex items-center gap-1"><CheckCircle2 className="h-3 w-3" /> {t("project.cmsConnected")}</p>
+              )}
+              {cmsTestResult === "error" && (
+                <p className="text-xs text-red-600 flex items-center gap-1"><AlertTriangle className="h-3 w-3" /> {t("project.cmsFailed")}</p>
+              )}
+            </div>
+          ) : (
+            project.cmsConfig?.siteUrl ? (
+              <p className="text-xs text-green-600 flex items-center gap-1"><CheckCircle2 className="h-3 w-3" /> {t("project.cmsConfigured")}: {project.cmsConfig.siteUrl}</p>
+            ) : (
+              <p className="text-xs text-muted-foreground">{t("project.cmsNotConfigured")}</p>
+            )
           )}
         </div>
 

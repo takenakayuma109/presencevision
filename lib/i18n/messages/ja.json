@@ -85,7 +85,20 @@
     "statusPublished": "公開済み",
     "statusVerified": "検証済み",
     "statusDraft": "下書き",
-    "statusError": "エラー"
+    "statusError": "エラー",
+    "cmsSettings": "CMS連携",
+    "cmsNotConfigured": "未設定 — WordPress連携で記事を自動公開",
+    "cmsConfigured": "WordPress連携済み",
+    "cmsSiteUrl": "WordPress URL",
+    "cmsUsername": "ユーザー名",
+    "cmsPassword": "アプリケーションパスワード",
+    "cmsStatus": "デフォルト公開状態",
+    "cmsStatusDraft": "下書き",
+    "cmsStatusPublish": "公開",
+    "cmsTestConnection": "接続テスト",
+    "cmsTesting": "テスト中...",
+    "cmsConnected": "接続成功",
+    "cmsFailed": "接続失敗"
   },
   "reports": {
     "title": "レポート",
@@ -202,7 +215,10 @@
     "stepConfig": "設定",
     "stepNotes": "要望",
     "stepPlan": "プラン確認",
-    "newProject": "新規プロジェクト"
+    "newProject": "新規プロジェクト",
+    "cmsIntegration": "CMS連携（任意）",
+    "cmsDesc": "WordPressと連携すると、生成したコンテンツを自動的に公開できます",
+    "enableCms": "WordPress連携を有効にする"
   },
   "taskDetail": {
     "executedTimes": "回実行済み",

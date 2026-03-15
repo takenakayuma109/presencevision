@@ -85,7 +85,20 @@
     "statusPublished": "已发布",
     "statusVerified": "已验证",
     "statusDraft": "草稿",
-    "statusError": "错误"
+    "statusError": "错误",
+    "cmsSettings": "CMS集成",
+    "cmsNotConfigured": "未配置 — 通过WordPress自动发布文章",
+    "cmsConfigured": "WordPress已连接",
+    "cmsSiteUrl": "WordPress URL",
+    "cmsUsername": "用户名",
+    "cmsPassword": "应用密码",
+    "cmsStatus": "默认发布状态",
+    "cmsStatusDraft": "草稿",
+    "cmsStatusPublish": "发布",
+    "cmsTestConnection": "测试连接",
+    "cmsTesting": "测试中...",
+    "cmsConnected": "连接成功",
+    "cmsFailed": "连接失败"
   },
   "reports": {
     "title": "报告",
@@ -202,7 +215,10 @@
     "stepConfig": "设置",
     "stepNotes": "需求",
     "stepPlan": "方案确认",
-    "newProject": "新建项目"
+    "newProject": "新建项目",
+    "cmsIntegration": "CMS集成（可选）",
+    "cmsDesc": "连接WordPress后，可自动发布生成的内容",
+    "enableCms": "启用WordPress集成"
   },
   "taskDetail": {
     "executedTimes": "次执行完成",

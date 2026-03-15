@@ -85,7 +85,20 @@
     "statusPublished": "Veröffentlicht",
     "statusVerified": "Verifiziert",
     "statusDraft": "Entwurf",
-    "statusError": "Fehler"
+    "statusError": "Fehler",
+    "cmsSettings": "CMS-Integration",
+    "cmsNotConfigured": "Nicht konfiguriert — Automatische Veröffentlichung über WordPress",
+    "cmsConfigured": "WordPress verbunden",
+    "cmsSiteUrl": "WordPress-URL",
+    "cmsUsername": "Benutzername",
+    "cmsPassword": "Anwendungspasswort",
+    "cmsStatus": "Standard-Veröffentlichungsstatus",
+    "cmsStatusDraft": "Entwurf",
+    "cmsStatusPublish": "Veröffentlichen",
+    "cmsTestConnection": "Verbindung testen",
+    "cmsTesting": "Testen...",
+    "cmsConnected": "Verbindung erfolgreich",
+    "cmsFailed": "Verbindung fehlgeschlagen"
   },
   "reports": {
     "title": "Berichte",
@@ -202,7 +215,10 @@
     "stepConfig": "Konfiguration",
     "stepNotes": "Anforderungen",
     "stepPlan": "Plan prüfen",
-    "newProject": "Neues Projekt"
+    "newProject": "Neues Projekt",
+    "cmsIntegration": "CMS-Integration (optional)",
+    "cmsDesc": "Verbinden Sie WordPress, um generierte Inhalte automatisch zu veröffentlichen",
+    "enableCms": "WordPress-Integration aktivieren"
   },
   "taskDetail": {
     "executedTimes": " Ausführungen abgeschlossen",

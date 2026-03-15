@@ -133,6 +133,14 @@ export interface EngineHealthResponse {
 // API calls
 // ---------------------------------------------------------------------------
 
+export interface CmsConfig {
+  type: "wordpress";
+  siteUrl: string;
+  username: string;
+  applicationPassword: string;
+  defaultStatus: "publish" | "draft";
+}
+
 export async function startEngine(project: {
   id: string;
   name: string;
@@ -141,6 +149,7 @@ export async function startEngine(project: {
   keywords: string[];
   targetCountries: string[];
   methods: string[];
+  cmsConfig?: CmsConfig;
 }): Promise<{ message: string; projectId: string }> {
   const res = await engineFetch("/engine/start", {
     method: "POST",
@@ -155,6 +164,7 @@ export async function startEngine(project: {
         methods: mapMethodsToEngine(project.methods),
         status: "active",
         createdAt: new Date(),
+        cmsConfig: project.cmsConfig,
       },
     }),
   });
@@ -215,6 +225,16 @@ export async function getStats(projectId: string): Promise<EngineStats> {
   const res = await engineFetch(
     `/activities/stats?projectId=${projectId}`,
   );
+  return res.json();
+}
+
+export async function testCmsConnection(
+  config: CmsConfig,
+): Promise<{ ok: boolean; siteName?: string; error?: string }> {
+  const res = await engineFetch("/engine/test-cms", {
+    method: "POST",
+    body: JSON.stringify(config),
+  });
   return res.json();
 }
 

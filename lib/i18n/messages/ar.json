@@ -85,7 +85,20 @@
     "statusPublished": "منشور",
     "statusVerified": "تم التحقق",
     "statusDraft": "مسودة",
-    "statusError": "خطأ"
+    "statusError": "خطأ",
+    "cmsSettings": "تكامل CMS",
+    "cmsNotConfigured": "غير مهيأ — نشر تلقائي عبر WordPress",
+    "cmsConfigured": "WordPress متصل",
+    "cmsSiteUrl": "عنوان WordPress",
+    "cmsUsername": "اسم المستخدم",
+    "cmsPassword": "كلمة مرور التطبيق",
+    "cmsStatus": "حالة النشر الافتراضية",
+    "cmsStatusDraft": "مسودة",
+    "cmsStatusPublish": "نشر",
+    "cmsTestConnection": "اختبار الاتصال",
+    "cmsTesting": "جارٍ الاختبار...",
+    "cmsConnected": "تم الاتصال بنجاح",
+    "cmsFailed": "فشل الاتصال"
   },
   "reports": {
     "title": "التقارير",
@@ -202,7 +215,10 @@
     "stepConfig": "الإعدادات",
     "stepNotes": "الطلبات",
     "stepPlan": "مراجعة الخطة",
-    "newProject": "مشروع جديد"
+    "newProject": "مشروع جديد",
+    "cmsIntegration": "تكامل CMS (اختياري)",
+    "cmsDesc": "اربط WordPress لنشر المحتوى المُنشأ تلقائياً",
+    "enableCms": "تفعيل تكامل WordPress"
   },
   "taskDetail": {
     "executedTimes": " تنفيذات مكتملة",

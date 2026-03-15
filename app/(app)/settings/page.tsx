@@ -105,8 +105,8 @@ export default function SettingsPage() {
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">稼働時間</span>
                     <span className="font-medium">
-                      {Math.floor(engineHealth.uptime / 3600)}時間{" "}
-                      {Math.floor((engineHealth.uptime % 3600) / 60)}分
+                      {Math.floor(engineHealth.uptime / 3600000)}時間{" "}
+                      {Math.floor((engineHealth.uptime % 3600000) / 60000)}分
                     </span>
                   </div>
                 )}

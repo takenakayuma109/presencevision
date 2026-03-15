@@ -97,3 +97,14 @@ body {
 ::-webkit-scrollbar-thumb:hover {
   background: var(--muted-foreground);
 }
+
+button,
+[role="button"],
+a,
+input[type="submit"],
+input[type="button"],
+input[type="reset"],
+select,
+summary {
+  cursor: pointer;
+}

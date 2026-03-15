@@ -11,7 +11,7 @@ import {
   ArrowLeft, Globe, Building2, Target, BarChart3, Clock, TrendingUp, FileText,
   Pause, Play, Mail, Repeat, ChevronRight, Activity, CheckCircle2, AlertTriangle,
   History, Plus, X, Pencil, Image, Code2, Database, Eye, FolderOpen, Radio,
-  Search, Swords, Users, Wrench, Settings,
+  Search, Swords, Users, Wrench, Settings, Maximize2, ExternalLink,
 } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
@@ -40,38 +40,50 @@ function ArtifactCard({ artifact, taskTitle, region, completedAt }: {
   artifact: ExecutionArtifact; taskTitle: string; region: string; completedAt: Date;
 }) {
   const [expanded, setExpanded] = useState(false);
+  const [imageOpen, setImageOpen] = useState(false);
   const Icon = artifactIcons[artifact.type] ?? FileText;
   const cc = availableCountries.find((c) => c.code === region);
+  const langInfo = countryLanguageMap[region];
   const { t } = useTranslation();
   const { artifactTypeLabels } = useLabels();
 
   return (
+    <>
     <div className={cn("rounded-lg border overflow-hidden transition-all", artifactColors[artifact.type])}>
+      {/* Context bar — どこで・何語で・何をしたか */}
+      <div className="flex items-center gap-1.5 px-3 py-1.5 bg-muted/40 border-b text-[10px]">
+        <span>{cc?.flag}</span>
+        <span className="font-medium">{cc?.name}</span>
+        <span className="text-muted-foreground">·</span>
+        <span className="text-muted-foreground">{langInfo?.langName}</span>
+        <span className="text-muted-foreground">·</span>
+        <span className="text-muted-foreground truncate">{taskTitle}</span>
+      </div>
+
       {/* Thumbnail / Preview header */}
       {artifact.type === "screenshot" && artifact.thumbnailUrl && (
-        <div className="bg-black/10 relative">
-          <img src={artifact.thumbnailUrl} alt={artifact.title} className="w-full h-36 object-cover" />
-          <div className="absolute top-2 right-2">
-            <Badge variant="secondary" className="text-[10px] bg-black/60 text-white border-0">{cc?.flag} {cc?.name}</Badge>
+        <button
+          onClick={() => setImageOpen(true)}
+          className="w-full bg-black/10 relative group"
+        >
+          <img src={artifact.thumbnailUrl} alt={artifact.title} className="w-full h-36 object-cover transition-opacity group-hover:opacity-80" />
+          <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+            <div className="bg-black/70 text-white rounded-full px-3 py-1.5 text-xs flex items-center gap-1.5">
+              <Maximize2 className="h-3 w-3" /> {t("project.showFullText")}
+            </div>
           </div>
-        </div>
+        </button>
       )}
       {artifact.type === "code" && artifact.content && (
         <div className="bg-gray-900 p-3 max-h-32 overflow-hidden relative">
           <pre className="text-[10px] text-gray-300 font-mono leading-relaxed whitespace-pre-wrap">{artifact.content.slice(0, 300)}</pre>
           <div className="absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-gray-900 to-transparent" />
-          <div className="absolute top-2 right-2">
-            <Badge variant="secondary" className="text-[10px] bg-black/60 text-white border-0">{cc?.flag}</Badge>
-          </div>
         </div>
       )}
       {(artifact.type === "content" || artifact.type === "data") && artifact.content && !expanded && (
         <div className="bg-muted/30 p-3 max-h-28 overflow-hidden relative">
           <p className="text-[11px] text-muted-foreground leading-relaxed whitespace-pre-wrap">{artifact.content.slice(0, 250)}</p>
           <div className="absolute bottom-0 left-0 right-0 h-6 bg-gradient-to-t from-muted/80 to-transparent" />
-          <div className="absolute top-2 right-2">
-            <Badge variant="secondary" className="text-[10px] bg-black/60 text-white border-0">{cc?.flag}</Badge>
-          </div>
         </div>
       )}
 
@@ -87,21 +99,25 @@ function ArtifactCard({ artifact, taskTitle, region, completedAt }: {
           </div>
         </div>
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Badge variant="outline" className="text-[9px] px-1.5 py-0">{artifactTypeLabels[artifact.type]}</Badge>
-            <span className="text-[10px] text-muted-foreground">{taskTitle}</span>
-          </div>
+          <Badge variant="outline" className="text-[9px] px-1.5 py-0">{artifactTypeLabels[artifact.type]}</Badge>
           <span className="text-[10px] text-muted-foreground">
             {completedAt.toLocaleString("ja-JP", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}
           </span>
         </div>
 
-        {/* Expand button for content */}
-        {(artifact.content && (artifact.type === "content" || artifact.type === "data" || artifact.type === "code")) && (
-          <button onClick={() => setExpanded(!expanded)} className="text-[10px] text-blue-500 hover:underline flex items-center gap-1 pt-1">
-            <Eye className="h-3 w-3" /> {expanded ? t("project.close") : t("project.showFullText")}
-          </button>
-        )}
+        {/* Action buttons */}
+        <div className="flex items-center gap-2 pt-0.5">
+          {(artifact.content && (artifact.type === "content" || artifact.type === "data" || artifact.type === "code")) && (
+            <button onClick={() => setExpanded(!expanded)} className="text-[10px] text-blue-500 hover:underline flex items-center gap-1">
+              <Eye className="h-3 w-3" /> {expanded ? t("project.close") : t("project.showFullText")}
+            </button>
+          )}
+          {artifact.type === "screenshot" && artifact.url && (
+            <a href={artifact.url} target="_blank" rel="noopener noreferrer" className="text-[10px] text-blue-500 hover:underline flex items-center gap-1">
+              <ExternalLink className="h-3 w-3" /> {t("taskDetail.fullSizeView")}
+            </a>
+          )}
+        </div>
       </div>
 
       {/* Expanded content */}
@@ -116,6 +132,24 @@ function ArtifactCard({ artifact, taskTitle, region, completedAt }: {
         </div>
       )}
     </div>
+
+    {/* Screenshot lightbox */}
+    {imageOpen && artifact.type === "screenshot" && (
+      <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 p-4" onClick={() => setImageOpen(false)}>
+        <button onClick={() => setImageOpen(false)} className="absolute top-4 right-4 text-white hover:text-gray-300">
+          <X className="h-6 w-6" />
+        </button>
+        <div className="max-w-4xl w-full space-y-3" onClick={(e) => e.stopPropagation()}>
+          <img src={artifact.url || artifact.thumbnailUrl} alt={artifact.title} className="w-full rounded-lg" />
+          <div className="text-center">
+            <p className="text-white text-sm font-medium">{artifact.title}</p>
+            <p className="text-gray-400 text-xs">{cc?.flag} {cc?.name} · {langInfo?.langName} · {taskTitle}</p>
+            {artifact.description && <p className="text-gray-400 text-xs mt-0.5">{artifact.description}</p>}
+          </div>
+        </div>
+      </div>
+    )}
+    </>
   );
 }
 

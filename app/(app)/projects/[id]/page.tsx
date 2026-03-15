@@ -503,11 +503,11 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-start justify-between">
+      <div className="flex flex-col sm:flex-row items-start justify-between gap-3">
         <div className="flex items-start gap-3">
           <Link href="/dashboard" className="mt-1"><Button variant="ghost" size="icon" className="h-8 w-8"><ArrowLeft className="h-4 w-4" /></Button></Link>
           <div>
-            <div className="flex items-center gap-3 mb-1">
+            <div className="flex items-center gap-3 mb-1 flex-wrap">
               {project.siteInfo.favicon && <img src={project.siteInfo.favicon} alt="" className="h-5 w-5 rounded" />}
               <h2 className="text-xl font-bold">{project.name}</h2>
               <Badge variant={project.status === "active" ? "success" : project.status === "paused" ? "secondary" : "info"}>
@@ -535,7 +535,7 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
       </div>
 
       {/* Stats */}
-      <div className="grid gap-3 grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
         {[
           {
             icon: Activity, label: "稼働タスク",
@@ -571,7 +571,7 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
             className={cn(
-              "flex items-center gap-1.5 px-4 py-2.5 text-sm font-medium border-b-2 transition-colors",
+              "flex items-center gap-1.5 px-2 sm:px-4 py-2.5 text-sm font-medium border-b-2 transition-colors",
               activeTab === tab.id
                 ? "border-blue-500 text-blue-600 dark:text-blue-400"
                 : "border-transparent text-muted-foreground hover:text-foreground",
@@ -665,7 +665,7 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
                           <Badge variant={r.type === "morning" ? "info" : "secondary"} className="text-xs">{r.type === "morning" ? "朝" : "夕"}</Badge>
                         </div>
                         <p className="text-xs text-muted-foreground">{r.summary}</p>
-                        <div className="grid grid-cols-3 gap-2 pt-1">
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 pt-1">
                           <div className="text-center rounded bg-muted/50 p-1">
                             <div className="flex items-center justify-center gap-1"><TrendingUp className="h-3 w-3 text-blue-500" /><p className="text-sm font-bold">{r.metrics.visibilityScore}</p></div>
                             <p className="text-xs text-muted-foreground">可視性</p>

@@ -22,7 +22,7 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-8">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
         <div>
           <h2 className="text-2xl font-bold">プロジェクト</h2>
           <p className="text-sm text-muted-foreground mt-1">デジタルプレゼンスを高めたいサイトを登録してください</p>

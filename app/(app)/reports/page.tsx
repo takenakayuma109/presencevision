@@ -33,7 +33,7 @@ export default function ReportsPage() {
       </div>
 
       {/* Global stats */}
-      <div className="grid gap-3 grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
         {[
           { icon: Activity, label: "稼働中プロジェクト", value: `${activeProjects}/${projects.length}`, color: "text-green-600 dark:text-green-400", bg: "bg-green-50 dark:bg-green-950" },
           { icon: Repeat, label: "総実行数", value: String(totalExecutions), color: "text-purple-600 dark:text-purple-400", bg: "bg-purple-50 dark:bg-purple-950" },
@@ -152,7 +152,7 @@ export default function ReportsPage() {
                           </Badge>
                         </div>
                         <p className="text-xs text-muted-foreground">{latestReport.summary}</p>
-                        <div className="grid grid-cols-4 gap-2">
+                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                           <div className="text-center">
                             <div className="flex items-center justify-center gap-1">
                               <TrendingUp className="h-3 w-3 text-blue-500" />

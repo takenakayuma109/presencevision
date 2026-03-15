@@ -322,5 +322,102 @@
       "code": "Code",
       "data": "Daten"
     }
+  },
+  "landing": {
+    "nav": {
+      "features": "Funktionen",
+      "howItWorks": "So funktioniert's",
+      "pricing": "Preise"
+    },
+    "hero": {
+      "badge": "Null API-Kosten — Lokale KI zum Festpreis",
+      "title": "Maximieren Sie Ihre digitale Präsenz automatisch mit KI, 24/7",
+      "subtitle": "Suchmaschinen, KI/LLM, Social Media, Blogs, Q&A-Seiten — verbreiten Sie Ihre Marke autonom über alle Kanäle weltweit. Null API-Kosten, Festpreis mit lokaler KI."
+    },
+    "cta": {
+      "start": "Kostenlos starten",
+      "startFree": "Kostenlos starten",
+      "viewPricing": "Preise ansehen",
+      "startTrial": "14-Tage-Testphase starten",
+      "bottomTitle": "Jetzt starten — 14 Tage kostenlos",
+      "bottomSubtitle": "Keine Kreditkarte erforderlich. Testen Sie alle Funktionen 14 Tage lang kostenlos."
+    },
+    "features": {
+      "sectionTitle": "6 Funktionen die alles automatisieren",
+      "sectionSubtitle": "Von der Keyword-Recherche bis zur Content-Erstellung, Verteilung und Tracking. KI erledigt alles autonom, 24/7.",
+      "keyword": {
+        "title": "Auto Long-Tail-Keyword-Entdeckung",
+        "desc": "Automatische Sammlung von 100+ Keywords aus der Google-Suche. Erweitert mit Ollama."
+      },
+      "content": {
+        "title": "Automatische Content-Erstellung",
+        "desc": "Unbegrenzt Artikel, FAQs, Schema.org und mehrsprachige Übersetzungen mit lokaler KI. Null API-Kosten."
+      },
+      "distribution": {
+        "title": "Verteilte Präsenz-Verbreitung",
+        "desc": "Auto-Verteilung an 20+ Kanäle: Twitter, Medium, Reddit und mehr."
+      },
+      "llmMonitoring": {
+        "title": "LLM-Zitat-Monitoring",
+        "desc": "Echtzeit-Tracking von Markenerwähnungen in ChatGPT, Gemini, Perplexity."
+      },
+      "serp": {
+        "title": "SERP-Tracking & Auto-Strategie",
+        "desc": "Verfolgen Sie Ranking-Änderungen. KI schlägt automatisch die nächste Content-Strategie vor."
+      },
+      "autonomous": {
+        "title": "24/7 Autonomer Betrieb",
+        "desc": "Engine läuft kontinuierlich auf VPS. Arbeit geht weiter auch wenn Ihr PC aus ist."
+      }
+    },
+    "howItWorks": {
+      "title": "In 4 Schritten starten",
+      "subtitle": "Geben Sie einfach eine URL ein. KI erstellt automatisch einen Plan und läuft 24/7."
+    },
+    "steps": {
+      "step1": {
+        "title": "URL eingeben",
+        "desc": "Site-Analyse & automatische Keyword-Erkennung"
+      },
+      "step2": {
+        "title": "KI erstellt Plan",
+        "desc": "Ziele, Länder und Methoden anpassen"
+      },
+      "step3": {
+        "title": "Ein-Klick-Start",
+        "desc": "24/7 autonomen Betrieb starten"
+      },
+      "step4": {
+        "title": "Ergebnisse verfolgen",
+        "desc": "Rankings, Zitate und Verteilung in Echtzeit"
+      }
+    },
+    "channels": {
+      "title": "20+ Verteilungskanäle",
+      "subtitle": "Social Media, Blogs, Q&A und regionale Plattformen. Auto-Verteilung überall."
+    },
+    "pricing": {
+      "title": "Einfache Preispläne",
+      "subtitle": "Alle Pläne beinhalten null API-Kosten und unbegrenzte lokale KI.",
+      "recommended": "Empfohlen",
+      "starter": {
+        "name": "Starter"
+      },
+      "professional": {
+        "name": "Professional"
+      },
+      "enterprise": {
+        "name": "Enterprise"
+      }
+    },
+    "comparison": {
+      "title": "Vergleich mit Wettbewerbern"
+    },
+    "footer": {
+      "features": "Funktionen",
+      "pricing": "Preise",
+      "docs": "Dokumentation",
+      "contact": "Kontakt"
+    }
   }
 }

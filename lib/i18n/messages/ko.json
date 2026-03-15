@@ -322,5 +322,102 @@
       "code": "코드",
       "data": "데이터"
     }
+  },
+  "landing": {
+    "nav": {
+      "features": "기능",
+      "howItWorks": "사용 방법",
+      "pricing": "요금"
+    },
+    "hero": {
+      "badge": "API 과금 제로 — 로컬 AI로 완전 정액",
+      "title": "AI가 24시간 자동으로 디지털 프레즌스를 극대화",
+      "subtitle": "검색 엔진, AI/LLM, SNS, 블로그, Q&A 사이트 — 전 세계 모든 채널에 브랜드를 자율적으로 확산합니다. API 과금 제로, 로컬 AI로 완전 정액."
+    },
+    "cta": {
+      "start": "무료로 시작",
+      "startFree": "무료로 시작",
+      "viewPricing": "요금 플랜 보기",
+      "startTrial": "14일 무료 체험 시작",
+      "bottomTitle": "지금 시작 — 14일 무료 체험",
+      "bottomSubtitle": "신용카드 불필요. 모든 기능을 14일간 무료로 체험하세요."
+    },
+    "features": {
+      "sectionTitle": "모든 것을 자동화하는 6가지 기능",
+      "sectionSubtitle": "키워드 발굴부터 콘텐츠 생성, 배포, 추적까지. AI가 24시간 자율적으로 실행합니다.",
+      "keyword": {
+        "title": "롱테일 키워드 자동 발굴",
+        "desc": "Google 검색에서 100+ 키워드를 자동 수집. Ollama로 확장."
+      },
+      "content": {
+        "title": "자동 콘텐츠 생성",
+        "desc": "로컬 AI로 기사, FAQ, Schema.org, 다국어 번역을 무한 생성. API 과금 제로."
+      },
+      "distribution": {
+        "title": "분산형 프레즌스 배포",
+        "desc": "Twitter, Medium, Reddit 등 20+ 채널에 자동 배포."
+      },
+      "llmMonitoring": {
+        "title": "LLM 인용 모니터링",
+        "desc": "ChatGPT, Gemini, Perplexity 등에서 브랜드 인용을 실시간 추적."
+      },
+      "serp": {
+        "title": "SERP 순위 추적 & 자동 전략",
+        "desc": "게시 후 검색 순위 변동을 추적. AI가 다음 콘텐츠 전략을 자동 제안."
+      },
+      "autonomous": {
+        "title": "24시간 자율 가동",
+        "desc": "VPS에서 엔진이 상시 가동. PC를 꺼도 전 세계에서 작업 계속."
+      }
+    },
+    "howItWorks": {
+      "title": "4단계로 시작",
+      "subtitle": "URL을 입력하기만 하면. AI가 자동으로 플랜을 생성하고 24시간 가동합니다."
+    },
+    "steps": {
+      "step1": {
+        "title": "URL 입력",
+        "desc": "사이트 분석 & 키워드 자동 감지"
+      },
+      "step2": {
+        "title": "AI가 플랜 생성",
+        "desc": "목적, 국가, 방법을 커스터마이즈"
+      },
+      "step3": {
+        "title": "원클릭 시작",
+        "desc": "24시간 자율 가동 시작"
+      },
+      "step4": {
+        "title": "성과 확인",
+        "desc": "순위, 인용, 배포 실적을 실시간으로"
+      }
+    },
+    "channels": {
+      "title": "20+ 배포 채널",
+      "subtitle": "SNS, 블로그, Q&A, 지역 플랫폼까지. 모든 채널에 자동 배포."
+    },
+    "pricing": {
+      "title": "심플한 요금 플랜",
+      "subtitle": "모든 플랜에 API 과금 제로 & 로컬 AI 무제한 포함.",
+      "recommended": "추천",
+      "starter": {
+        "name": "Starter"
+      },
+      "professional": {
+        "name": "Professional"
+      },
+      "enterprise": {
+        "name": "Enterprise"
+      }
+    },
+    "comparison": {
+      "title": "경쟁사와 비교"
+    },
+    "footer": {
+      "features": "기능",
+      "pricing": "요금",
+      "docs": "문서",
+      "contact": "문의"
+    }
   }
 }

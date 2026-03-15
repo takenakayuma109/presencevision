@@ -322,5 +322,96 @@
       "code": "Code",
       "data": "Data"
     }
+  },
+  "landing": {
+    "nav": {
+      "features": "Features",
+      "howItWorks": "How It Works",
+      "pricing": "Pricing"
+    },
+    "hero": {
+      "badge": "Zero API costs — Flat rate with local AI",
+      "title": "Maximize your digital presence automatically with AI, 24/7",
+      "subtitle": "Search engines, AI/LLMs, social media, blogs, Q&A sites — autonomously spread your brand across every channel worldwide. Zero API costs, fully flat-rate with local AI."
+    },
+    "cta": {
+      "start": "Get Started Free",
+      "startFree": "Get Started Free",
+      "viewPricing": "View Pricing",
+      "startTrial": "Start 14-Day Free Trial",
+      "bottomTitle": "Get Started — 14-Day Free Trial",
+      "bottomSubtitle": "No credit card required. Try all features free for 14 days."
+    },
+    "features": {
+      "sectionTitle": "6 Features That Automate Everything",
+      "sectionSubtitle": "From keyword discovery to content generation, distribution, and tracking. AI handles it all autonomously, 24/7.",
+      "keyword": {
+        "title": "Auto Long-Tail Keyword Discovery",
+        "desc": "Automatically collect 100+ keywords from Google Search. Expanded with Ollama."
+      },
+      "content": {
+        "title": "Automatic Content Generation",
+        "desc": "Generate unlimited articles, FAQs, Schema.org, and multilingual translations with local AI. Zero API costs."
+      },
+      "distribution": {
+        "title": "Distributed Presence Delivery",
+        "desc": "Auto-distribute to 20+ channels: Twitter, Medium, Reddit, Quora, note.com, dev.to and more."
+      },
+      "llmMonitoring": {
+        "title": "LLM Citation Monitoring",
+        "desc": "Track brand citations in real-time across ChatGPT, Gemini, Perplexity and more."
+      },
+      "serp": {
+        "title": "SERP Tracking & Auto Strategy",
+        "desc": "Track search ranking changes after publishing. AI auto-suggests next content strategy."
+      },
+      "autonomous": {
+        "title": "24/7 Autonomous Operation",
+        "desc": "Engine runs continuously on VPS. Work continues worldwide even when your PC is off."
+      }
+    },
+    "howItWorks": {
+      "title": "Get Started in 4 Steps",
+      "subtitle": "Just enter a URL. AI automatically generates a plan and runs 24/7."
+    },
+    "steps": {
+      "step1": {
+        "title": "Enter URL",
+        "desc": "Site analysis & automatic keyword detection"
+      },
+      "step2": {
+        "title": "AI Generates Plan",
+        "desc": "Customize goals, countries, and methods"
+      },
+      "step3": {
+        "title": "One-Click Start",
+        "desc": "Begin 24/7 autonomous operation"
+      },
+      "step4": {
+        "title": "Track Results",
+        "desc": "Monitor rankings, citations, and distribution in real-time"
+      }
+    },
+    "channels": {
+      "title": "20+ Distribution Channels",
+      "subtitle": "Social media, blogs, Q&A sites, and regional platforms. Auto-distribute to every channel."
+    },
+    "pricing": {
+      "title": "Simple Pricing Plans",
+      "subtitle": "All plans include zero API costs and unlimited local AI.",
+      "recommended": "Recommended",
+      "starter": { "name": "Starter" },
+      "professional": { "name": "Professional" },
+      "enterprise": { "name": "Enterprise" }
+    },
+    "comparison": {
+      "title": "Compare with Competitors"
+    },
+    "footer": {
+      "features": "Features",
+      "pricing": "Pricing",
+      "docs": "Documentation",
+      "contact": "Contact"
+    }
   }
 }

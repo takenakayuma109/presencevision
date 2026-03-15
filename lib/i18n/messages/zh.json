@@ -322,5 +322,102 @@
       "code": "代码",
       "data": "数据"
     }
+  },
+  "landing": {
+    "nav": {
+      "features": "功能",
+      "howItWorks": "使用方法",
+      "pricing": "价格"
+    },
+    "hero": {
+      "badge": "零API费用 — 本地AI完全固定价",
+      "title": "让AI 24小时自动最大化您的数字存在感",
+      "subtitle": "搜索引擎、AI/LLM、社交媒体、博客、问答网站 — 在全球所有渠道自主传播您的品牌。零API费用，本地AI完全固定价。"
+    },
+    "cta": {
+      "start": "免费开始",
+      "startFree": "免费开始",
+      "viewPricing": "查看价格方案",
+      "startTrial": "开始14天免费试用",
+      "bottomTitle": "立即开始 — 14天免费试用",
+      "bottomSubtitle": "无需信用卡。免费试用所有功能14天。"
+    },
+    "features": {
+      "sectionTitle": "自动化一切的6大功能",
+      "sectionSubtitle": "从关键词发掘到内容生成、分发和追踪。AI 24小时自主执行。",
+      "keyword": {
+        "title": "长尾关键词自动发掘",
+        "desc": "从Google搜索自动收集100+关键词。用Ollama扩展。"
+      },
+      "content": {
+        "title": "自动内容生成",
+        "desc": "用本地AI无限生成文章、FAQ、Schema.org和多语言翻译。零API费用。"
+      },
+      "distribution": {
+        "title": "分布式存在感分发",
+        "desc": "自动分发到Twitter、Medium、Reddit等20+渠道。"
+      },
+      "llmMonitoring": {
+        "title": "LLM引用监控",
+        "desc": "在ChatGPT、Gemini、Perplexity等实时追踪品牌引用。"
+      },
+      "serp": {
+        "title": "SERP排名追踪与自动策略",
+        "desc": "追踪发布后的搜索排名变化。AI自动建议下一步内容策略。"
+      },
+      "autonomous": {
+        "title": "24小时自主运行",
+        "desc": "引擎在VPS上持续运行。即使关闭PC也在全球继续工作。"
+      }
+    },
+    "howItWorks": {
+      "title": "4步开始",
+      "subtitle": "只需输入URL。AI自动生成计划并24小时运行。"
+    },
+    "steps": {
+      "step1": {
+        "title": "输入URL",
+        "desc": "网站分析与自动关键词检测"
+      },
+      "step2": {
+        "title": "AI生成计划",
+        "desc": "自定义目标、国家和方法"
+      },
+      "step3": {
+        "title": "一键启动",
+        "desc": "开始24小时自主运行"
+      },
+      "step4": {
+        "title": "查看成果",
+        "desc": "实时监控排名、引用和分发"
+      }
+    },
+    "channels": {
+      "title": "20+分发渠道",
+      "subtitle": "社交媒体、博客、问答网站和区域平台。自动分发到所有渠道。"
+    },
+    "pricing": {
+      "title": "简单价格方案",
+      "subtitle": "所有方案包含零API费用和无限本地AI。",
+      "recommended": "推荐",
+      "starter": {
+        "name": "Starter"
+      },
+      "professional": {
+        "name": "Professional"
+      },
+      "enterprise": {
+        "name": "Enterprise"
+      }
+    },
+    "comparison": {
+      "title": "与竞争对手比较"
+    },
+    "footer": {
+      "features": "功能",
+      "pricing": "价格",
+      "docs": "文档",
+      "contact": "联系我们"
+    }
   }
 }

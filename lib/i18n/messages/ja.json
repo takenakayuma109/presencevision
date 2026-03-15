@@ -322,5 +322,96 @@
       "code": "コード",
       "data": "データ"
     }
+  },
+  "landing": {
+    "nav": {
+      "features": "機能",
+      "howItWorks": "使い方",
+      "pricing": "料金"
+    },
+    "hero": {
+      "badge": "API課金ゼロ — ローカルAIで完全定額",
+      "title": "あなたのデジタルプレゼンスを、AIが24時間自動で最大化する",
+      "subtitle": "検索エンジン、AI/LLM、SNS、ブログ、Q&Aサイト — 世界中のあらゆるチャネルに、あなたのブランドを自律的に拡散します。API課金ゼロ、ローカルAIで完全定額。"
+    },
+    "cta": {
+      "start": "無料で始める",
+      "startFree": "無料で始める",
+      "viewPricing": "料金プランを見る",
+      "startTrial": "14日間無料トライアルを始める",
+      "bottomTitle": "今すぐ始める — 14日間無料トライアル",
+      "bottomSubtitle": "クレジットカード不要。すべての機能を14日間お試しいただけます。"
+    },
+    "features": {
+      "sectionTitle": "すべてを自動化する6つの機能",
+      "sectionSubtitle": "キーワード発掘からコンテンツ生成、配信、追跡まで。すべてをAIが24時間自律的に実行します。",
+      "keyword": {
+        "title": "ロングテールキーワード自動発掘",
+        "desc": "Google検索から100+のキーワードを自動収集。Ollamaで拡張。"
+      },
+      "content": {
+        "title": "コンテンツ自動生成",
+        "desc": "記事・FAQ・Schema.org・多言語翻訳をローカルAIで無限生成。API課金ゼロ。"
+      },
+      "distribution": {
+        "title": "分散型プレゼンス配信",
+        "desc": "Twitter, Medium, Reddit, Quora, note.com, dev.to等20+チャネルに自動配信。"
+      },
+      "llmMonitoring": {
+        "title": "LLM引用モニタリング",
+        "desc": "ChatGPT, Gemini, Perplexity等でブランド引用をリアルタイム追跡。"
+      },
+      "serp": {
+        "title": "SERP順位追跡 & 戦略自動調整",
+        "desc": "公開後の検索順位変動を追跡。AIが次のコンテンツ戦略を自動提案。"
+      },
+      "autonomous": {
+        "title": "24時間自律稼働",
+        "desc": "VPS上でエンジンが常時稼働。PCを閉じても全世界で作業を続行。"
+      }
+    },
+    "howItWorks": {
+      "title": "4ステップで始める",
+      "subtitle": "URLを入力するだけ。あとはAIが自動でプランを生成し、24時間稼働します。"
+    },
+    "steps": {
+      "step1": {
+        "title": "URLを入力",
+        "desc": "サイト分析 & キーワード自動検出"
+      },
+      "step2": {
+        "title": "AIがプランを生成",
+        "desc": "目的・国・手段をカスタマイズ"
+      },
+      "step3": {
+        "title": "ワンクリックで開始",
+        "desc": "24時間自律稼働スタート"
+      },
+      "step4": {
+        "title": "成果を確認",
+        "desc": "順位変動・引用状況・配信実績をリアルタイムで"
+      }
+    },
+    "channels": {
+      "title": "20+の配信チャネル",
+      "subtitle": "SNS、ブログ、Q&Aサイト、地域特化プラットフォームまで。あらゆるチャネルに自動配信。"
+    },
+    "pricing": {
+      "title": "シンプルな料金プラン",
+      "subtitle": "すべてのプランにAPI課金ゼロ・ローカルAI無制限が含まれます。",
+      "recommended": "おすすめ",
+      "starter": { "name": "Starter" },
+      "professional": { "name": "Professional" },
+      "enterprise": { "name": "Enterprise" }
+    },
+    "comparison": {
+      "title": "競合との比較"
+    },
+    "footer": {
+      "features": "機能",
+      "pricing": "料金",
+      "docs": "ドキュメント",
+      "contact": "お問い合わせ"
+    }
   }
 }

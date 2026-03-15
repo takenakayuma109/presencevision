@@ -322,5 +322,102 @@
       "code": "Code",
       "data": "Données"
     }
+  },
+  "landing": {
+    "nav": {
+      "features": "Fonctionnalités",
+      "howItWorks": "Comment ça marche",
+      "pricing": "Tarifs"
+    },
+    "hero": {
+      "badge": "Zéro frais API — IA locale à tarif fixe",
+      "title": "Maximisez automatiquement votre présence numérique avec l'IA, 24h/24",
+      "subtitle": "Moteurs de recherche, IA/LLM, réseaux sociaux, blogs, sites Q&R — diffusez votre marque sur tous les canaux dans le monde entier. Zéro frais API, tarif fixe avec IA locale."
+    },
+    "cta": {
+      "start": "Commencer gratuitement",
+      "startFree": "Commencer gratuitement",
+      "viewPricing": "Voir les tarifs",
+      "startTrial": "Essai gratuit de 14 jours",
+      "bottomTitle": "Commencez maintenant — Essai gratuit de 14 jours",
+      "bottomSubtitle": "Sans carte de crédit. Testez toutes les fonctionnalités pendant 14 jours."
+    },
+    "features": {
+      "sectionTitle": "6 fonctionnalités qui automatisent tout",
+      "sectionSubtitle": "De la découverte de mots-clés à la génération de contenu, distribution et suivi. L'IA gère tout 24h/24.",
+      "keyword": {
+        "title": "Découverte auto de mots-clés longue traîne",
+        "desc": "Collecte automatique de 100+ mots-clés depuis Google. Étendu avec Ollama."
+      },
+      "content": {
+        "title": "Génération auto de contenu",
+        "desc": "Générez articles, FAQ, Schema.org et traductions multilingues en illimité. Zéro frais API."
+      },
+      "distribution": {
+        "title": "Distribution de présence distribuée",
+        "desc": "Distribution auto sur 20+ canaux : Twitter, Medium, Reddit et plus."
+      },
+      "llmMonitoring": {
+        "title": "Surveillance des citations LLM",
+        "desc": "Suivez les citations de marque en temps réel sur ChatGPT, Gemini, Perplexity."
+      },
+      "serp": {
+        "title": "Suivi SERP & Stratégie auto",
+        "desc": "Suivez les changements de classement. L'IA suggère la stratégie de contenu suivante."
+      },
+      "autonomous": {
+        "title": "Fonctionnement autonome 24/7",
+        "desc": "Le moteur fonctionne en continu sur VPS. Le travail continue même PC éteint."
+      }
+    },
+    "howItWorks": {
+      "title": "Démarrez en 4 étapes",
+      "subtitle": "Entrez simplement une URL. L'IA génère un plan et fonctionne 24h/24."
+    },
+    "steps": {
+      "step1": {
+        "title": "Entrez l'URL",
+        "desc": "Analyse du site & détection auto des mots-clés"
+      },
+      "step2": {
+        "title": "L'IA génère le plan",
+        "desc": "Personnalisez objectifs, pays et méthodes"
+      },
+      "step3": {
+        "title": "Démarrage en un clic",
+        "desc": "Opération autonome 24h/24"
+      },
+      "step4": {
+        "title": "Suivez les résultats",
+        "desc": "Classements, citations et distribution en temps réel"
+      }
+    },
+    "channels": {
+      "title": "20+ canaux de distribution",
+      "subtitle": "Réseaux sociaux, blogs, Q&R et plateformes régionales. Distribution auto partout."
+    },
+    "pricing": {
+      "title": "Tarifs simples",
+      "subtitle": "Tous les plans incluent zéro frais API et IA locale illimitée.",
+      "recommended": "Recommandé",
+      "starter": {
+        "name": "Starter"
+      },
+      "professional": {
+        "name": "Professional"
+      },
+      "enterprise": {
+        "name": "Enterprise"
+      }
+    },
+    "comparison": {
+      "title": "Comparaison avec la concurrence"
+    },
+    "footer": {
+      "features": "Fonctionnalités",
+      "pricing": "Tarifs",
+      "docs": "Documentation",
+      "contact": "Contact"
+    }
   }
 }

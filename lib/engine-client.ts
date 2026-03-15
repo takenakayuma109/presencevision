@@ -1,7 +1,8 @@
 /**
  * Engine Client — フロントエンドからPresence Engineを制御するAPI
  *
- * 外部VPSエンジンサーバーに直接接続する。
+ * Next.js API Route (/api/engine/*) 経由でVPSエンジンにプロキシ。
+ * これによりhttps→httpのMixed Content問題を回避。
  * Engine APIのレスポンスをUI型（PlanTask, TaskExecution等）に変換する。
  */
 
@@ -18,6 +19,11 @@ import type {
 // ---------------------------------------------------------------------------
 
 export function getEngineBaseUrl(): string {
+  // ブラウザからはNext.js API Routeプロキシ経由でアクセス
+  if (typeof window !== "undefined") {
+    return "/api/engine";
+  }
+  // サーバーサイドからは直接VPSにアクセス
   return (
     process.env.NEXT_PUBLIC_ENGINE_URL?.replace(/\/+$/, "") ??
     "http://localhost:4000"
@@ -28,9 +34,12 @@ function getHeaders(): Record<string, string> {
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
   };
-  const apiKey = process.env.NEXT_PUBLIC_ENGINE_API_KEY;
-  if (apiKey) {
-    headers["x-api-key"] = apiKey;
+  // プロキシ経由の場合はAPI keyはサーバーサイドで付与されるので不要
+  if (typeof window === "undefined") {
+    const apiKey = process.env.NEXT_PUBLIC_ENGINE_API_KEY;
+    if (apiKey) {
+      headers["x-api-key"] = apiKey;
+    }
   }
   return headers;
 }
@@ -133,10 +142,9 @@ export async function startEngine(project: {
   targetCountries: string[];
   methods: string[];
 }): Promise<{ message: string; projectId: string }> {
-  const res = await engineFetch("/api/engine", {
+  const res = await engineFetch("/engine/start", {
     method: "POST",
     body: JSON.stringify({
-      action: "start",
       project: {
         id: project.id,
         name: project.name,
@@ -154,9 +162,9 @@ export async function startEngine(project: {
 }
 
 export async function stopEngine(projectId: string): Promise<void> {
-  await engineFetch("/api/engine", {
+  await engineFetch("/engine/stop", {
     method: "POST",
-    body: JSON.stringify({ action: "stop", projectId }),
+    body: JSON.stringify({ projectId }),
   });
 }
 
@@ -169,10 +177,9 @@ export async function runCycle(project: {
   targetCountries: string[];
   methods: string[];
 }): Promise<unknown> {
-  const res = await engineFetch("/api/engine", {
+  const res = await engineFetch("/engine/run-cycle", {
     method: "POST",
     body: JSON.stringify({
-      action: "run_cycle",
       project: {
         id: project.id,
         name: project.name,
@@ -190,7 +197,7 @@ export async function runCycle(project: {
 }
 
 export async function getEngineStatus(): Promise<EngineStatus> {
-  const res = await engineFetch("/api/engine");
+  const res = await engineFetch("/engine/status");
   return res.json();
 }
 
@@ -199,14 +206,14 @@ export async function getActivities(
   limit = 50,
 ): Promise<{ activities: EngineActivity[]; total: number }> {
   const res = await engineFetch(
-    `/api/engine/activities?projectId=${projectId}&limit=${limit}`,
+    `/activities?projectId=${projectId}&limit=${limit}`,
   );
   return res.json();
 }
 
 export async function getStats(projectId: string): Promise<EngineStats> {
   const res = await engineFetch(
-    `/api/engine/activities?projectId=${projectId}&stats=true`,
+    `/activities/stats?projectId=${projectId}`,
   );
   return res.json();
 }
@@ -233,12 +240,10 @@ export function connectActivityStream(
   onOpen?: () => void,
 ): () => void {
   const base = getEngineBaseUrl();
-  const url = new URL(`${base}/api/engine/activities/stream`);
+  // SSEはブラウザから直接接続。プロキシ経由の場合はプロキシURLを使う
+  const sseBase = base.startsWith("/api/") ? base : base;
+  const url = new URL(`${sseBase}/activities/stream`, window.location.origin);
   url.searchParams.set("projectId", projectId);
-  const apiKey = process.env.NEXT_PUBLIC_ENGINE_API_KEY;
-  if (apiKey) {
-    url.searchParams.set("apiKey", apiKey);
-  }
 
   const es = new EventSource(url.toString());
 

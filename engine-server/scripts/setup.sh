@@ -2,7 +2,10 @@
 # chmod +x engine-server/scripts/setup.sh
 #
 # PresenceVision Production Setup Script
-# Initializes all services on a fresh VPS.
+# Target: Hetzner CPX32 (4 vCPU, 8GB RAM, 160GB SSD)
+# Server IP: 77.42.32.52
+# Location: Helsinki, Finland (hel1-dc2)
+# OS: Ubuntu (Hetzner default)
 #
 # Usage: ./engine-server/scripts/setup.sh
 # Run from the project root (/opt/presencevision or local checkout).
@@ -11,7 +14,7 @@ set -euo pipefail
 COMPOSE_FILE="docker-compose.prod.yml"
 ENV_TEMPLATE=".env.production.example"
 ENV_FILE=".env"
-OLLAMA_MODEL="${OLLAMA_MODEL:-llama3.1}"
+OLLAMA_MODEL="${OLLAMA_MODEL:-qwen2.5:7b}"
 
 # Colors
 RED='\033[0;31m'
@@ -26,16 +29,89 @@ error() { echo -e "${RED}[x]${NC} $*"; }
 echo ""
 echo "============================================"
 echo "  PresenceVision Production Setup"
+echo "  Hetzner CPX32 — 4 vCPU / 8GB RAM"
 echo "============================================"
 echo ""
+
+# --------------------------------------------------------------------------
+# 0. Hetzner / Ubuntu-specific optimizations
+# --------------------------------------------------------------------------
+info "Running system-level optimizations..."
+
+# Detect Hetzner (optional — informational only)
+if [ -f /sys/class/dmi/id/sys_vendor ] && grep -qi "hetzner" /sys/class/dmi/id/sys_vendor 2>/dev/null; then
+    info "Hetzner server detected."
+elif [ -f /etc/hetzner ]; then
+    info "Hetzner server detected."
+else
+    warn "Could not confirm Hetzner environment (continuing anyway)."
+fi
+
+# Set up swap (4GB) if not already present — helps Ollama on 8GB RAM
+if ! swapon --show | grep -q '/swapfile'; then
+    info "Setting up 4GB swap..."
+    if [ ! -f /swapfile ]; then
+        fallocate -l 4G /swapfile
+        chmod 600 /swapfile
+        mkswap /swapfile
+    fi
+    swapon /swapfile
+    # Persist across reboots
+    if ! grep -q '/swapfile' /etc/fstab; then
+        echo '/swapfile none swap sw 0 0' >> /etc/fstab
+    fi
+    # Optimize swappiness for server workload
+    sysctl vm.swappiness=10
+    if ! grep -q 'vm.swappiness' /etc/sysctl.conf; then
+        echo 'vm.swappiness=10' >> /etc/sysctl.conf
+    fi
+    info "4GB swap enabled (swappiness=10)."
+else
+    info "Swap already active."
+fi
+
+# Set up firewall (ufw) — allow SSH, HTTP, HTTPS
+if command -v ufw &> /dev/null; then
+    info "Configuring firewall (ufw)..."
+    ufw --force reset > /dev/null 2>&1
+    ufw default deny incoming > /dev/null 2>&1
+    ufw default allow outgoing > /dev/null 2>&1
+    ufw allow 22/tcp > /dev/null 2>&1   # SSH
+    ufw allow 80/tcp > /dev/null 2>&1   # HTTP
+    ufw allow 443/tcp > /dev/null 2>&1  # HTTPS
+    ufw --force enable > /dev/null 2>&1
+    info "Firewall enabled: SSH(22), HTTP(80), HTTPS(443)."
+else
+    warn "ufw not found. Installing..."
+    apt-get update -qq && apt-get install -y -qq ufw
+    ufw default deny incoming > /dev/null 2>&1
+    ufw default allow outgoing > /dev/null 2>&1
+    ufw allow 22/tcp > /dev/null 2>&1
+    ufw allow 80/tcp > /dev/null 2>&1
+    ufw allow 443/tcp > /dev/null 2>&1
+    ufw --force enable > /dev/null 2>&1
+    info "Firewall installed and enabled."
+fi
 
 # --------------------------------------------------------------------------
 # 1. Check Docker
 # --------------------------------------------------------------------------
 info "Checking Docker..."
 if ! command -v docker &> /dev/null; then
-    warn "Docker not found. Installing..."
-    curl -fsSL https://get.docker.com | sh
+    warn "Docker not found. Installing via apt (Ubuntu)..."
+    # Install prerequisites
+    apt-get update -qq
+    apt-get install -y -qq ca-certificates curl gnupg lsb-release
+    # Add Docker GPG key and repo
+    install -m 0755 -d /etc/apt/keyrings
+    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+    chmod a+r /etc/apt/keyrings/docker.gpg
+    echo \
+      "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
+      $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | \
+      tee /etc/apt/sources.list.d/docker.list > /dev/null
+    apt-get update -qq
+    apt-get install -y -qq docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
     systemctl enable docker
     systemctl start docker
     info "Docker installed."
@@ -105,21 +181,13 @@ source "${ENV_FILE}"
 set +a
 
 # --------------------------------------------------------------------------
-# 4. GPU Check — remove GPU reservation if no NVIDIA GPU
+# 4. GPU Check — Hetzner CPX32 has no GPU, Ollama will use CPU
 # --------------------------------------------------------------------------
 if command -v nvidia-smi &> /dev/null; then
     info "NVIDIA GPU detected. Ollama will use GPU acceleration."
 else
-    warn "No NVIDIA GPU detected. Ollama will run on CPU."
-    warn "Removing GPU reservation from compose file..."
-    # Create a temporary compose override without GPU
-    cat > docker-compose.override.yml << 'OVERRIDE_EOF'
-services:
-  ollama:
-    deploy:
-      resources: {}
-OVERRIDE_EOF
-    info "Created docker-compose.override.yml to disable GPU."
+    info "No GPU detected (expected on Hetzner CPX32). Ollama will run on CPU."
+    info "Using CPU-optimized model: ${OLLAMA_MODEL}"
 fi
 
 # --------------------------------------------------------------------------
@@ -182,10 +250,11 @@ if [ -d "prisma" ]; then
 fi
 
 # --------------------------------------------------------------------------
-# 8. Pull Ollama model
+# 8. Pull Ollama model (CPU-optimized for 8GB RAM)
 # --------------------------------------------------------------------------
 info "Pulling Ollama model: ${OLLAMA_MODEL}..."
 info "(This may take several minutes on first run)"
+info "Note: Using ${OLLAMA_MODEL} — optimized for CPU-only on 8GB RAM"
 docker compose -f "${COMPOSE_FILE}" exec -T ollama ollama pull "${OLLAMA_MODEL}" || {
     warn "Model pull may still be in progress. Check with:"
     warn "  docker compose -f ${COMPOSE_FILE} exec ollama ollama list"
@@ -232,10 +301,11 @@ fi
 echo ""
 echo "============================================"
 echo "  Setup Complete!"
+echo "  Server: Hetzner CPX32 — 77.42.32.52"
 echo "============================================"
 echo ""
 
-VPS_IP=$(hostname -I 2>/dev/null | awk '{print $1}' || echo "your-server-ip")
+VPS_IP=$(hostname -I 2>/dev/null | awk '{print $1}' || echo "77.42.32.52")
 
 info "Service URLs:"
 echo "  Engine API:  http://${VPS_IP}:4000"

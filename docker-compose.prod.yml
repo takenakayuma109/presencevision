@@ -1,3 +1,8 @@
+# PresenceVision Production Docker Compose
+# Target: Hetzner CPX32 (4 vCPU, 8GB RAM, 160GB SSD) - Helsinki (hel1-dc2)
+# Server IP: 77.42.32.52
+# Ollama runs CPU-only (no GPU on CPX32)
+
 version: '3.8'
 
 services:
@@ -10,6 +15,11 @@ services:
     volumes:
       - postgres-data:/var/lib/postgresql/data
     restart: always
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 1G
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-pvuser} -d presencevision"]
       interval: 10s
@@ -21,18 +31,18 @@ services:
     volumes:
       - ollama-data:/root/.ollama
     restart: always
+    # No GPU reservation — Hetzner CPX32 is CPU-only
     deploy:
       resources:
-        reservations:
-          devices:
-            - capabilities: [gpu]
-              count: all
+        limits:
+          cpus: '2.0'
+          memory: 4G
     healthcheck:
       test: ["CMD-SHELL", "curl -sf http://localhost:11434/api/tags || exit 1"]
       interval: 15s
       timeout: 10s
       retries: 5
-      start_period: 30s
+      start_period: 60s
 
   engine:
     build: ./engine-server
@@ -41,8 +51,8 @@ services:
       - ENGINE_API_KEY=${ENGINE_API_KEY:?Set ENGINE_API_KEY in .env}
       - FRONTEND_URL=${FRONTEND_URL:-https://presencevision-rho.vercel.app}
       - OLLAMA_BASE_URL=http://ollama:11434
-      - OLLAMA_MODEL=${OLLAMA_MODEL:-llama3.1}
-      - BROWSER_CONCURRENCY=${BROWSER_CONCURRENCY:-5}
+      - OLLAMA_MODEL=${OLLAMA_MODEL:-qwen2.5:7b}
+      - BROWSER_CONCURRENCY=${BROWSER_CONCURRENCY:-3}
       - BROWSER_HEADLESS=true
       - ENGINE_CYCLE_INTERVAL_MS=${ENGINE_CYCLE_INTERVAL_MS:-21600000}
       - DATABASE_URL=postgresql://${POSTGRES_USER:-pvuser}:${POSTGRES_PASSWORD}@postgres:5432/presencevision
@@ -52,6 +62,11 @@ services:
       ollama:
         condition: service_healthy
     restart: always
+    deploy:
+      resources:
+        limits:
+          cpus: '1.5'
+          memory: 2G
     volumes:
       - engine-data:/app/data
     healthcheck:
@@ -75,9 +90,15 @@ services:
       engine:
         condition: service_healthy
     restart: always
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 256M
 
   certbot:
     image: certbot/certbot
+    restart: always
     volumes:
       - certbot-etc:/etc/letsencrypt
       - certbot-var:/var/lib/letsencrypt

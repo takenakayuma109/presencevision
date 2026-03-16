@@ -331,16 +331,26 @@
     },
     "hero": {
       "badge": "Ноль затрат на API — Локальный ИИ с фиксированной ценой",
-      "title": "Максимизируйте цифровое присутствие автоматически с ИИ, 24/7",
-      "subtitle": "Поисковые системы, ИИ/LLM, соцсети, блоги, Q&A-сайты — автономно распространяйте бренд по всем каналам. Ноль затрат на API."
+      "title": "Полная автоматизация SEO + оптимизации для ИИ!",
+      "subtitle": "Сделайте свой бренд находимым и в Google, и в ИИ, таких как ChatGPT и Gemini, 24 часа в сутки, 7 дней в неделю.",
+      "disruption": "Эра поисковой рекламы заканчивается. Реклама исчезает, когда вы перестаёте платить. Присутствие, построенное с PV, остаётся навсегда.",
+      "effects": {
+        "label": "Ожидаемые результаты",
+        "items": [
+          "Более высокие позиции в поиске Google",
+          "Больше упоминаний бренда в ChatGPT, Gemini и других",
+          "Узнаваемость бренда через 25+ каналов",
+          "Сокращение усилий на создание контента на 95%"
+        ]
+      }
     },
     "cta": {
       "start": "Начать бесплатно",
       "startFree": "Начать бесплатно",
       "viewPricing": "Посмотреть цены",
-      "startTrial": "14-дневный бесплатный пробный период",
-      "bottomTitle": "Начните сейчас — 14 дней бесплатно",
-      "bottomSubtitle": "Кредитная карта не требуется. Попробуйте все функции бесплатно в течение 14 дней."
+      "startTrial": "7-дневный бесплатный пробный период",
+      "bottomTitle": "Ваш первый шаг к нулевым расходам на рекламу",
+      "bottomSubtitle": "7-дневная бесплатная пробная версия всех функций после регистрации платёжных данных."
     },
     "features": {
       "sectionTitle": "6 функций, которые автоматизируют всё",
@@ -355,7 +365,7 @@
       },
       "distribution": {
         "title": "Распределённое продвижение",
-        "desc": "Автоматическое распространение на 20+ каналов."
+        "desc": "Автоматическое распространение на 25+ каналов."
       },
       "llmMonitoring": {
         "title": "Мониторинг цитирования LLM",
@@ -393,7 +403,7 @@
       }
     },
     "channels": {
-      "title": "20+ каналов распространения",
+      "title": "25+ каналов распространения",
       "subtitle": "Соцсети, блоги, Q&A и региональные платформы."
     },
     "pricing": {
@@ -408,16 +418,83 @@
       },
       "enterprise": {
         "name": "Enterprise"
+      },
+      "aiBoost": "AI Boost",
+      "aiBoostDesc": "Генерация высококачественных статей с помощью GPT-4o / Claude. Создавайте глубокий, оригинальный контент, недоступный локальному ИИ.",
+      "billing": {
+        "monthly": "Monthly",
+        "annual": "Annual",
+        "annualSave": "Save 20% with annual billing",
+        "trialCta": "Start 7-Day Free Trial",
+        "paymentMethods": "Accepted payments"
+      }
+    },
+    "trust": {
+      "title": "Продвижение только проверенных компаний — правильным способом",
+      "subtitle": "PresenceVision — это не инструмент скрытого маркетинга. Это платформа, которая повышает видимость реальных, высококачественных продуктов и услуг с полной прозрачностью и соблюдением законодательства.",
+      "verified": {
+        "title": "Verified Entity Only",
+        "badge": "Entry Gate",
+        "desc": "Только организации, прошедшие корпоративную верификацию, проверку официального сайта и оценку реальных услуг, могут использовать платформу. Анонимные или вымышленные бренды не допускаются."
+      },
+      "evidence": {
+        "title": "Evidence-Required Publishing",
+        "badge": "Quality Control",
+        "desc": "Контент без первичных источников, официальных данных, научных публикаций или новостных ссылок автоматически блокируется от публикации."
+      },
+      "score": {
+        "title": "Entity Trust Score",
+        "badge": "Continuous Evaluation",
+        "desc": "Непрерывная оценка на основе новостных цитирований, внешних ссылок, упоминаний в социальных сетях и проверенных бизнес-рейтингов. Организации с низким рейтингом подвергаются ограничениям распространения."
+      },
+      "legal": {
+        "title": "Legal & Compliance",
+        "stealth": {
+          "title": "Закон о противодействии необоснованным премиям и вводящим в заблуждение представлениям (Япония)",
+          "desc": "Полное соответствие японскому регулированию скрытого маркетинга, вступившему в силу в октябре 2023 года."
+        },
+        "ftc": {
+          "title": "FTC Endorsement Guides (US)",
+          "desc": "Соответствует Руководству по одобрениям FTC США."
+        },
+        "dsa": {
+          "title": "EU Digital Services Act",
+          "desc": "Соблюдает требования прозрачности EU Digital Services Act."
+        },
+        "google": {
+          "title": "Google Search Essentials",
+          "desc": "Контент соответствует Google Search Essentials. Нет нарушений политики спама."
+        }
       }
     },
     "comparison": {
       "title": "Сравнение с конкурентами"
+    },
+    "adDiff": {
+      "title": "How we differ from \"ad optimization AI\"",
+      "subtitle": "AI ad tools like Claude Ads make your ads smarter. PV makes ads unnecessary.",
+      "table": {
+        "category": "Comparison",
+        "adTools": "Ad Optimization AI",
+        "pv": "PresenceVision",
+        "whatItDoes": { "label": "What it does", "ad": "Optimizes existing ad campaigns", "pv": "Builds organic presence without ads" },
+        "cost": { "label": "Ad spend", "ad": "Keeps paying", "pv": "Aims for zero" },
+        "whenStopped": { "label": "When stopped?", "ad": "Ads disappear, traffic drops to zero", "pv": "Content remains, rankings and AI citations persist" },
+        "output": { "label": "Output", "ad": "More efficient ad delivery", "pv": "Search #1 + AI citations + natural presence across 25+ channels" },
+        "approach": { "label": "Approach", "ad": "Ad operation automation", "pv": "Presence building automation" }
+      },
+      "complementNote": "Ads are effective for short-term acquisition. PV builds organic presence over time, gradually reducing ad dependency to zero — that is the PresenceVision philosophy."
     },
     "footer": {
       "features": "Возможности",
       "pricing": "Цены",
       "docs": "Документация",
       "contact": "Контакты"
+    },
+    "hubSpoke": {
+      "title": "Hub & Spoke Distribution",
+      "subtitle": "Your site is home base. Every channel is a branch office that brings people back.",
+      "explanation": "Write one article, and AI automatically transforms it into a Twitter thread, a LinkedIn business post, an Instagram card, and more. Every post links back to your site, so visitors always find their way to you. This continuously builds your Google authority (domain authority) on autopilot."
     }
   }
 }

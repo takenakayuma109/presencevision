@@ -8,6 +8,7 @@ import {
   BarChart3,
   Settings,
   X,
+  Sparkles,
 } from "lucide-react";
 import { useTranslation } from "@/lib/hooks/use-translation";
 
@@ -41,9 +42,9 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
         )}
       >
         <div className="flex h-14 items-center border-b px-5">
-          <Link href="/dashboard" className="flex items-center gap-2.5 flex-1" onClick={onClose}>
-            <div className="flex h-7 w-7 items-center justify-center rounded-md bg-foreground text-background text-xs font-bold">
-              PV
+          <Link href="/" className="flex items-center gap-2.5 flex-1" onClick={onClose}>
+            <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-to-br from-blue-500 to-violet-600">
+              <Sparkles className="h-4 w-4 text-white" />
             </div>
             <span className="text-sm font-semibold tracking-tight">PresenceVision</span>
           </Link>

@@ -331,16 +331,26 @@
     },
     "hero": {
       "badge": "صفر تكاليف API — ذكاء اصطناعي محلي بسعر ثابت",
-      "title": "عزّز حضورك الرقمي تلقائياً بالذكاء الاصطناعي على مدار الساعة",
-      "subtitle": "محركات البحث، AI/LLM، وسائل التواصل، المدونات، مواقع الأسئلة — انشر علامتك التجارية بشكل مستقل عبر كل القنوات. صفر تكاليف API."
+      "title": "أتمتة كاملة لتحسين SEO والذكاء الاصطناعي!",
+      "subtitle": "اجعل علامتك التجارية قابلة للاكتشاف في كلٍّ من Google والذكاء الاصطناعي مثل ChatGPT وGemini، على مدار الساعة طوال أيام الأسبوع.",
+      "disruption": "عصر إعلانات البحث ينتهي. الإعلانات تختفي عندما تتوقف عن الدفع. الحضور المبني مع PV يدوم للأبد.",
+      "effects": {
+        "label": "النتائج المتوقعة",
+        "items": [
+          "تحسين ترتيب البحث في Google",
+          "زيادة ذكر العلامة التجارية في ChatGPT وGemini وغيرها",
+          "نشر الوعي بالعلامة التجارية عبر أكثر من 25 قناة",
+          "تقليل جهد إنشاء المحتوى بنسبة 95%"
+        ]
+      }
     },
     "cta": {
       "start": "ابدأ مجاناً",
       "startFree": "ابدأ مجاناً",
       "viewPricing": "عرض الأسعار",
-      "startTrial": "تجربة مجانية 14 يوماً",
-      "bottomTitle": "ابدأ الآن — تجربة مجانية 14 يوماً",
-      "bottomSubtitle": "لا حاجة لبطاقة ائتمان. جرب جميع الميزات مجاناً لمدة 14 يوماً."
+      "startTrial": "تجربة مجانية 7 أيام",
+      "bottomTitle": "خطوتك الأولى نحو صفر إنفاق إعلاني",
+      "bottomSubtitle": "تجربة مجانية لمدة 7 أيام لجميع الميزات بعد تسجيل بيانات الدفع."
     },
     "features": {
       "sectionTitle": "6 ميزات تؤتمت كل شيء",
@@ -355,7 +365,7 @@
       },
       "distribution": {
         "title": "توزيع الحضور الموزع",
-        "desc": "توزيع تلقائي على 20+ قناة."
+        "desc": "توزيع تلقائي على 25+ قناة."
       },
       "llmMonitoring": {
         "title": "مراقبة اقتباسات LLM",
@@ -393,7 +403,7 @@
       }
     },
     "channels": {
-      "title": "20+ قناة توزيع",
+      "title": "25+ قناة توزيع",
       "subtitle": "وسائل التواصل والمدونات ومواقع الأسئلة والمنصات الإقليمية."
     },
     "pricing": {
@@ -408,16 +418,83 @@
       },
       "enterprise": {
         "name": "Enterprise"
+      },
+      "aiBoost": "AI Boost",
+      "aiBoostDesc": "إنشاء مقالات عالية الجودة بواسطة GPT-4o / Claude. إنتاج محتوى معمّق وأصلي يتجاوز قدرات الذكاء الاصطناعي المحلي.",
+      "billing": {
+        "monthly": "Monthly",
+        "annual": "Annual",
+        "annualSave": "Save 20% with annual billing",
+        "trialCta": "Start 7-Day Free Trial",
+        "paymentMethods": "Accepted payments"
+      }
+    },
+    "trust": {
+      "title": "تعزيز الكيانات الموثوقة فقط، بالطريقة الصحيحة",
+      "subtitle": "PresenceVision ليست أداة تسويق خفي. إنها منصة تزيد من ظهور المنتجات والخدمات الحقيقية وعالية الجودة بشفافية كاملة وامتثال قانوني.",
+      "verified": {
+        "title": "Verified Entity Only",
+        "badge": "Entry Gate",
+        "desc": "يمكن فقط للكيانات التي تجتاز التحقق المؤسسي والتحقق من الموقع الرسمي وفحص الخدمة الحقيقية استخدام المنصة. لا يُسمح بالعلامات التجارية المجهولة أو الوهمية."
+      },
+      "evidence": {
+        "title": "Evidence-Required Publishing",
+        "badge": "Quality Control",
+        "desc": "يتم حظر نشر المحتوى الذي لا يحتوي على مصادر أولية أو بيانات رسمية أو أوراق أكاديمية أو مراجع إخبارية تلقائياً."
+      },
+      "score": {
+        "title": "Entity Trust Score",
+        "badge": "Continuous Evaluation",
+        "desc": "تقييم مستمر بناءً على الاستشهادات الإخبارية والروابط الخارجية وإشارات وسائل التواصل الاجتماعي وتقييمات الأعمال الموثقة. تواجه الكيانات ذات الدرجات المنخفضة قيوداً على التوزيع."
+      },
+      "legal": {
+        "title": "Legal & Compliance",
+        "stealth": {
+          "title": "قانون مكافحة العلاوات غير المبررة والتمثيلات المضللة (اليابان)",
+          "desc": "متوافق تماماً مع لائحة التسويق الخفي في اليابان التي دخلت حيز التنفيذ في أكتوبر 2023."
+        },
+        "ftc": {
+          "title": "FTC Endorsement Guides (US)",
+          "desc": "متوافق مع إرشادات التأييد الصادرة عن لجنة التجارة الفيدرالية الأمريكية."
+        },
+        "dsa": {
+          "title": "EU Digital Services Act",
+          "desc": "يلتزم بمتطلبات الشفافية بموجب قانون الخدمات الرقمية للاتحاد الأوروبي."
+        },
+        "google": {
+          "title": "Google Search Essentials",
+          "desc": "يتبع المحتوى أساسيات بحث Google. لا توجد انتهاكات لسياسة البريد العشوائي."
+        }
       }
     },
     "comparison": {
       "title": "مقارنة مع المنافسين"
+    },
+    "adDiff": {
+      "title": "How we differ from \"ad optimization AI\"",
+      "subtitle": "AI ad tools like Claude Ads make your ads smarter. PV makes ads unnecessary.",
+      "table": {
+        "category": "Comparison",
+        "adTools": "Ad Optimization AI",
+        "pv": "PresenceVision",
+        "whatItDoes": { "label": "What it does", "ad": "Optimizes existing ad campaigns", "pv": "Builds organic presence without ads" },
+        "cost": { "label": "Ad spend", "ad": "Keeps paying", "pv": "Aims for zero" },
+        "whenStopped": { "label": "When stopped?", "ad": "Ads disappear, traffic drops to zero", "pv": "Content remains, rankings and AI citations persist" },
+        "output": { "label": "Output", "ad": "More efficient ad delivery", "pv": "Search #1 + AI citations + natural presence across 25+ channels" },
+        "approach": { "label": "Approach", "ad": "Ad operation automation", "pv": "Presence building automation" }
+      },
+      "complementNote": "Ads are effective for short-term acquisition. PV builds organic presence over time, gradually reducing ad dependency to zero — that is the PresenceVision philosophy."
     },
     "footer": {
       "features": "الميزات",
       "pricing": "الأسعار",
       "docs": "الوثائق",
       "contact": "اتصل بنا"
+    },
+    "hubSpoke": {
+      "title": "Hub & Spoke Distribution",
+      "subtitle": "Your site is home base. Every channel is a branch office that brings people back.",
+      "explanation": "Write one article, and AI automatically transforms it into a Twitter thread, a LinkedIn business post, an Instagram card, and more. Every post links back to your site, so visitors always find their way to you. This continuously builds your Google authority (domain authority) on autopilot."
     }
   }
 }

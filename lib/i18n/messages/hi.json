@@ -331,16 +331,26 @@
     },
     "hero": {
       "badge": "शून्य API लागत — स्थानीय AI के साथ निश्चित दर",
-      "title": "AI के साथ अपनी डिजिटल उपस्थिति को स्वचालित रूप से अधिकतम करें, 24/7",
-      "subtitle": "सर्च इंजन, AI/LLM, सोशल मीडिया, ब्लॉग, Q&A साइट्स — हर चैनल पर अपने ब्रांड को स्वायत्त रूप से फैलाएं। शून्य API लागत।"
+      "title": "SEO + AI ऑप्टिमाइज़ेशन पूरी तरह स्वचालित!",
+      "subtitle": "अपने ब्रांड को Google और ChatGPT, Gemini जैसे AI दोनों में खोजने योग्य बनाएं, 24/7।",
+      "disruption": "सर्च विज्ञापनों का युग समाप्त हो रहा है। विज्ञापन भुगतान बंद करने पर गायब हो जाते हैं। PV से निर्मित उपस्थिति हमेशा बनी रहती है।",
+      "effects": {
+        "label": "अपेक्षित परिणाम",
+        "items": [
+          "Google खोज में बेहतर रैंकिंग",
+          "ChatGPT, Gemini और अन्य में अधिक ब्रांड उल्लेख",
+          "25+ चैनलों पर ब्रांड जागरूकता",
+          "कंटेंट निर्माण प्रयास में 95% की कमी"
+        ]
+      }
     },
     "cta": {
       "start": "मुफ्त शुरू करें",
       "startFree": "मुफ्त शुरू करें",
       "viewPricing": "मूल्य देखें",
-      "startTrial": "14-दिन का मुफ्त ट्रायल शुरू करें",
-      "bottomTitle": "अभी शुरू करें — 14 दिन मुफ्त ट्रायल",
-      "bottomSubtitle": "क्रेडिट कार्ड की आवश्यकता नहीं। 14 दिनों तक सभी सुविधाएँ मुफ्त आज़माएँ।"
+      "startTrial": "7-दिन का मुफ्त ट्रायल शुरू करें",
+      "bottomTitle": "शून्य विज्ञापन खर्च की ओर आपका पहला कदम",
+      "bottomSubtitle": "भुगतान पंजीकरण के बाद सभी सुविधाओं का 7 दिन मुफ्त ट्रायल।"
     },
     "features": {
       "sectionTitle": "सब कुछ स्वचालित करने वाली 6 विशेषताएँ",
@@ -355,7 +365,7 @@
       },
       "distribution": {
         "title": "वितरित उपस्थिति वितरण",
-        "desc": "20+ चैनलों पर स्वचालित वितरण।"
+        "desc": "25+ चैनलों पर स्वचालित वितरण।"
       },
       "llmMonitoring": {
         "title": "LLM उद्धरण निगरानी",
@@ -393,7 +403,7 @@
       }
     },
     "channels": {
-      "title": "20+ वितरण चैनल",
+      "title": "25+ वितरण चैनल",
       "subtitle": "सोशल मीडिया, ब्लॉग, Q&A और क्षेत्रीय प्लेटफ़ॉर्म।"
     },
     "pricing": {
@@ -408,16 +418,83 @@
       },
       "enterprise": {
         "name": "Enterprise"
+      },
+      "aiBoost": "AI Boost",
+      "aiBoostDesc": "GPT-4o / Claude द्वारा उच्च गुणवत्ता वाले लेख निर्माण। स्थानीय AI क्षमताओं से परे गहन, मौलिक सामग्री तैयार करें।",
+      "billing": {
+        "monthly": "Monthly",
+        "annual": "Annual",
+        "annualSave": "Save 20% with annual billing",
+        "trialCta": "Start 7-Day Free Trial",
+        "paymentMethods": "Accepted payments"
+      }
+    },
+    "trust": {
+      "title": "केवल विश्वसनीय संस्थाओं को सही तरीके से बढ़ावा देना",
+      "subtitle": "PresenceVision एक स्टेल्थ मार्केटिंग टूल नहीं है। यह एक ऐसा प्लेटफ़ॉर्म है जो पूर्ण पारदर्शिता और कानूनी अनुपालन के साथ वास्तविक, उच्च-गुणवत्ता वाले उत्पादों और सेवाओं की दृश्यता बढ़ाता है।",
+      "verified": {
+        "title": "Verified Entity Only",
+        "badge": "Entry Gate",
+        "desc": "केवल वे संस्थाएँ जो कॉर्पोरेट सत्यापन, आधिकारिक वेबसाइट मान्यता और वास्तविक सेवा जाँच पास करती हैं, प्लेटफ़ॉर्म का उपयोग कर सकती हैं। अनाम या काल्पनिक ब्रांड की अनुमति नहीं है।"
+      },
+      "evidence": {
+        "title": "Evidence-Required Publishing",
+        "badge": "Quality Control",
+        "desc": "प्राथमिक स्रोतों, आधिकारिक डेटा, शैक्षणिक शोधपत्रों या समाचार संदर्भों के बिना सामग्री प्रकाशन से स्वचालित रूप से अवरुद्ध हो जाती है।"
+      },
+      "score": {
+        "title": "Entity Trust Score",
+        "badge": "Continuous Evaluation",
+        "desc": "समाचार उद्धरणों, बाहरी लिंक, सोशल मीडिया उल्लेखों और सत्यापित व्यावसायिक रेटिंग के आधार पर निरंतर स्कोरिंग। कम स्कोर वाली संस्थाओं पर वितरण प्रतिबंध लगाए जाते हैं।"
+      },
+      "legal": {
+        "title": "Legal & Compliance",
+        "stealth": {
+          "title": "अनुचित प्रीमियम और भ्रामक प्रतिनिधित्व के खिलाफ कानून (जापान)",
+          "desc": "अक्टूबर 2023 में लागू जापान के स्टेल्थ मार्केटिंग नियमन के पूर्ण अनुपालन में।"
+        },
+        "ftc": {
+          "title": "FTC Endorsement Guides (US)",
+          "desc": "अमेरिकी FTC एंडोर्समेंट दिशानिर्देशों के अनुपालन में।"
+        },
+        "dsa": {
+          "title": "EU Digital Services Act",
+          "desc": "EU Digital Services Act के तहत पारदर्शिता आवश्यकताओं का पालन करता है।"
+        },
+        "google": {
+          "title": "Google Search Essentials",
+          "desc": "सामग्री Google Search Essentials का पालन करती है। कोई स्पैम नीति उल्लंघन नहीं।"
+        }
       }
     },
     "comparison": {
       "title": "प्रतिस्पर्धियों से तुलना"
+    },
+    "adDiff": {
+      "title": "How we differ from \"ad optimization AI\"",
+      "subtitle": "AI ad tools like Claude Ads make your ads smarter. PV makes ads unnecessary.",
+      "table": {
+        "category": "Comparison",
+        "adTools": "Ad Optimization AI",
+        "pv": "PresenceVision",
+        "whatItDoes": { "label": "What it does", "ad": "Optimizes existing ad campaigns", "pv": "Builds organic presence without ads" },
+        "cost": { "label": "Ad spend", "ad": "Keeps paying", "pv": "Aims for zero" },
+        "whenStopped": { "label": "When stopped?", "ad": "Ads disappear, traffic drops to zero", "pv": "Content remains, rankings and AI citations persist" },
+        "output": { "label": "Output", "ad": "More efficient ad delivery", "pv": "Search #1 + AI citations + natural presence across 25+ channels" },
+        "approach": { "label": "Approach", "ad": "Ad operation automation", "pv": "Presence building automation" }
+      },
+      "complementNote": "Ads are effective for short-term acquisition. PV builds organic presence over time, gradually reducing ad dependency to zero — that is the PresenceVision philosophy."
     },
     "footer": {
       "features": "विशेषताएँ",
       "pricing": "मूल्य",
       "docs": "दस्तावेज़",
       "contact": "संपर्क करें"
+    },
+    "hubSpoke": {
+      "title": "Hub & Spoke Distribution",
+      "subtitle": "Your site is home base. Every channel is a branch office that brings people back.",
+      "explanation": "Write one article, and AI automatically transforms it into a Twitter thread, a LinkedIn business post, an Instagram card, and more. Every post links back to your site, so visitors always find their way to you. This continuously builds your Google authority (domain authority) on autopilot."
     }
   }
 }

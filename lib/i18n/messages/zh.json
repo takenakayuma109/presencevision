@@ -331,16 +331,26 @@
     },
     "hero": {
       "badge": "零API费用 — 本地AI完全固定价",
-      "title": "让AI 24小时自动最大化您的数字存在感",
-      "subtitle": "搜索引擎、AI/LLM、社交媒体、博客、问答网站 — 在全球所有渠道自主传播您的品牌。零API费用，本地AI完全固定价。"
+      "title": "SEO + AI对策完全自动化！",
+      "subtitle": "让您的品牌在Google搜索和ChatGPT、Gemini等AI中都能被发现，全天候24/7自动运行。",
+      "disruption": "搜索广告的时代即将结束。广告一停就消失。用PV建立的存在感永远留存。",
+      "effects": {
+        "label": "预期效果",
+        "items": [
+          "提升Google搜索排名",
+          "增加品牌在ChatGPT、Gemini等AI中的提及",
+          "在25+渠道扩大品牌知名度",
+          "内容创作工作量减少95%"
+        ]
+      }
     },
     "cta": {
       "start": "免费开始",
       "startFree": "免费开始",
       "viewPricing": "查看价格方案",
-      "startTrial": "开始14天免费试用",
-      "bottomTitle": "立即开始 — 14天免费试用",
-      "bottomSubtitle": "无需信用卡。免费试用所有功能14天。"
+      "startTrial": "开始7天免费试用",
+      "bottomTitle": "迈向零广告支出的第一步",
+      "bottomSubtitle": "注册支付信息后，7天免费试用所有功能。"
     },
     "features": {
       "sectionTitle": "自动化一切的6大功能",
@@ -355,7 +365,7 @@
       },
       "distribution": {
         "title": "分布式存在感分发",
-        "desc": "自动分发到Twitter、Medium、Reddit等20+渠道。"
+        "desc": "自动分发到Twitter、Medium、Reddit等25+渠道。"
       },
       "llmMonitoring": {
         "title": "LLM引用监控",
@@ -393,7 +403,7 @@
       }
     },
     "channels": {
-      "title": "20+分发渠道",
+      "title": "25+分发渠道",
       "subtitle": "社交媒体、博客、问答网站和区域平台。自动分发到所有渠道。"
     },
     "pricing": {
@@ -408,16 +418,83 @@
       },
       "enterprise": {
         "name": "Enterprise"
+      },
+      "aiBoost": "AI Boost",
+      "aiBoostDesc": "借助 GPT-4o / Claude 生成高质量文章。产出超越本地 AI 能力的深度原创内容。",
+      "billing": {
+        "monthly": "Monthly",
+        "annual": "Annual",
+        "annualSave": "Save 20% with annual billing",
+        "trialCta": "Start 7-Day Free Trial",
+        "paymentMethods": "Accepted payments"
+      }
+    },
+    "trust": {
+      "title": "以正确的方式，只放大值得信赖的实体",
+      "subtitle": "PresenceVision 不是隐性营销工具。它是一个以完全透明和合法合规的方式，提升真实、高品质产品和服务可见度的平台。",
+      "verified": {
+        "title": "Verified Entity Only",
+        "badge": "Entry Gate",
+        "desc": "只有通过企业验证、官方网站验证和真实服务审核的实体才能使用平台。不允许匿名或虚构品牌。"
+      },
+      "evidence": {
+        "title": "Evidence-Required Publishing",
+        "badge": "Quality Control",
+        "desc": "没有一手来源、官方数据、学术论文或新闻引用的内容将被自动阻止发布。"
+      },
+      "score": {
+        "title": "Entity Trust Score",
+        "badge": "Continuous Evaluation",
+        "desc": "基于新闻引用、外部链接、社交媒体提及和经过验证的商业评级进行持续评分。低分实体将面临分发限制。"
+      },
+      "legal": {
+        "title": "Legal & Compliance",
+        "stealth": {
+          "title": "不当景品类及不当表示防止法（日本）",
+          "desc": "完全符合日本于2023年10月实施的隐性营销法规。"
+        },
+        "ftc": {
+          "title": "FTC Endorsement Guides (US)",
+          "desc": "符合美国FTC背书指南。"
+        },
+        "dsa": {
+          "title": "EU Digital Services Act",
+          "desc": "遵守EU Digital Services Act的透明度要求。"
+        },
+        "google": {
+          "title": "Google Search Essentials",
+          "desc": "内容遵循Google Search Essentials。无垃圾信息政策违规。"
+        }
       }
     },
     "comparison": {
       "title": "与竞争对手比较"
+    },
+    "adDiff": {
+      "title": "How we differ from \"ad optimization AI\"",
+      "subtitle": "AI ad tools like Claude Ads make your ads smarter. PV makes ads unnecessary.",
+      "table": {
+        "category": "Comparison",
+        "adTools": "Ad Optimization AI",
+        "pv": "PresenceVision",
+        "whatItDoes": { "label": "What it does", "ad": "Optimizes existing ad campaigns", "pv": "Builds organic presence without ads" },
+        "cost": { "label": "Ad spend", "ad": "Keeps paying", "pv": "Aims for zero" },
+        "whenStopped": { "label": "When stopped?", "ad": "Ads disappear, traffic drops to zero", "pv": "Content remains, rankings and AI citations persist" },
+        "output": { "label": "Output", "ad": "More efficient ad delivery", "pv": "Search #1 + AI citations + natural presence across 25+ channels" },
+        "approach": { "label": "Approach", "ad": "Ad operation automation", "pv": "Presence building automation" }
+      },
+      "complementNote": "Ads are effective for short-term acquisition. PV builds organic presence over time, gradually reducing ad dependency to zero — that is the PresenceVision philosophy."
     },
     "footer": {
       "features": "功能",
       "pricing": "价格",
       "docs": "文档",
       "contact": "联系我们"
+    },
+    "hubSpoke": {
+      "title": "Hub & Spoke Distribution",
+      "subtitle": "Your site is home base. Every channel is a branch office that brings people back.",
+      "explanation": "Write one article, and AI automatically transforms it into a Twitter thread, a LinkedIn business post, an Instagram card, and more. Every post links back to your site, so visitors always find their way to you. This continuously builds your Google authority (domain authority) on autopilot."
     }
   }
 }

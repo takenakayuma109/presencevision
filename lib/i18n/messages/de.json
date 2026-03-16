@@ -331,16 +331,26 @@
     },
     "hero": {
       "badge": "Null API-Kosten — Lokale KI zum Festpreis",
-      "title": "Maximieren Sie Ihre digitale Präsenz automatisch mit KI, 24/7",
-      "subtitle": "Suchmaschinen, KI/LLM, Social Media, Blogs, Q&A-Seiten — verbreiten Sie Ihre Marke autonom über alle Kanäle weltweit. Null API-Kosten, Festpreis mit lokaler KI."
+      "title": "SEO + KI-Optimierung vollständig automatisiert!",
+      "subtitle": "Machen Sie Ihre Marke sowohl bei Google als auch bei KI wie ChatGPT und Gemini auffindbar — rund um die Uhr, 7 Tage die Woche.",
+      "disruption": "Die Ära der Suchanzeigen endet. Anzeigen verschwinden, wenn Sie aufhören zu zahlen. Mit PV aufgebaute Präsenz bleibt für immer.",
+      "effects": {
+        "label": "Erwartete Ergebnisse",
+        "items": [
+          "Bessere Platzierungen in der Google-Suche",
+          "Mehr Markenerwähnungen in ChatGPT, Gemini & Co.",
+          "Markenbekanntheit über 25+ Kanäle",
+          "95 % weniger Aufwand bei der Content-Erstellung"
+        ]
+      }
     },
     "cta": {
       "start": "Kostenlos starten",
       "startFree": "Kostenlos starten",
       "viewPricing": "Preise ansehen",
-      "startTrial": "14-Tage-Testphase starten",
-      "bottomTitle": "Jetzt starten — 14 Tage kostenlos",
-      "bottomSubtitle": "Keine Kreditkarte erforderlich. Testen Sie alle Funktionen 14 Tage lang kostenlos."
+      "startTrial": "7-Tage-Testphase starten",
+      "bottomTitle": "Ihr erster Schritt zu null Werbeausgaben",
+      "bottomSubtitle": "7 Tage kostenlose Testversion aller Funktionen nach Zahlungsregistrierung."
     },
     "features": {
       "sectionTitle": "6 Funktionen die alles automatisieren",
@@ -355,7 +365,7 @@
       },
       "distribution": {
         "title": "Verteilte Präsenz-Verbreitung",
-        "desc": "Auto-Verteilung an 20+ Kanäle: Twitter, Medium, Reddit und mehr."
+        "desc": "Auto-Verteilung an 25+ Kanäle: Twitter, Medium, Reddit und mehr."
       },
       "llmMonitoring": {
         "title": "LLM-Zitat-Monitoring",
@@ -393,7 +403,7 @@
       }
     },
     "channels": {
-      "title": "20+ Verteilungskanäle",
+      "title": "25+ Verteilungskanäle",
       "subtitle": "Social Media, Blogs, Q&A und regionale Plattformen. Auto-Verteilung überall."
     },
     "pricing": {
@@ -408,16 +418,83 @@
       },
       "enterprise": {
         "name": "Enterprise"
+      },
+      "aiBoost": "AI Boost",
+      "aiBoostDesc": "Hochwertige Artikelerstellung mit GPT-4o / Claude. Erstellen Sie tiefgehende, originelle Inhalte jenseits der Möglichkeiten lokaler KI.",
+      "billing": {
+        "monthly": "Monthly",
+        "annual": "Annual",
+        "annualSave": "Save 20% with annual billing",
+        "trialCta": "Start 7-Day Free Trial",
+        "paymentMethods": "Accepted payments"
+      }
+    },
+    "trust": {
+      "title": "Nur vertrauenswürdige Unternehmen fördern – auf die richtige Art",
+      "subtitle": "PresenceVision ist kein Stealth-Marketing-Tool. Es ist eine Plattform, die die Sichtbarkeit echter, hochwertiger Produkte und Dienstleistungen mit voller Transparenz und Rechtskonformität erhöht.",
+      "verified": {
+        "title": "Verified Entity Only",
+        "badge": "Entry Gate",
+        "desc": "Nur Unternehmen, die die Unternehmensverifizierung, offizielle Website-Validierung und Prüfung realer Dienstleistungen bestehen, können die Plattform nutzen. Anonyme oder fiktive Marken sind nicht zugelassen."
+      },
+      "evidence": {
+        "title": "Evidence-Required Publishing",
+        "badge": "Quality Control",
+        "desc": "Inhalte ohne Primärquellen, offizielle Daten, wissenschaftliche Publikationen oder Nachrichtenreferenzen werden automatisch von der Veröffentlichung ausgeschlossen."
+      },
+      "score": {
+        "title": "Entity Trust Score",
+        "badge": "Continuous Evaluation",
+        "desc": "Kontinuierliche Bewertung basierend auf Nachrichtenzitaten, externen Links, Social-Media-Erwähnungen und verifizierten Geschäftsbewertungen. Unternehmen mit niedrigen Bewertungen unterliegen Verbreitungsbeschränkungen."
+      },
+      "legal": {
+        "title": "Legal & Compliance",
+        "stealth": {
+          "title": "Gesetz gegen ungerechtfertigte Prämien und irreführende Darstellungen (Japan)",
+          "desc": "Vollständig konform mit der japanischen Stealth-Marketing-Verordnung, die im Oktober 2023 in Kraft trat."
+        },
+        "ftc": {
+          "title": "FTC Endorsement Guides (US)",
+          "desc": "Konform mit den Endorsement-Richtlinien der US-amerikanischen FTC."
+        },
+        "dsa": {
+          "title": "EU Digital Services Act",
+          "desc": "Erfüllt die Transparenzanforderungen des EU Digital Services Act."
+        },
+        "google": {
+          "title": "Google Search Essentials",
+          "desc": "Inhalte folgen den Google Search Essentials. Keine Verstöße gegen Spam-Richtlinien."
+        }
       }
     },
     "comparison": {
       "title": "Vergleich mit Wettbewerbern"
+    },
+    "adDiff": {
+      "title": "How we differ from \"ad optimization AI\"",
+      "subtitle": "AI ad tools like Claude Ads make your ads smarter. PV makes ads unnecessary.",
+      "table": {
+        "category": "Comparison",
+        "adTools": "Ad Optimization AI",
+        "pv": "PresenceVision",
+        "whatItDoes": { "label": "What it does", "ad": "Optimizes existing ad campaigns", "pv": "Builds organic presence without ads" },
+        "cost": { "label": "Ad spend", "ad": "Keeps paying", "pv": "Aims for zero" },
+        "whenStopped": { "label": "When stopped?", "ad": "Ads disappear, traffic drops to zero", "pv": "Content remains, rankings and AI citations persist" },
+        "output": { "label": "Output", "ad": "More efficient ad delivery", "pv": "Search #1 + AI citations + natural presence across 25+ channels" },
+        "approach": { "label": "Approach", "ad": "Ad operation automation", "pv": "Presence building automation" }
+      },
+      "complementNote": "Ads are effective for short-term acquisition. PV builds organic presence over time, gradually reducing ad dependency to zero — that is the PresenceVision philosophy."
     },
     "footer": {
       "features": "Funktionen",
       "pricing": "Preise",
       "docs": "Dokumentation",
       "contact": "Kontakt"
+    },
+    "hubSpoke": {
+      "title": "Hub & Spoke Distribution",
+      "subtitle": "Your site is home base. Every channel is a branch office that brings people back.",
+      "explanation": "Write one article, and AI automatically transforms it into a Twitter thread, a LinkedIn business post, an Instagram card, and more. Every post links back to your site, so visitors always find their way to you. This continuously builds your Google authority (domain authority) on autopilot."
     }
   }
 }

@@ -332,42 +332,52 @@
     "hero": {
       "badge": "API課金ゼロ — ローカルAIで完全定額",
       "title": "あなたのデジタルプレゼンスを、AIが24時間自動で最大化する",
-      "subtitle": "検索エンジン、AI/LLM、SNS、ブログ、Q&Aサイト — 世界中のあらゆるチャネルに、あなたのブランドを自律的に拡散します。API課金ゼロ、ローカルAIで完全定額。"
+      "subtitle": "SEO + AI対策を完全自動化！検索エンジンもChatGPT・Gemini等のAIも、あなたのブランドが「見つかる」状態を24時間自動で作り続けます。",
+      "disruption": "リスティング広告の時代は終わる。広告は止めたら消える。PVで築いた存在は残り続ける。",
+      "effects": {
+        "label": "期待できる効果",
+        "items": [
+          "Google検索順位の向上",
+          "ChatGPT・Gemini等でのブランド引用増加",
+          "25+チャネルへの自動露出でブランド認知拡大",
+          "コンテンツ制作の工数を95%削減"
+        ]
+      }
     },
     "cta": {
       "start": "無料で始める",
       "startFree": "無料で始める",
       "viewPricing": "料金プランを見る",
-      "startTrial": "14日間無料トライアルを始める",
-      "bottomTitle": "今すぐ始める — 14日間無料トライアル",
-      "bottomSubtitle": "クレジットカード不要。すべての機能を14日間お試しいただけます。"
+      "startTrial": "7日間無料トライアルを始める",
+      "bottomTitle": "広告費をゼロにする、はじめの一歩",
+      "bottomSubtitle": "決済情報登録後、7日間すべての機能を無料でお試しいただけます。"
     },
     "features": {
       "sectionTitle": "すべてを自動化する6つの機能",
       "sectionSubtitle": "キーワード発掘からコンテンツ生成、配信、追跡まで。すべてをAIが24時間自律的に実行します。",
       "keyword": {
         "title": "ロングテールキーワード自動発掘",
-        "desc": "Google検索から100+のキーワードを自動収集。Ollamaで拡張。"
+        "desc": "ロングテールキーワード自動発掘 — Google検索から100+のキーワードを自動収集。「人が実際に検索している言葉」を見つけ出し、そこに向けた記事を作る土台になります。"
       },
       "content": {
         "title": "コンテンツ自動生成",
-        "desc": "記事・FAQ・Schema.org・多言語翻訳をローカルAIで無限生成。API課金ゼロ。"
+        "desc": "コンテンツ自動生成 — 記事・FAQ・Schema.org・多言語翻訳をローカルAIで無限生成。API課金ゼロ。つまり、人を雇わずにブログ記事が毎日自動で増えていきます。"
       },
       "distribution": {
         "title": "分散型プレゼンス配信",
-        "desc": "Twitter, Medium, Reddit, Quora, note.com, dev.to等20+チャネルに自動配信。"
+        "desc": "分散型プレゼンス配信 — Twitter, Medium, Reddit, Quora, note.com等25+チャネルに自動配信。あなたの代わりにAIが世界中のSNS・ブログ・Q&Aサイトに投稿します。"
       },
       "llmMonitoring": {
         "title": "LLM引用モニタリング",
-        "desc": "ChatGPT, Gemini, Perplexity等でブランド引用をリアルタイム追跡。"
+        "desc": "LLM引用モニタリング — ChatGPT, Gemini, Perplexity等でブランド引用をリアルタイム追跡。「AIがあなたのことをどう紹介しているか」を常に監視します。"
       },
       "serp": {
         "title": "SERP順位追跡 & 戦略自動調整",
-        "desc": "公開後の検索順位変動を追跡。AIが次のコンテンツ戦略を自動提案。"
+        "desc": "SERP順位追跡 & 戦略自動調整 — 公開後の検索順位変動を追跡。「この記事は3位に上がった、こっちは圏外」→ AIが次の一手を自動で考えます。"
       },
       "autonomous": {
         "title": "24時間自律稼働",
-        "desc": "VPS上でエンジンが常時稼働。PCを閉じても全世界で作業を続行。"
+        "desc": "24時間自律稼働 — VPS上でエンジンが常時稼働。寝ている間も、休日も、あなたのデジタルプレゼンスは育ち続けます。"
       }
     },
     "howItWorks": {
@@ -376,24 +386,29 @@
     },
     "steps": {
       "step1": {
-        "title": "URLを入力",
-        "desc": "サイト分析 & キーワード自動検出"
+        "title": "初期設定",
+        "desc": "URLを入力、ブランドボイス設定、チャネル接続、素材アップロード"
       },
       "step2": {
-        "title": "AIがプランを生成",
-        "desc": "目的・国・手段をカスタマイズ"
+        "title": "AI自動稼働",
+        "desc": "キーワード発掘→記事生成→配信を24時間自動実行"
       },
       "step3": {
-        "title": "ワンクリックで開始",
-        "desc": "24時間自律稼働スタート"
+        "title": "ハブ＆スポーク配信",
+        "desc": "自社サイト(ハブ)に記事公開→各チャネル(スポーク)にリンク付き変換版を配信"
       },
       "step4": {
-        "title": "成果を確認",
-        "desc": "順位変動・引用状況・配信実績をリアルタイムで"
+        "title": "存在が育つ",
+        "desc": "検索順位上昇・AI引用増加・被リンク蓄積が自動で進行"
       }
     },
+    "hubSpoke": {
+      "title": "Hub & Spoke Distribution（ハブ＆スポーク配信）",
+      "subtitle": "あなたのサイトが「本拠地」。各チャネルはそこへ人を連れてくる「支店」です。",
+      "explanation": "記事を1本書くと、AIが自動でTwitter用の短文、LinkedIn用のビジネス記事、Instagram用のカード画像…と各チャネルに最適な形に変換。すべての投稿にあなたのサイトへのリンクが入るので、見た人は必ずあなたのサイトに辿り着きます。これにより、Googleからの評価（ドメイン権威）が自動的に高まり続けます。"
+    },
     "channels": {
-      "title": "20+の配信チャネル",
+      "title": "25+の配信チャネル",
       "subtitle": "SNS、ブログ、Q&Aサイト、地域特化プラットフォームまで。あらゆるチャネルに自動配信。"
     },
     "pricing": {
@@ -402,10 +417,92 @@
       "recommended": "おすすめ",
       "starter": { "name": "Starter" },
       "professional": { "name": "Professional" },
-      "enterprise": { "name": "Enterprise" }
+      "enterprise": { "name": "Enterprise" },
+      "aiBoost": "AI Boost",
+      "aiBoostDesc": "GPT-4o / Claude による高品質記事生成。ローカルAIでは出せない深み・独自性のある記事を自動生成。",
+      "billing": {
+        "monthly": "月払い",
+        "annual": "年払い",
+        "annualSave": "年払いで20%OFF",
+        "trialCta": "7日間無料で始める",
+        "paymentMethods": "対応決済"
+      }
+    },
+    "trust": {
+      "title": "信頼できる存在だけを、正しく届ける",
+      "subtitle": "PresenceVisionはステルスマーケティングツールではありません。実在する優れたプロダクト・サービスの可視性を、透明性と法令遵守のもとで高めるプラットフォームです。",
+      "verified": {
+        "title": "Verified Entity Only（審査制）",
+        "badge": "Entry Gate",
+        "desc": "法人確認・公式サイト・実在サービスの審査を通過したエンティティのみ利用可能。匿名・架空のブランドによる利用はできません。"
+      },
+      "evidence": {
+        "title": "Evidence-Required Publishing（エビデンス必須）",
+        "badge": "Quality Control",
+        "desc": "一次情報・公式データ・論文・ニュースソースなしのコンテンツは公開ブロック。根拠のない主張や誇大表現を自動検出し、品質を担保します。"
+      },
+      "score": {
+        "title": "Entity Trust Score（信頼スコア）",
+        "badge": "Continuous Evaluation",
+        "desc": "ニュース引用・外部リンク・SNS言及・実在企業評価で継続スコアリング。低スコアのエンティティは拡散が制限されます。"
+      },
+      "legal": {
+        "title": "Legal & Compliance",
+        "stealth": {
+          "title": "景品表示法（日本）— ステルスマーケティング規制",
+          "desc": "2023年10月施行のステマ規制に完全準拠。すべての生成コンテンツに適切な表示を行い、消費者の誤認を防止します。"
+        },
+        "ftc": {
+          "title": "FTC Endorsement Guides（米国）",
+          "desc": "米国連邦取引委員会のエンドースメントガイドラインに準拠。広告と自然なコンテンツの明確な区別を徹底します。"
+        },
+        "dsa": {
+          "title": "EU Digital Services Act",
+          "desc": "EUデジタルサービス法に基づく透明性要件を遵守。プラットフォーム上でのコンテンツ配信において適切な開示を行います。"
+        },
+        "google": {
+          "title": "Google Search Essentials",
+          "desc": "旧Webmaster Guidelinesに準拠したコンテンツ生成・配信を実施。スパムポリシー違反となる手法は一切使用しません。"
+        }
+      }
     },
     "comparison": {
       "title": "競合との比較"
+    },
+    "adDiff": {
+      "title": "「広告を最適化するAI」との違い",
+      "subtitle": "広告運用AIツール（Claude Ads等）は広告をもっと上手く回すもの。PVは広告そのものを不要にするOSです。",
+      "table": {
+        "category": "比較項目",
+        "adTools": "広告最適化AI",
+        "pv": "PresenceVision",
+        "whatItDoes": {
+          "label": "やること",
+          "ad": "既存の広告運用を効率化",
+          "pv": "広告に頼らないオーガニック存在を構築"
+        },
+        "cost": {
+          "label": "広告費",
+          "ad": "払い続ける前提",
+          "pv": "ゼロを目指す"
+        },
+        "whenStopped": {
+          "label": "止めたら？",
+          "ad": "広告が消え、流入もゼロに",
+          "pv": "コンテンツは残り、検索順位もAI引用も維持"
+        },
+        "output": {
+          "label": "成果物",
+          "ad": "より効率的な広告配信",
+          "pv": "検索1位 + AI引用 + 25+チャネルでの自然な存在"
+        },
+        "approach": {
+          "label": "アプローチ",
+          "ad": "広告運用の自動化",
+          "pv": "プレゼンス構築の自動化"
+        }
+      },
+      "complementNote": "短期の集客には広告も有効です。PVは中長期でオーガニックなプレゼンスを育て、広告依存を徐々にゼロにしていく——それがPresenceVisionの思想です。"
     },
     "footer": {
       "features": "機能",

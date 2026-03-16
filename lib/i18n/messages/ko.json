@@ -331,16 +331,26 @@
     },
     "hero": {
       "badge": "API 과금 제로 — 로컬 AI로 완전 정액",
-      "title": "AI가 24시간 자동으로 디지털 프레즌스를 극대화",
-      "subtitle": "검색 엔진, AI/LLM, SNS, 블로그, Q&A 사이트 — 전 세계 모든 채널에 브랜드를 자율적으로 확산합니다. API 과금 제로, 로컬 AI로 완전 정액."
+      "title": "SEO + AI 대책을 완전 자동화!",
+      "subtitle": "Google 검색과 ChatGPT, Gemini 등 AI 양쪽에서 브랜드를 발견할 수 있게 만듭니다. 24시간 365일 자동 운영.",
+      "disruption": "검색 광고의 시대는 끝나고 있습니다. 광고는 비용을 멈추면 사라집니다. PV로 구축한 존재감은 영원히 남습니다.",
+      "effects": {
+        "label": "기대 효과",
+        "items": [
+          "Google 검색 순위 향상",
+          "ChatGPT, Gemini 등에서 브랜드 언급 증가",
+          "25개 이상의 채널에서 브랜드 인지도 확대",
+          "콘텐츠 제작 노력 95% 절감"
+        ]
+      }
     },
     "cta": {
       "start": "무료로 시작",
       "startFree": "무료로 시작",
       "viewPricing": "요금 플랜 보기",
-      "startTrial": "14일 무료 체험 시작",
-      "bottomTitle": "지금 시작 — 14일 무료 체험",
-      "bottomSubtitle": "신용카드 불필요. 모든 기능을 14일간 무료로 체험하세요."
+      "startTrial": "7일 무료 체험 시작",
+      "bottomTitle": "광고비 제로를 향한 첫걸음",
+      "bottomSubtitle": "결제 정보 등록 후 7일간 모든 기능을 무료로 체험하세요."
     },
     "features": {
       "sectionTitle": "모든 것을 자동화하는 6가지 기능",
@@ -355,7 +365,7 @@
       },
       "distribution": {
         "title": "분산형 프레즌스 배포",
-        "desc": "Twitter, Medium, Reddit 등 20+ 채널에 자동 배포."
+        "desc": "Twitter, Medium, Reddit 등 25+ 채널에 자동 배포."
       },
       "llmMonitoring": {
         "title": "LLM 인용 모니터링",
@@ -393,7 +403,7 @@
       }
     },
     "channels": {
-      "title": "20+ 배포 채널",
+      "title": "25+ 배포 채널",
       "subtitle": "SNS, 블로그, Q&A, 지역 플랫폼까지. 모든 채널에 자동 배포."
     },
     "pricing": {
@@ -408,16 +418,83 @@
       },
       "enterprise": {
         "name": "Enterprise"
+      },
+      "aiBoost": "AI Boost",
+      "aiBoostDesc": "GPT-4o / Claude를 활용한 고품질 기사 생성. 로컬 AI의 한계를 넘어 깊이 있고 독창적인 콘텐츠를 자동 생성합니다.",
+      "billing": {
+        "monthly": "Monthly",
+        "annual": "Annual",
+        "annualSave": "Save 20% with annual billing",
+        "trialCta": "Start 7-Day Free Trial",
+        "paymentMethods": "Accepted payments"
+      }
+    },
+    "trust": {
+      "title": "신뢰할 수 있는 기업만을 올바른 방식으로 증폭",
+      "subtitle": "PresenceVision은 스텔스 마케팅 도구가 아닙니다. 완전한 투명성과 법적 준수를 통해 실제 고품질 제품과 서비스의 가시성을 높이는 플랫폼입니다.",
+      "verified": {
+        "title": "Verified Entity Only",
+        "badge": "Entry Gate",
+        "desc": "기업 인증, 공식 웹사이트 검증, 실제 서비스 심사를 통과한 기업만 플랫폼을 사용할 수 있습니다. 익명 또는 가상 브랜드는 허용되지 않습니다."
+      },
+      "evidence": {
+        "title": "Evidence-Required Publishing",
+        "badge": "Quality Control",
+        "desc": "1차 출처, 공식 데이터, 학술 논문 또는 뉴스 참조가 없는 콘텐츠는 자동으로 게시가 차단됩니다."
+      },
+      "score": {
+        "title": "Entity Trust Score",
+        "badge": "Continuous Evaluation",
+        "desc": "뉴스 인용, 외부 링크, 소셜 미디어 언급, 검증된 비즈니스 평점을 기반으로 지속적으로 점수를 산정합니다. 낮은 점수의 기업은 배포 제한을 받습니다."
+      },
+      "legal": {
+        "title": "Legal & Compliance",
+        "stealth": {
+          "title": "부당 경품류 및 부당 표시 방지법 (일본)",
+          "desc": "2023년 10월 시행된 일본의 스텔스 마케팅 규제를 완벽히 준수합니다."
+        },
+        "ftc": {
+          "title": "FTC Endorsement Guides (US)",
+          "desc": "미국 FTC 추천 가이드라인을 준수합니다."
+        },
+        "dsa": {
+          "title": "EU Digital Services Act",
+          "desc": "EU Digital Services Act의 투명성 요구사항을 준수합니다."
+        },
+        "google": {
+          "title": "Google Search Essentials",
+          "desc": "콘텐츠는 Google Search Essentials를 따릅니다. 스팸 정책 위반이 없습니다."
+        }
       }
     },
     "comparison": {
       "title": "경쟁사와 비교"
+    },
+    "adDiff": {
+      "title": "How we differ from \"ad optimization AI\"",
+      "subtitle": "AI ad tools like Claude Ads make your ads smarter. PV makes ads unnecessary.",
+      "table": {
+        "category": "Comparison",
+        "adTools": "Ad Optimization AI",
+        "pv": "PresenceVision",
+        "whatItDoes": { "label": "What it does", "ad": "Optimizes existing ad campaigns", "pv": "Builds organic presence without ads" },
+        "cost": { "label": "Ad spend", "ad": "Keeps paying", "pv": "Aims for zero" },
+        "whenStopped": { "label": "When stopped?", "ad": "Ads disappear, traffic drops to zero", "pv": "Content remains, rankings and AI citations persist" },
+        "output": { "label": "Output", "ad": "More efficient ad delivery", "pv": "Search #1 + AI citations + natural presence across 25+ channels" },
+        "approach": { "label": "Approach", "ad": "Ad operation automation", "pv": "Presence building automation" }
+      },
+      "complementNote": "Ads are effective for short-term acquisition. PV builds organic presence over time, gradually reducing ad dependency to zero — that is the PresenceVision philosophy."
     },
     "footer": {
       "features": "기능",
       "pricing": "요금",
       "docs": "문서",
       "contact": "문의"
+    },
+    "hubSpoke": {
+      "title": "Hub & Spoke Distribution",
+      "subtitle": "Your site is home base. Every channel is a branch office that brings people back.",
+      "explanation": "Write one article, and AI automatically transforms it into a Twitter thread, a LinkedIn business post, an Instagram card, and more. Every post links back to your site, so visitors always find their way to you. This continuously builds your Google authority (domain authority) on autopilot."
     }
   }
 }

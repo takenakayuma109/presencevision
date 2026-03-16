@@ -1,15 +1,24 @@
 import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
 import { getStripe, getPlan } from "@/lib/stripe/config";
+import { getSession, getUserId } from "@/lib/stripe/get-session";
 import type { PlanId, BillingInterval } from "@/lib/types/billing";
 
 export async function POST(request: NextRequest) {
   try {
+    const session = await getSession();
+
+    if (!session?.user?.email) {
+      return NextResponse.json(
+        { error: "Authentication required" },
+        { status: 401 },
+      );
+    }
+
     const body = await request.json();
-    const { planId, interval, customerId } = body as {
+    const { planId, interval } = body as {
       planId: PlanId;
       interval: BillingInterval;
-      customerId?: string;
     };
 
     if (!planId || !interval) {
@@ -35,10 +44,12 @@ export async function POST(request: NextRequest) {
     const stripe = getStripe();
 
     const origin = request.nextUrl.origin;
+    const userId = getUserId(session);
 
     const params: Stripe.Checkout.SessionCreateParams = {
       mode: "subscription",
       payment_method_types: ["card"],
+      customer_email: session.user.email,
       line_items: [
         {
           price: priceId,
@@ -47,19 +58,25 @@ export async function POST(request: NextRequest) {
       ],
       subscription_data: {
         trial_period_days: 7,
+        metadata: {
+          userId,
+          planId,
+          interval,
+        },
+      },
+      metadata: {
+        userId,
+        planId,
+        interval,
       },
       currency: "jpy",
       success_url: `${origin}/dashboard?checkout=success&session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${origin}/pricing?checkout=canceled`,
     };
 
-    if (customerId) {
-      params.customer = customerId;
-    }
+    const checkoutSession = await stripe.checkout.sessions.create(params);
 
-    const session = await stripe.checkout.sessions.create(params);
-
-    return NextResponse.json({ sessionUrl: session.url });
+    return NextResponse.json({ sessionUrl: checkoutSession.url });
   } catch (error) {
     console.error("POST /api/stripe/checkout:", error);
     return NextResponse.json(

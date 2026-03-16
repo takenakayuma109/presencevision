@@ -1008,11 +1008,14 @@ export function LandingPage() {
                 </div>
                 PresenceVision
               </div>
-              <div className="flex gap-8 text-sm text-muted-foreground">
+              <div className="flex flex-wrap justify-center gap-x-8 gap-y-2 text-sm text-muted-foreground">
                 <a href="#features" className="transition-colors hover:text-foreground">{t("landing.footer.features")}</a>
                 <a href="#pricing" className="transition-colors hover:text-foreground">{t("landing.footer.pricing")}</a>
                 <a href="#" className="transition-colors hover:text-foreground">{t("landing.footer.docs")}</a>
                 <a href="#" className="transition-colors hover:text-foreground">{t("landing.footer.contact")}</a>
+                <Link href="/terms" className="transition-colors hover:text-foreground">利用規約</Link>
+                <Link href="/privacy" className="transition-colors hover:text-foreground">プライバシーポリシー</Link>
+                <Link href="/tokushoho" className="transition-colors hover:text-foreground">特定商取引法に基づく表記</Link>
               </div>
               <p className="text-sm text-muted-foreground">
                 &copy; 2026 PresenceVision. All rights reserved.

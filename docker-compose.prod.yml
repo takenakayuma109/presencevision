@@ -1,0 +1,93 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: presencevision
+      POSTGRES_USER: ${POSTGRES_USER:-pvuser}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-pvuser} -d presencevision"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  ollama:
+    image: ollama/ollama:latest
+    volumes:
+      - ollama-data:/root/.ollama
+    restart: always
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - capabilities: [gpu]
+              count: all
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:11434/api/tags || exit 1"]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+
+  engine:
+    build: ./engine-server
+    environment:
+      - ENGINE_PORT=4000
+      - ENGINE_API_KEY=${ENGINE_API_KEY:?Set ENGINE_API_KEY in .env}
+      - FRONTEND_URL=${FRONTEND_URL:-https://presencevision-rho.vercel.app}
+      - OLLAMA_BASE_URL=http://ollama:11434
+      - OLLAMA_MODEL=${OLLAMA_MODEL:-llama3.1}
+      - BROWSER_CONCURRENCY=${BROWSER_CONCURRENCY:-5}
+      - BROWSER_HEADLESS=true
+      - ENGINE_CYCLE_INTERVAL_MS=${ENGINE_CYCLE_INTERVAL_MS:-21600000}
+      - DATABASE_URL=postgresql://${POSTGRES_USER:-pvuser}:${POSTGRES_PASSWORD}@postgres:5432/presencevision
+    depends_on:
+      postgres:
+        condition: service_healthy
+      ollama:
+        condition: service_healthy
+    restart: always
+    volumes:
+      - engine-data:/app/data
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:4000/health || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - certbot-etc:/etc/letsencrypt:ro
+      - certbot-var:/var/lib/letsencrypt
+      - certbot-webroot:/var/www/certbot
+    depends_on:
+      engine:
+        condition: service_healthy
+    restart: always
+
+  certbot:
+    image: certbot/certbot
+    volumes:
+      - certbot-etc:/etc/letsencrypt
+      - certbot-var:/var/lib/letsencrypt
+      - certbot-webroot:/var/www/certbot
+    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done'"
+
+volumes:
+  postgres-data:
+  ollama-data:
+  engine-data:
+  certbot-etc:
+  certbot-var:
+  certbot-webroot:

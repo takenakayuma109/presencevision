@@ -1,5 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getStripe } from "@/lib/stripe/config";
+import {
+  createOrUpdateSubscription,
+  getSubscriptionByStripeSubId,
+  cancelSubscription,
+  updateSubscriptionStatus,
+} from "@/lib/stripe/subscription";
 import type Stripe from "stripe";
 
 // Disable body parsing — Stripe needs the raw body for signature verification
@@ -44,7 +50,7 @@ export async function POST(request: NextRequest) {
     switch (event.type) {
       case "checkout.session.completed": {
         const session = event.data.object as Stripe.Checkout.Session;
-        await handleCheckoutCompleted(session);
+        await handleCheckoutCompleted(session, stripe);
         break;
       }
       case "customer.subscription.updated": {
@@ -82,16 +88,56 @@ export async function POST(request: NextRequest) {
 
 async function handleCheckoutCompleted(
   session: Stripe.Checkout.Session,
+  stripe: Stripe,
 ): Promise<void> {
   const customerId = session.customer as string;
   const subscriptionId = session.subscription as string;
+  const userId = session.metadata?.userId;
+  const planId = session.metadata?.planId ?? "starter";
+  const interval = session.metadata?.interval ?? "monthly";
 
   console.log(
-    `Checkout completed: customer=${customerId}, subscription=${subscriptionId}`,
+    `Checkout completed: customer=${customerId}, subscription=${subscriptionId}, userId=${userId}`,
   );
 
-  // TODO: Update user record in database with customerId and subscriptionId
-  // TODO: Activate subscription in local database
+  if (!userId) {
+    console.error("No userId in checkout session metadata — cannot create subscription record");
+    return;
+  }
+
+  // Fetch the full subscription from Stripe to get period dates
+  let trialEnd: Date | undefined;
+  let currentPeriodStart = new Date();
+  let currentPeriodEnd = new Date();
+  let status = "active";
+
+  try {
+    const stripeSubscription = await stripe.subscriptions.retrieve(subscriptionId);
+    status = stripeSubscription.status;
+    currentPeriodStart = new Date(stripeSubscription.items.data[0]?.current_period_start
+      ? stripeSubscription.items.data[0].current_period_start * 1000
+      : Date.now());
+    currentPeriodEnd = new Date(stripeSubscription.items.data[0]?.current_period_end
+      ? stripeSubscription.items.data[0].current_period_end * 1000
+      : Date.now());
+    if (stripeSubscription.trial_end) {
+      trialEnd = new Date(stripeSubscription.trial_end * 1000);
+    }
+  } catch (err) {
+    console.error("Failed to retrieve subscription details from Stripe:", err);
+  }
+
+  await createOrUpdateSubscription({
+    userId,
+    stripeCustomerId: customerId,
+    stripeSubId: subscriptionId,
+    planId,
+    status,
+    interval,
+    currentPeriodStart,
+    currentPeriodEnd,
+    trialEnd,
+  });
 }
 
 async function handleSubscriptionUpdated(
@@ -104,8 +150,40 @@ async function handleSubscriptionUpdated(
     `Subscription updated: customer=${customerId}, status=${status}, id=${subscription.id}`,
   );
 
-  // TODO: Update subscription status in local database
-  // TODO: Handle plan changes, trial endings, etc.
+  // Try to find the existing subscription record to get userId
+  const existing = await getSubscriptionByStripeSubId(subscription.id);
+
+  if (existing) {
+    const currentPeriodStart = new Date(
+      subscription.items.data[0]?.current_period_start
+        ? subscription.items.data[0].current_period_start * 1000
+        : Date.now(),
+    );
+    const currentPeriodEnd = new Date(
+      subscription.items.data[0]?.current_period_end
+        ? subscription.items.data[0].current_period_end * 1000
+        : Date.now(),
+    );
+
+    await createOrUpdateSubscription({
+      userId: existing.userId,
+      stripeCustomerId: customerId,
+      stripeSubId: subscription.id,
+      planId: existing.planId,
+      status,
+      interval: existing.interval,
+      currentPeriodStart,
+      currentPeriodEnd,
+      trialEnd: subscription.trial_end
+        ? new Date(subscription.trial_end * 1000)
+        : undefined,
+      cancelAtPeriodEnd: subscription.cancel_at_period_end,
+    });
+  } else {
+    console.warn(
+      `No subscription record found for stripeSubId=${subscription.id}, skipping update`,
+    );
+  }
 }
 
 async function handleSubscriptionDeleted(
@@ -117,8 +195,7 @@ async function handleSubscriptionDeleted(
     `Subscription deleted: customer=${customerId}, id=${subscription.id}`,
   );
 
-  // TODO: Mark subscription as canceled in local database
-  // TODO: Revoke access or downgrade to free tier
+  await cancelSubscription(subscription.id);
 }
 
 async function handlePaymentFailed(
@@ -132,6 +209,7 @@ async function handlePaymentFailed(
     `Payment failed: customer=${customerId}, subscription=${subscriptionId}`,
   );
 
-  // TODO: Notify user of payment failure
-  // TODO: Update subscription status to past_due in local database
+  if (subscriptionId) {
+    await updateSubscriptionStatus(subscriptionId, "past_due");
+  }
 }

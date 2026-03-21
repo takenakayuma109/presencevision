@@ -101,7 +101,7 @@ export function HeroParticles() {
 
       // Random bursts
       burstTimer++;
-      if (burstTimer > 60) {
+      if (burstTimer > 180) {
         burst(w * 0.15 + Math.random() * w * 0.7, h * 0.15 + Math.random() * h * 0.7);
         burstTimer = 0;
       }

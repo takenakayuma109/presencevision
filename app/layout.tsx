@@ -16,6 +16,9 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "PresenceVision — Autonomous Digital Presence Engine",
   description: "AI-powered digital presence OS that autonomously builds and manages knowledge presence across the internet.",
+  icons: {
+    icon: "/icon.svg",
+  },
 };
 
 export default function RootLayout({

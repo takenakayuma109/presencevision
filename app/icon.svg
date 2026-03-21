@@ -6,13 +6,12 @@
     </linearGradient>
   </defs>
   <rect width="512" height="512" rx="108" fill="url(#g)"/>
-  <!-- Sparkles / star icon - stylized "PV" presence spark -->
-  <g transform="translate(256,256)" fill="white">
-    <!-- Main 4-point star -->
-    <path d="M0-140 C12-48 48-12 140 0 48 12 12 48 0 140 -12 48-48 12-140 0-48-12-12-48 0-140Z" opacity="1"/>
-    <!-- Small top-right sparkle -->
-    <circle cx="100" cy="-100" r="18" opacity="0.7"/>
-    <!-- Small bottom-left sparkle -->
-    <circle cx="-80" cy="90" r="12" opacity="0.5"/>
+  <!-- Lucide Sparkles icon scaled to fit -->
+  <g transform="translate(96,96) scale(13.33)" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/>
+    <path d="M5 3v4"/>
+    <path d="M19 17v4"/>
+    <path d="M3 5h4"/>
+    <path d="M17 19h4"/>
   </g>
 </svg>

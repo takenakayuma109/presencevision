@@ -30,6 +30,17 @@ export function HeroParticles() {
     const CONNECTION_DIST = 150;
     const PARTICLE_COUNT = 90;
 
+    // 30% gold, 25% blue, 20% violet, 10% cyan, 10% pink, 5% green
+    const randomHue = () => {
+      const r = Math.random();
+      if (r < 0.30) return 38 + Math.random() * 14;    // gold/amber
+      if (r < 0.55) return 215 + Math.random() * 25;   // blue
+      if (r < 0.75) return 260 + Math.random() * 20;   // violet
+      if (r < 0.85) return 180 + Math.random() * 15;   // cyan
+      if (r < 0.95) return 320 + Math.random() * 20;   // pink
+      return 140 + Math.random() * 20;                  // green
+    };
+
     const resize = () => {
       const dpr = window.devicePixelRatio || 1;
       const rect = canvas.getBoundingClientRect();
@@ -48,7 +59,7 @@ export function HeroParticles() {
       r: Math.random() * 2.5 + 1.5,
       life: 0,
       maxLife: 400 + Math.random() * 500,
-      hue: Math.random() > 0.5 ? 220 + Math.random() * 30 : 260 + Math.random() * 20,
+      hue: randomHue(),
     });
 
     const burst = (x: number, y: number) => {
@@ -61,7 +72,7 @@ export function HeroParticles() {
         p.vy = Math.sin(angle) * speed;
         p.maxLife = 60 + Math.random() * 90;
         p.r = 2 + Math.random() * 2.5;
-        p.hue = 200 + Math.random() * 80;
+        p.hue = randomHue();
         particles.push(p);
       }
     };
@@ -115,7 +126,8 @@ export function HeroParticles() {
             ctx.beginPath();
             ctx.moveTo(pi.x, pi.y);
             ctx.lineTo(pj.x, pj.y);
-            ctx.strokeStyle = `hsla(240, 70%, 65%, ${lineAlpha})`;
+            const avgHue = (pi.hue + pj.hue) / 2;
+            ctx.strokeStyle = `hsla(${avgHue}, 60%, 60%, ${lineAlpha})`;
             ctx.lineWidth = 0.8;
             ctx.stroke();
           }
@@ -139,20 +151,27 @@ export function HeroParticles() {
           continue;
         }
 
+        // Gold particles get higher saturation & lightness for sparkle
+        const isGold = p.hue >= 35 && p.hue <= 55;
+        const sat = isGold ? 90 : 80;
+        const lit = isGold ? 65 : 65;
+        const coreLit = isGold ? 80 : 70;
+        const glowSize = isGold ? p.r * 4 : p.r * 3;
+
         // Glow
-        const gradient = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.r * 3);
-        gradient.addColorStop(0, `hsla(${p.hue}, 80%, 65%, ${a * 0.8})`);
-        gradient.addColorStop(0.4, `hsla(${p.hue}, 70%, 60%, ${a * 0.3})`);
-        gradient.addColorStop(1, `hsla(${p.hue}, 60%, 50%, 0)`);
+        const gradient = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, glowSize);
+        gradient.addColorStop(0, `hsla(${p.hue}, ${sat}%, ${lit}%, ${a * 0.8})`);
+        gradient.addColorStop(0.4, `hsla(${p.hue}, ${sat - 10}%, ${lit - 5}%, ${a * 0.3})`);
+        gradient.addColorStop(1, `hsla(${p.hue}, ${sat - 20}%, ${lit - 15}%, 0)`);
         ctx.beginPath();
-        ctx.arc(p.x, p.y, p.r * 3, 0, Math.PI * 2);
+        ctx.arc(p.x, p.y, glowSize, 0, Math.PI * 2);
         ctx.fillStyle = gradient;
         ctx.fill();
 
         // Core
         ctx.beginPath();
         ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-        ctx.fillStyle = `hsla(${p.hue}, 80%, 70%, ${a * 0.9})`;
+        ctx.fillStyle = `hsla(${p.hue}, ${sat}%, ${coreLit}%, ${a * 0.95})`;
         ctx.fill();
       }
 

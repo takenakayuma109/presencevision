@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { HeroParticles } from "./hero-particles";
 import {
   Search,
   FileText,
@@ -406,11 +407,12 @@ export function LandingPage() {
 
         {/* ========== Hero ========== */}
         <section className="relative overflow-hidden pt-32 pb-20 md:pt-44 md:pb-32">
-          {/* Gradient background */}
+          {/* Animated particle background */}
           <div className="absolute inset-0 -z-10">
             <div className="animate-gradient absolute inset-0 bg-gradient-to-br from-blue-600/10 via-violet-600/10 to-cyan-600/10" />
             <div className="animate-pulse-glow absolute top-1/4 left-1/4 h-96 w-96 rounded-full bg-blue-500/10 blur-3xl" />
             <div className="animate-pulse-glow absolute right-1/4 bottom-1/4 h-96 w-96 rounded-full bg-violet-500/10 blur-3xl" style={{ animationDelay: "2s" }} />
+            <HeroParticles />
           </div>
 
           <div className="mx-auto max-w-7xl px-6 text-center">

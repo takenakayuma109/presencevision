@@ -16,7 +16,6 @@ import {
   Zap,
   Globe,
   ChevronRight,
-  Twitter,
   Linkedin,
   Facebook,
   Instagram,
@@ -42,6 +41,12 @@ import { LanguageSwitch } from "@/components/ui/language-switch";
 import { PaymentMethods } from "@/components/billing/payment-methods";
 import { useThemeStore } from "@/lib/store/theme";
 import { useRouter } from "next/navigation";
+
+const XIcon = ({ className }: { className?: string }) => (
+  <svg viewBox="0 0 24 24" className={className} fill="currentColor">
+    <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+  </svg>
+);
 
 /* ------------------------------------------------------------------ */
 /*  CSS animation styles (injected via <style> tag)                    */
@@ -188,7 +193,7 @@ const steps = [
 
 const channels = {
   SNS: [
-    { name: "Twitter / X", icon: Twitter, color: "#000000", bg: "bg-black" },
+    { name: "X", icon: XIcon, color: "#000000", bg: "bg-black" },
     { name: "Instagram", icon: Instagram, color: "#E4405F", bg: "bg-[#E4405F]" },
     { name: "LinkedIn", icon: Linkedin, color: "#0A66C2", bg: "bg-[#0A66C2]" },
     { name: "Facebook", icon: Facebook, color: "#1877F2", bg: "bg-[#1877F2]" },
@@ -659,7 +664,7 @@ export function LandingPage() {
 
                     {/* Spoke items */}
                     {[
-                      { name: "Twitter", angle: 0, color: "#000000" },
+                      { name: "X", angle: 0, color: "#000000" },
                       { name: "LinkedIn", angle: 60, color: "#0A66C2" },
                       { name: "Instagram", angle: 120, color: "#E4405F" },
                       { name: "Medium", angle: 180, color: "#000000" },

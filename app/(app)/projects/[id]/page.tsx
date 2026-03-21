@@ -1,12 +1,13 @@
 "use client";
 
-import { use, useState, useMemo } from "react";
+import { use, useState, useMemo, useEffect } from "react";
 import { useStore, availableCountries, countryLanguageMap, expandPresenceCountries } from "@/lib/store";
 import type { TaskExecution, ExecutionArtifact, ReportConfig, PresenceGoal, PresenceMethod, TargetAudience, CmsConfig } from "@/lib/store";
 import { useEngineActivities } from "@/lib/hooks/use-engine";
 import { useTranslation, useLabels } from "@/lib/hooks/use-translation";
 import { Button, Badge, Card, CardContent, CardHeader, CardTitle, Input, Textarea } from "@/components/ui";
 import { TaskDetailModal } from "@/components/wizard/task-detail-modal";
+import { ProjectDetailSkeleton } from "@/components/dashboard";
 import {
   ArrowLeft, Globe, Building2, Target, BarChart3, Clock, TrendingUp, FileText,
   Pause, Play, Mail, Repeat, ChevronRight, ChevronDown, Activity, CheckCircle2, AlertTriangle,
@@ -15,6 +16,28 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
+
+// ---------------------------------------------------------------------------
+// Types for API data
+// ---------------------------------------------------------------------------
+interface DbProject {
+  id: string;
+  name: string;
+  description: string | null;
+  locale: string;
+  status: string;
+  workspaceId: string;
+  createdAt: string;
+  updatedAt: string;
+  entities: Array<{ id: string; name: string; type: string; description: string | null }>;
+  competitors: Array<{ id: string; name: string; domain: string | null }>;
+  _count: {
+    topics: number;
+    contentAssets: number;
+    contentBriefs: number;
+    reports: number;
+  };
+}
 
 const statusBg: Record<string, string> = {
   running: "bg-green-500", waiting: "bg-yellow-500", completed: "bg-blue-500", error: "bg-red-500",
@@ -748,7 +771,7 @@ function ReportConfigCard({ config, onUpdate }: { config: ReportConfig; onUpdate
 export default function ProjectDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const { projects, updateProjectStatus, updateProjectReportConfig, updateProjectSettings, selectTask } = useStore();
-  const project = projects.find((p) => p.id === id);
+  const storeProject = projects.find((p) => p.id === id);
   const { t } = useTranslation();
   const { statusLabels, taskStatusLabels, methodLabels, durationLabels, artifactTypeLabels } = useLabels();
 
@@ -756,7 +779,161 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
   const [showFullTimeline, setShowFullTimeline] = useState(false);
   const [workFilter, setWorkFilter] = useState<string>("all");
 
-  const engine = useEngineActivities(id, project?.status === "active");
+  // Fetch real project data from the database
+  const [dbProject, setDbProject] = useState<DbProject | null>(null);
+  const [dbLoading, setDbLoading] = useState(true);
+  const [dbError, setDbError] = useState<string | null>(null);
+
+  useEffect(() => {
+    async function fetchProject() {
+      try {
+        setDbError(null);
+        const res = await fetch(`/api/projects/${id}`);
+        if (res.ok) {
+          const data = await res.json();
+          setDbProject(data);
+        } else if (res.status === 404) {
+          setDbError("not_found");
+        }
+      } catch (err) {
+        console.error("Failed to fetch project:", err);
+      } finally {
+        setDbLoading(false);
+      }
+    }
+    fetchProject();
+  }, [id]);
+
+  // Use DB data for the project or fall back to store data
+  const project = storeProject;
+  const projectName = dbProject?.name ?? storeProject?.name;
+  const projectStatus = dbProject?.status ?? storeProject?.status ?? "active";
+  const projectDescription = dbProject?.description ?? storeProject?.url;
+
+  const engine = useEngineActivities(id, projectStatus === "active");
+
+  // Show loading while fetching DB data and no store fallback
+  if (dbLoading && !storeProject) {
+    return <ProjectDetailSkeleton />;
+  }
+
+  if (!storeProject && dbError === "not_found" && !dbProject) {
+    return (
+      <div className="flex flex-col items-center justify-center py-20">
+        <p className="text-lg font-semibold mb-2">{t("project.notFound")}</p>
+        <Link href="/dashboard"><Button variant="outline" className="gap-2"><ArrowLeft className="h-4 w-4" /> {t("project.backToList")}</Button></Link>
+      </div>
+    );
+  }
+
+  // DB-only project (no store data): render a simplified detail view
+  if (!storeProject && dbProject) {
+    return (
+      <div className="space-y-6">
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row items-start justify-between gap-3">
+          <div className="flex items-start gap-3">
+            <Link href="/dashboard" className="mt-1"><Button variant="ghost" size="icon" className="h-8 w-8"><ArrowLeft className="h-4 w-4" /></Button></Link>
+            <div>
+              <div className="flex items-center gap-3 mb-1 flex-wrap">
+                <h2 className="text-xl font-bold">{dbProject.name}</h2>
+                <Badge variant={dbProject.status === "active" ? "success" : dbProject.status === "paused" ? "secondary" : "info"}>
+                  {statusLabels[dbProject.status] ?? dbProject.status}
+                </Badge>
+              </div>
+              {dbProject.description && <p className="text-sm text-muted-foreground">{dbProject.description}</p>}
+            </div>
+          </div>
+          <div className="flex gap-2">
+            {dbProject.status === "active" && (
+              <Button variant="outline" size="sm" onClick={async () => {
+                await fetch(`/api/projects/${id}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ status: "paused" }) });
+                setDbProject((p) => p ? { ...p, status: "paused" } : p);
+              }} className="gap-1.5"><Pause className="h-3.5 w-3.5" /> {t("project.pause")}</Button>
+            )}
+            {dbProject.status === "paused" && (
+              <Button size="sm" onClick={async () => {
+                await fetch(`/api/projects/${id}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ status: "active" }) });
+                setDbProject((p) => p ? { ...p, status: "active" } : p);
+              }} className="gap-1.5"><Play className="h-3.5 w-3.5" /> {t("project.resume")}</Button>
+            )}
+          </div>
+        </div>
+
+        {/* Stats from DB */}
+        <div className="grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+          {[
+            { icon: Building2, label: t("dashboard.entities"), value: String(dbProject.entities.length), color: "text-green-600 dark:text-green-400", bg: "bg-green-50 dark:bg-green-950" },
+            { icon: Target, label: t("dashboard.topics"), value: String(dbProject._count.topics), color: "text-purple-600 dark:text-purple-400", bg: "bg-purple-50 dark:bg-purple-950" },
+            { icon: FileText, label: t("dashboard.contentAssets"), value: String(dbProject._count.contentAssets), color: "text-orange-600 dark:text-orange-400", bg: "bg-orange-50 dark:bg-orange-950" },
+            { icon: BarChart3, label: t("dashboard.reports"), value: String(dbProject._count.reports), color: "text-amber-600 dark:text-amber-400", bg: "bg-amber-50 dark:bg-amber-950" },
+          ].map((s) => (
+            <Card key={s.label}>
+              <CardContent className="p-4 flex items-center gap-3">
+                <div className={cn("flex h-9 w-9 shrink-0 items-center justify-center rounded-lg", s.bg)}>
+                  <s.icon className={cn("h-4 w-4", s.color)} />
+                </div>
+                <div>
+                  <p className="text-xl font-bold">{s.value}</p>
+                  <p className="text-xs text-muted-foreground">{s.label}</p>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+
+        {/* Entities list */}
+        {dbProject.entities.length > 0 && (
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm font-semibold flex items-center gap-2">
+                <Building2 className="h-4 w-4" /> {t("dashboard.entities")} ({dbProject.entities.length})
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-1.5">
+              {dbProject.entities.map((entity) => (
+                <div key={entity.id} className="flex items-center gap-3 rounded-lg border p-3">
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium">{entity.name}</p>
+                    <p className="text-xs text-muted-foreground">{entity.type}{entity.description ? ` - ${entity.description}` : ""}</p>
+                  </div>
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Competitors list */}
+        {dbProject.competitors.length > 0 && (
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm font-semibold flex items-center gap-2">
+                <Swords className="h-4 w-4" /> {t("project.competitors")} ({dbProject.competitors.length})
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-1.5">
+              {dbProject.competitors.map((comp) => (
+                <div key={comp.id} className="flex items-center gap-3 rounded-lg border p-3">
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium">{comp.name}</p>
+                    {comp.domain && <p className="text-xs text-muted-foreground">{comp.domain}</p>}
+                  </div>
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Empty state */}
+        {dbProject.entities.length === 0 && dbProject._count.topics === 0 && (
+          <div className="flex flex-col items-center justify-center rounded-xl border border-dashed py-16 px-8">
+            <Globe className="h-10 w-10 text-muted-foreground mb-4" />
+            <p className="text-sm text-muted-foreground text-center">{t("project.reportsAutoGenerated")}</p>
+          </div>
+        )}
+      </div>
+    );
+  }
 
   if (!project) {
     return (
@@ -825,7 +1002,7 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
           <div>
             <div className="flex items-center gap-3 mb-1 flex-wrap">
               {project.siteInfo.favicon && <img src={project.siteInfo.favicon} alt="" className="h-5 w-5 rounded" />}
-              <h2 className="text-xl font-bold">{project.name}</h2>
+              <h2 className="text-xl font-bold">{dbProject?.name ?? project.name}</h2>
               <Badge variant={project.status === "active" ? "success" : project.status === "paused" ? "secondary" : "info"}>
                 {statusLabels[project.status]}
               </Badge>

@@ -1,4 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
+import { prisma } from "@/lib/db";
 import { exchangeTwitterCode } from "@/lib/oauth/twitter";
 
 export async function GET(request: NextRequest) {
@@ -7,10 +10,10 @@ export async function GET(request: NextRequest) {
     const code = searchParams.get("code");
     const state = searchParams.get("state");
     const error = searchParams.get("error");
+    const baseUrl = process.env.NEXTAUTH_URL ?? "http://localhost:3000";
 
     if (error) {
       console.error("Twitter OAuth error:", error);
-      const baseUrl = process.env.NEXTAUTH_URL ?? "http://localhost:3000";
       return NextResponse.redirect(
         `${baseUrl}/settings?error=twitter_oauth_denied`
       );
@@ -41,19 +44,80 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    // Verify user session
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.id) {
+      return NextResponse.redirect(`${baseUrl}/sign-in`);
+    }
+
     // Exchange code for tokens
     const tokens = await exchangeTwitterCode(code, codeVerifier);
 
-    // TODO: Store tokens in channel connection when DB schema is ready
-    console.log("Twitter OAuth tokens obtained:", {
-      token_type: tokens.token_type,
-      expires_in: tokens.expires_in,
-      scope: tokens.scope,
-      has_refresh_token: !!tokens.refresh_token,
+    // Find user's workspace (use the first one they own/admin)
+    const membership = await prisma.membership.findFirst({
+      where: {
+        userId: session.user.id,
+        role: { in: ["OWNER", "ADMIN"] },
+      },
+      select: { workspaceId: true },
     });
 
+    if (!membership) {
+      return NextResponse.redirect(
+        `${baseUrl}/settings?error=no_workspace`
+      );
+    }
+
+    // Create or update the Channel and ChannelCredential records
+    const expiresAt = new Date(
+      Date.now() + tokens.expires_in * 1000
+    ).toISOString();
+
+    let channel = await prisma.channel.findFirst({
+      where: {
+        workspaceId: membership.workspaceId,
+        type: "twitter",
+      },
+    });
+
+    if (channel) {
+      // Delete old credentials and replace
+      await prisma.channelCredential.deleteMany({
+        where: { channelId: channel.id },
+      });
+      await prisma.channel.update({
+        where: { id: channel.id },
+        data: { updatedAt: new Date() },
+      });
+    } else {
+      channel = await prisma.channel.create({
+        data: {
+          workspaceId: membership.workspaceId,
+          name: "Twitter / X",
+          type: "twitter",
+          config: { scope: tokens.scope },
+        },
+      });
+    }
+
+    // Store credentials as key-value pairs
+    const credentials = [
+      { channelId: channel.id, key: "accessToken", value: tokens.access_token },
+      { channelId: channel.id, key: "expiresAt", value: expiresAt },
+      { channelId: channel.id, key: "scope", value: tokens.scope },
+    ];
+
+    if (tokens.refresh_token) {
+      credentials.push({
+        channelId: channel.id,
+        key: "refreshToken",
+        value: tokens.refresh_token,
+      });
+    }
+
+    await prisma.channelCredential.createMany({ data: credentials });
+
     // Clear OAuth cookies
-    const baseUrl = process.env.NEXTAUTH_URL ?? "http://localhost:3000";
     const response = NextResponse.redirect(
       `${baseUrl}/settings?success=twitter_connected`
     );

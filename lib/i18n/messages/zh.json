@@ -20,7 +20,14 @@
     "presence": "传播",
     "deleteProject": "删除项目",
     "deleteConfirm": "确定要删除此项目吗？此操作无法撤销。",
-    "tasks": "任务"
+    "tasks": "任务",
+    "entities": "Entities",
+    "topics": "Topics",
+    "contentAssets": "Content",
+    "totalItems": "items",
+    "reports": "Reports",
+    "fetchError": "Failed to load projects",
+    "retry": "Retry"
   },
   "project": {
     "notFound": "未找到项目",
@@ -477,11 +484,31 @@
         "category": "Comparison",
         "adTools": "Ad Optimization AI",
         "pv": "PresenceVision",
-        "whatItDoes": { "label": "What it does", "ad": "Optimizes existing ad campaigns", "pv": "Builds organic presence without ads" },
-        "cost": { "label": "Ad spend", "ad": "Keeps paying", "pv": "Aims for zero" },
-        "whenStopped": { "label": "When stopped?", "ad": "Ads disappear, traffic drops to zero", "pv": "Content remains, rankings and AI citations persist" },
-        "output": { "label": "Output", "ad": "More efficient ad delivery", "pv": "Search #1 + AI citations + natural presence across 25+ channels" },
-        "approach": { "label": "Approach", "ad": "Ad operation automation", "pv": "Presence building automation" }
+        "whatItDoes": {
+          "label": "What it does",
+          "ad": "Optimizes existing ad campaigns",
+          "pv": "Builds organic presence without ads"
+        },
+        "cost": {
+          "label": "Ad spend",
+          "ad": "Keeps paying",
+          "pv": "Aims for zero"
+        },
+        "whenStopped": {
+          "label": "When stopped?",
+          "ad": "Ads disappear, traffic drops to zero",
+          "pv": "Content remains, rankings and AI citations persist"
+        },
+        "output": {
+          "label": "Output",
+          "ad": "More efficient ad delivery",
+          "pv": "Search #1 + AI citations + natural presence across 25+ channels"
+        },
+        "approach": {
+          "label": "Approach",
+          "ad": "Ad operation automation",
+          "pv": "Presence building automation"
+        }
       },
       "complementNote": "Ads are effective for short-term acquisition. PV builds organic presence over time, gradually reducing ad dependency to zero — that is the PresenceVision philosophy."
     },

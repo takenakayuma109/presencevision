@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#3b82f6"/>
+      <stop offset="100%" stop-color="#7c3aed"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="108" fill="url(#g)"/>
+  <!-- Sparkles / star icon - stylized "PV" presence spark -->
+  <g transform="translate(256,256)" fill="white">
+    <!-- Main 4-point star -->
+    <path d="M0-140 C12-48 48-12 140 0 48 12 12 48 0 140 -12 48-48 12-140 0-48-12-12-48 0-140Z" opacity="1"/>
+    <!-- Small top-right sparkle -->
+    <circle cx="100" cy="-100" r="18" opacity="0.7"/>
+    <!-- Small bottom-left sparkle -->
+    <circle cx="-80" cy="90" r="12" opacity="0.5"/>
+  </g>
+</svg>

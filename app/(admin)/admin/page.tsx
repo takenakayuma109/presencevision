@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui";
 import { Badge } from "@/components/ui";
 import {
@@ -9,115 +10,126 @@ import {
   DollarSign,
   ArrowRight,
   Activity,
+  Loader2,
 } from "lucide-react";
 import Link from "next/link";
 
-const stats = [
-  { title: "Total Users", value: "1,247", icon: Users, trend: "+12%", trendUp: true },
-  { title: "Active Projects", value: "3,891", icon: FolderOpen, trend: "+8%", trendUp: true },
-  { title: "Pending Reviews", value: "23", icon: ClipboardCheck, trend: "-5%", trendUp: false },
-  { title: "Revenue (MRR)", value: "¥2,340,000", icon: DollarSign, trend: "+15%", trendUp: true },
-];
+interface Stats {
+  totalUsers: number;
+  totalProjects: number;
+  pendingReviews: number;
+  mrr: number;
+  activeSubscriptions: number;
+}
 
-const recentActivity = [
-  { id: 1, action: "New user registered", detail: "tanaka@example.com", time: "3 minutes ago", type: "user" },
-  { id: 2, action: "Entity verification submitted", detail: "株式会社ABC - abc-corp.jp", time: "15 minutes ago", type: "review" },
-  { id: 3, action: "Plan upgraded", detail: "sato@example.com → Pro plan", time: "1 hour ago", type: "billing" },
-  { id: 4, action: "Entity approved", detail: "XYZ Technologies - xyz-tech.com", time: "2 hours ago", type: "review" },
-  { id: 5, action: "New project created", detail: "example-shop.jp by yamada@example.com", time: "3 hours ago", type: "project" },
-  { id: 6, action: "Engine error reported", detail: "Ollama connection timeout", time: "5 hours ago", type: "system" },
-];
-
-const quickLinks = [
-  { title: "Entity Reviews", description: "Review pending entity verifications", href: "/admin/reviews", count: 23 },
-  { title: "User Management", description: "Manage users and subscriptions", href: "/admin/users", count: 1247 },
-  { title: "System Status", description: "Monitor service health and queues", href: "/admin/system" },
-];
-
-const activityTypeStyles: Record<string, string> = {
-  user: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200",
-  review: "bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200",
-  billing: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200",
-  project: "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200",
-  system: "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200",
-};
+function formatJPY(amount: number): string {
+  return `\u00a5${amount.toLocaleString()}`;
+}
 
 export default function AdminDashboardPage() {
+  const [stats, setStats] = useState<Stats | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    async function fetchStats() {
+      try {
+        const res = await fetch("/api/admin/stats");
+        if (!res.ok) throw new Error("Failed to fetch stats");
+        const data = await res.json();
+        setStats(data);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Unknown error");
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchStats();
+  }, []);
+
+  const statCards = stats
+    ? [
+        { title: "Total Users", value: stats.totalUsers.toLocaleString(), icon: Users },
+        { title: "Active Projects", value: stats.totalProjects.toLocaleString(), icon: FolderOpen },
+        { title: "Pending Reviews", value: stats.pendingReviews.toLocaleString(), icon: ClipboardCheck },
+        { title: "Revenue (MRR)", value: formatJPY(stats.mrr), icon: DollarSign },
+      ]
+    : [];
+
+  const quickLinks = [
+    {
+      title: "Content Reviews",
+      description: "Review pending content approvals",
+      href: "/admin/content",
+      count: stats?.pendingReviews,
+    },
+    {
+      title: "User Management",
+      description: "Manage users and subscriptions",
+      href: "/admin/users",
+      count: stats?.totalUsers,
+    },
+    {
+      title: "System Status",
+      description: "Monitor service health and queues",
+      href: "/admin/system",
+    },
+  ];
+
   return (
     <div className="space-y-8">
       <div>
         <h1 className="text-2xl font-bold">Dashboard</h1>
-        <p className="text-sm text-muted-foreground mt-1">System overview and recent activity</p>
+        <p className="text-sm text-muted-foreground mt-1">
+          System overview and quick actions
+        </p>
       </div>
 
       {/* Stats */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {stats.map((stat) => (
-          <Card key={stat.title} className="relative overflow-hidden">
-            <CardContent className="p-5">
-              <div className="flex items-start justify-between">
-                <div className="space-y-1">
-                  <p className="text-xs font-medium text-muted-foreground">{stat.title}</p>
-                  <p className="text-2xl font-bold tracking-tight">{stat.value}</p>
-                  <p className={`text-xs font-medium ${stat.trendUp ? "text-green-600" : "text-red-600"}`}>
-                    {stat.trend} from last week
-                  </p>
-                </div>
-                <div className="rounded-md bg-muted p-2">
-                  <stat.icon className="h-4 w-4 text-muted-foreground" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-
-      <div className="grid gap-6 lg:grid-cols-3">
-        {/* Recent Activity */}
-        <div className="lg:col-span-2">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-base">
-                <Activity className="h-4 w-4" />
-                Recent Activity
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                {recentActivity.map((item) => (
-                  <div
-                    key={item.id}
-                    className="flex items-start justify-between gap-3 rounded-md border p-3"
-                  >
-                    <div className="space-y-1 min-w-0">
-                      <p className="text-sm font-medium">{item.action}</p>
-                      <p className="text-xs text-muted-foreground truncate">{item.detail}</p>
-                    </div>
-                    <div className="flex flex-col items-end gap-1 shrink-0">
-                      <span
-                        className={`inline-flex rounded-full px-2 py-0.5 text-[10px] font-medium ${activityTypeStyles[item.type]}`}
-                      >
-                        {item.type}
-                      </span>
-                      <span className="text-[10px] text-muted-foreground whitespace-nowrap">
-                        {item.time}
-                      </span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
+      {loading ? (
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+          <span className="ml-2 text-sm text-muted-foreground">Loading stats...</span>
         </div>
+      ) : error ? (
+        <Card>
+          <CardContent className="p-6 text-center text-sm text-red-600">
+            Failed to load stats: {error}
+          </CardContent>
+        </Card>
+      ) : (
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {statCards.map((stat) => (
+            <Card key={stat.title} className="relative overflow-hidden">
+              <CardContent className="p-5">
+                <div className="flex items-start justify-between">
+                  <div className="space-y-1">
+                    <p className="text-xs font-medium text-muted-foreground">
+                      {stat.title}
+                    </p>
+                    <p className="text-2xl font-bold tracking-tight">
+                      {stat.value}
+                    </p>
+                  </div>
+                  <div className="rounded-md bg-muted p-2">
+                    <stat.icon className="h-4 w-4 text-muted-foreground" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
 
-        {/* Quick Links */}
-        <div className="space-y-4">
-          <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
-            Quick Links
-          </h3>
+      {/* Quick Links */}
+      <div>
+        <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-4">
+          Quick Links
+        </h3>
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {quickLinks.map((link) => (
             <Link key={link.href} href={link.href}>
-              <Card className="transition-all hover:shadow-md hover:border-foreground/20 cursor-pointer">
+              <Card className="transition-all hover:shadow-md hover:border-foreground/20 cursor-pointer h-full">
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between">
                     <div>
@@ -129,7 +141,9 @@ export default function AdminDashboardPage() {
                           </Badge>
                         )}
                       </div>
-                      <p className="text-xs text-muted-foreground mt-0.5">{link.description}</p>
+                      <p className="text-xs text-muted-foreground mt-0.5">
+                        {link.description}
+                      </p>
                     </div>
                     <ArrowRight className="h-4 w-4 text-muted-foreground" />
                   </div>

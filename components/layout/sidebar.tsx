@@ -7,6 +7,8 @@ import {
   LayoutDashboard,
   BarChart3,
   Settings,
+  CreditCard,
+  Share2,
   X,
   Sparkles,
 } from "lucide-react";
@@ -19,6 +21,8 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
   const navItems = [
     { label: t("nav.projects"), href: "/dashboard", icon: LayoutDashboard },
     { label: t("nav.reports"), href: "/reports", icon: BarChart3 },
+    { label: t("nav.channels"), href: "/channels", icon: Share2 },
+    { label: t("nav.billing"), href: "/billing", icon: CreditCard },
     { label: t("nav.settings"), href: "/settings", icon: Settings },
   ];
 

@@ -4,32 +4,12 @@ import { usePathname } from "next/navigation";
 import { Menu, Sun, Moon } from "lucide-react";
 import { useTranslation } from "@/lib/hooks/use-translation";
 import { LanguageSwitch } from "@/components/ui/language-switch";
-import { useState, useEffect } from "react";
+import { useThemeStore } from "@/lib/store/theme";
 
 export function Header({ onMenuClick }: { onMenuClick: () => void }) {
   const pathname = usePathname();
   const { t } = useTranslation();
-  const [dark, setDark] = useState(false);
-
-  useEffect(() => {
-    const saved = localStorage.getItem("theme");
-    if (saved === "dark" || (!saved && window.matchMedia("(prefers-color-scheme: dark)").matches)) {
-      document.documentElement.classList.add("dark");
-      setDark(true);
-    }
-  }, []);
-
-  const toggleTheme = () => {
-    const next = !dark;
-    setDark(next);
-    if (next) {
-      document.documentElement.classList.add("dark");
-      localStorage.setItem("theme", "dark");
-    } else {
-      document.documentElement.classList.remove("dark");
-      localStorage.setItem("theme", "light");
-    }
-  };
+  const { dark, toggleTheme } = useThemeStore();
 
   const pageTitles: Record<string, string> = {
     "/dashboard": t("nav.projects"),

@@ -40,6 +40,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useTranslation } from "@/lib/hooks/use-translation";
 import { LanguageSwitch } from "@/components/ui/language-switch";
 import { PaymentMethods } from "@/components/billing/payment-methods";
+import { useThemeStore } from "@/lib/store/theme";
+import { useRouter } from "next/navigation";
 
 /* ------------------------------------------------------------------ */
 /*  CSS animation styles (injected via <style> tag)                    */
@@ -301,26 +303,41 @@ const comparisonRows = [
 /* ------------------------------------------------------------------ */
 export function LandingPage() {
   const { t, messages } = useTranslation();
-  const [dark, setDark] = useState(false);
+  const { dark, toggleTheme } = useThemeStore();
   const [isAnnual, setIsAnnual] = useState(false);
+  const [checkoutLoading, setCheckoutLoading] = useState<string | null>(null);
+  const router = useRouter();
 
-  useEffect(() => {
-    const saved = localStorage.getItem("theme");
-    if (saved === "dark" || (!saved && window.matchMedia("(prefers-color-scheme: dark)").matches)) {
-      document.documentElement.classList.add("dark");
-      setDark(true);
-    }
-  }, []);
+  const handlePricingCta = async (planSlug: string) => {
+    setCheckoutLoading(planSlug);
+    try {
+      // First check if user is authenticated by trying the checkout endpoint
+      const res = await fetch("/api/stripe/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          planId: planSlug,
+          interval: isAnnual ? "annual" : "monthly",
+        }),
+      });
 
-  const toggleTheme = () => {
-    const next = !dark;
-    setDark(next);
-    if (next) {
-      document.documentElement.classList.add("dark");
-      localStorage.setItem("theme", "dark");
-    } else {
-      document.documentElement.classList.remove("dark");
-      localStorage.setItem("theme", "light");
+      if (res.status === 401) {
+        // Not authenticated — redirect to sign-in with redirect back
+        router.push(`/sign-in?redirect=/billing`);
+        return;
+      }
+
+      if (!res.ok) throw new Error("Checkout failed");
+
+      const { sessionUrl } = await res.json();
+      if (sessionUrl) {
+        window.location.href = sessionUrl;
+      }
+    } catch {
+      // Fallback: redirect to billing page
+      router.push("/billing");
+    } finally {
+      setCheckoutLoading(null);
     }
   };
 
@@ -347,7 +364,7 @@ export function LandingPage() {
   return (
     <>
       <style dangerouslySetInnerHTML={{ __html: animationStyles }} />
-      <div className="min-h-screen bg-[#fafaf8] text-foreground dark:bg-background">
+      <div className="min-h-screen bg-background text-foreground">
         {/* ========== Navbar ========== */}
         <nav className="fixed top-0 z-50 w-full border-b border-border/50 bg-background/80 backdrop-blur-xl">
           <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6">
@@ -834,14 +851,16 @@ export function LandingPage() {
                         ))}
                       </ul>
                       <div className="mt-8">
-                        <Link href={`/dashboard?plan=${plan.slug}`} className="block">
-                          <Button
-                            className={`w-full ${plan.featured ? "bg-blue-500 hover:bg-blue-600 text-white" : ""}`}
-                            variant={plan.featured ? "default" : "outline"}
-                          >
-                            {t("landing.pricing.billing.trialCta")}
-                          </Button>
-                        </Link>
+                        <Button
+                          className={`w-full ${plan.featured ? "bg-blue-500 hover:bg-blue-600 text-white" : ""}`}
+                          variant={plan.featured ? "default" : "outline"}
+                          disabled={checkoutLoading === plan.slug}
+                          onClick={() => handlePricingCta(plan.slug)}
+                        >
+                          {checkoutLoading === plan.slug
+                            ? t("billing.redirecting")
+                            : t("landing.pricing.billing.trialCta")}
+                        </Button>
                         <PaymentMethods />
                       </div>
                     </CardContent>

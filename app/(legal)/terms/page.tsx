@@ -153,7 +153,7 @@ export default function TermsPage() {
               <Link href="/privacy" className="transition-colors hover:text-foreground">プライバシーポリシー</Link>
               <Link href="/tokushoho" className="transition-colors hover:text-foreground">特定商取引法に基づく表記</Link>
             </div>
-            <p>&copy; 2026 PresenceVision. All rights reserved.</p>
+            <p>&copy; 2026 VISIONOID Inc. All rights reserved.</p>
           </div>
         </div>
       </footer>

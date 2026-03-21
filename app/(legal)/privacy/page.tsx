@@ -36,7 +36,7 @@ export default function PrivacyPage() {
 
         <div className="mt-12 space-y-10 text-base leading-relaxed text-foreground/90">
           <p>
-            PresenceVision（以下「当社」といいます）は、本サービスにおけるユーザーの個人情報の取扱いについて、以下のとおりプライバシーポリシーを定めます。
+            VISIONOID株式会社（以下「当社」といいます）は、当社が運営するPresenceVision（以下「本サービス」といいます）におけるユーザーの個人情報の取扱いについて、以下のとおりプライバシーポリシーを定めます。
           </p>
 
           {/* 第1条 */}
@@ -160,9 +160,9 @@ export default function PrivacyPage() {
               個人情報の取扱いに関するお問い合わせは、以下までご連絡ください。
             </p>
             <div className="mt-4 rounded-lg border border-border/50 bg-muted/30 p-6">
-              <p className="font-medium">PresenceVision 個人情報保護担当</p>
+              <p className="font-medium">VISIONOID株式会社</p>
               <p className="mt-1 text-muted-foreground">
-                メール: privacy@presencevision.com
+                メール: info@visionoid.co
               </p>
             </div>
           </section>
@@ -178,7 +178,7 @@ export default function PrivacyPage() {
               <Link href="/privacy" className="font-medium text-foreground">プライバシーポリシー</Link>
               <Link href="/tokushoho" className="transition-colors hover:text-foreground">特定商取引法に基づく表記</Link>
             </div>
-            <p>&copy; 2026 PresenceVision. All rights reserved.</p>
+            <p>&copy; 2026 VISIONOID Inc. All rights reserved.</p>
           </div>
         </div>
       </footer>

@@ -42,7 +42,7 @@ export default function TokushohoPage() {
                   販売事業者名
                 </th>
                 <td className="py-5 text-sm text-foreground/90">
-                  [事業者名を入力してください]
+                  VISIONOID株式会社
                 </td>
               </tr>
               <tr>
@@ -66,7 +66,7 @@ export default function TokushohoPage() {
                   連絡先
                 </th>
                 <td className="py-5 text-sm text-foreground/90">
-                  [メールアドレスを入力してください]
+                  メール: info@visionoid.co
                 </td>
               </tr>
               <tr>
@@ -148,7 +148,7 @@ export default function TokushohoPage() {
               <Link href="/privacy" className="transition-colors hover:text-foreground">プライバシーポリシー</Link>
               <Link href="/tokushoho" className="font-medium text-foreground">特定商取引法に基づく表記</Link>
             </div>
-            <p>&copy; 2026 PresenceVision. All rights reserved.</p>
+            <p>&copy; 2026 VISIONOID Inc. All rights reserved.</p>
           </div>
         </div>
       </footer>

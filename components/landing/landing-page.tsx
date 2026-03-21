@@ -1042,7 +1042,7 @@ export function LandingPage() {
                 <Link href="/tokushoho" className="transition-colors hover:text-foreground">特定商取引法に基づく表記</Link>
               </div>
               <p className="text-sm text-muted-foreground">
-                &copy; 2026 PresenceVision. All rights reserved.
+                &copy; 2026 VISIONOID Inc. All rights reserved.
               </p>
             </div>
           </div>

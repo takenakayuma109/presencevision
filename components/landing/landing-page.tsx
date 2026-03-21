@@ -408,14 +408,14 @@ export function LandingPage() {
         {/* ========== Hero ========== */}
         <section className="relative overflow-hidden pt-32 pb-20 md:pt-44 md:pb-32">
           {/* Animated particle background */}
-          <div className="absolute inset-0 -z-10">
-            <div className="animate-gradient absolute inset-0 bg-gradient-to-br from-blue-600/10 via-violet-600/10 to-cyan-600/10" />
+          <div className="absolute inset-0">
+            <div className="absolute inset-0 bg-gradient-to-br from-blue-600/10 via-violet-600/10 to-cyan-600/10" />
             <div className="animate-pulse-glow absolute top-1/4 left-1/4 h-96 w-96 rounded-full bg-blue-500/10 blur-3xl" />
             <div className="animate-pulse-glow absolute right-1/4 bottom-1/4 h-96 w-96 rounded-full bg-violet-500/10 blur-3xl" style={{ animationDelay: "2s" }} />
             <HeroParticles />
           </div>
 
-          <div className="mx-auto max-w-7xl px-6 text-center">
+          <div className="relative z-10 mx-auto max-w-7xl px-6 text-center">
             <Badge variant="secondary" className="animate-fade-in-up mb-6 inline-flex items-center gap-1.5 px-4 py-1.5 text-sm">
               <Zap className="h-3.5 w-3.5 text-amber-500" />
               {t("landing.hero.badge")}

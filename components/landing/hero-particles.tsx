@@ -25,41 +25,43 @@ export function HeroParticles() {
 
     let animId: number;
     let particles: Particle[] = [];
-    const CONNECTION_DIST = 120;
-    const PARTICLE_COUNT = 80;
+    let w = 0;
+    let h = 0;
+    const CONNECTION_DIST = 150;
+    const PARTICLE_COUNT = 90;
 
     const resize = () => {
       const dpr = window.devicePixelRatio || 1;
       const rect = canvas.getBoundingClientRect();
-      canvas.width = rect.width * dpr;
-      canvas.height = rect.height * dpr;
-      ctx.scale(dpr, dpr);
+      w = rect.width;
+      h = rect.height;
+      canvas.width = w * dpr;
+      canvas.height = h * dpr;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     };
 
-    const createParticle = (x?: number, y?: number): Particle => {
-      const rect = canvas.getBoundingClientRect();
-      return {
-        x: x ?? Math.random() * rect.width,
-        y: y ?? Math.random() * rect.height,
-        vx: (Math.random() - 0.5) * 0.8,
-        vy: (Math.random() - 0.5) * 0.8,
-        r: Math.random() * 2 + 1,
-        life: 0,
-        maxLife: 300 + Math.random() * 400,
-        hue: Math.random() > 0.5 ? 220 + Math.random() * 30 : 260 + Math.random() * 20, // blue to violet
-      };
-    };
+    const createParticle = (x?: number, y?: number): Particle => ({
+      x: x ?? Math.random() * w,
+      y: y ?? Math.random() * h,
+      vx: (Math.random() - 0.5) * 0.6,
+      vy: (Math.random() - 0.5) * 0.6,
+      r: Math.random() * 2.5 + 1.5,
+      life: 0,
+      maxLife: 400 + Math.random() * 500,
+      hue: Math.random() > 0.5 ? 220 + Math.random() * 30 : 260 + Math.random() * 20,
+    });
 
     const burst = (x: number, y: number) => {
-      const count = 6 + Math.floor(Math.random() * 6);
+      const count = 8 + Math.floor(Math.random() * 8);
       for (let i = 0; i < count; i++) {
-        const angle = (Math.PI * 2 * i) / count + Math.random() * 0.3;
-        const speed = 1.5 + Math.random() * 2;
+        const angle = (Math.PI * 2 * i) / count + Math.random() * 0.4;
+        const speed = 2 + Math.random() * 3;
         const p = createParticle(x, y);
         p.vx = Math.cos(angle) * speed;
         p.vy = Math.sin(angle) * speed;
-        p.maxLife = 80 + Math.random() * 80;
-        p.r = 1.5 + Math.random() * 1.5;
+        p.maxLife = 60 + Math.random() * 90;
+        p.r = 2 + Math.random() * 2.5;
+        p.hue = 200 + Math.random() * 80;
         particles.push(p);
       }
     };
@@ -68,24 +70,56 @@ export function HeroParticles() {
       resize();
       particles = [];
       for (let i = 0; i < PARTICLE_COUNT; i++) {
-        particles.push(createParticle());
+        const p = createParticle();
+        p.life = Math.random() * p.maxLife * 0.5; // stagger start
+        particles.push(p);
       }
     };
 
     let burstTimer = 0;
 
-    const animate = () => {
-      const rect = canvas.getBoundingClientRect();
-      const w = rect.width;
-      const h = rect.height;
+    const fadeAlpha = (p: Particle) => {
+      const t = p.life / p.maxLife;
+      if (t < 0.05) return t / 0.05;
+      if (t > 0.75) return (1 - t) / 0.25;
+      return 1;
+    };
 
+    const animate = () => {
       ctx.clearRect(0, 0, w, h);
 
       // Random bursts
       burstTimer++;
-      if (burstTimer > 90 + Math.random() * 60) {
-        burst(Math.random() * w, Math.random() * h);
+      if (burstTimer > 70 + Math.random() * 50) {
+        burst(w * 0.15 + Math.random() * w * 0.7, h * 0.15 + Math.random() * h * 0.7);
         burstTimer = 0;
+      }
+
+      // Draw connections first (behind particles)
+      for (let i = 0; i < particles.length; i++) {
+        const pi = particles[i];
+        const ai = fadeAlpha(pi);
+        if (ai <= 0) continue;
+
+        for (let j = i + 1; j < particles.length; j++) {
+          const pj = particles[j];
+          const dx = pi.x - pj.x;
+          const dy = pi.y - pj.y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+
+          if (dist < CONNECTION_DIST) {
+            const aj = fadeAlpha(pj);
+            if (aj <= 0) continue;
+            const lineAlpha = (1 - dist / CONNECTION_DIST) * 0.35 * Math.min(ai, aj);
+
+            ctx.beginPath();
+            ctx.moveTo(pi.x, pi.y);
+            ctx.lineTo(pj.x, pj.y);
+            ctx.strokeStyle = `hsla(240, 70%, 65%, ${lineAlpha})`;
+            ctx.lineWidth = 0.8;
+            ctx.stroke();
+          }
+        }
       }
 
       // Update & draw particles
@@ -93,51 +127,33 @@ export function HeroParticles() {
         const p = particles[i];
         p.x += p.vx;
         p.y += p.vy;
+        p.vx *= 0.999;
+        p.vy *= 0.999;
         p.life++;
 
-        // Fade in/out
-        const progress = p.life / p.maxLife;
-        const alpha = progress < 0.1 ? progress / 0.1 : progress > 0.8 ? (1 - progress) / 0.2 : 1;
-        const a = Math.max(0, Math.min(alpha * 0.6, 1));
+        const a = fadeAlpha(p);
 
-        // Remove dead or out-of-bounds
-        if (p.life >= p.maxLife || p.x < -20 || p.x > w + 20 || p.y < -20 || p.y > h + 20) {
+        if (p.life >= p.maxLife || p.x < -30 || p.x > w + 30 || p.y < -30 || p.y > h + 30) {
           particles.splice(i, 1);
-          if (particles.length < PARTICLE_COUNT) {
-            particles.push(createParticle());
-          }
+          if (particles.length < PARTICLE_COUNT) particles.push(createParticle());
           continue;
         }
 
-        // Draw particle
+        // Glow
+        const gradient = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.r * 3);
+        gradient.addColorStop(0, `hsla(${p.hue}, 80%, 65%, ${a * 0.8})`);
+        gradient.addColorStop(0.4, `hsla(${p.hue}, 70%, 60%, ${a * 0.3})`);
+        gradient.addColorStop(1, `hsla(${p.hue}, 60%, 50%, 0)`);
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.r * 3, 0, Math.PI * 2);
+        ctx.fillStyle = gradient;
+        ctx.fill();
+
+        // Core
         ctx.beginPath();
         ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-        ctx.fillStyle = `hsla(${p.hue}, 70%, 60%, ${a})`;
+        ctx.fillStyle = `hsla(${p.hue}, 80%, 70%, ${a * 0.9})`;
         ctx.fill();
-      }
-
-      // Draw connections
-      for (let i = 0; i < particles.length; i++) {
-        for (let j = i + 1; j < particles.length; j++) {
-          const dx = particles[i].x - particles[j].x;
-          const dy = particles[i].y - particles[j].y;
-          const dist = Math.sqrt(dx * dx + dy * dy);
-
-          if (dist < CONNECTION_DIST) {
-            const a1 = particles[i].life / particles[i].maxLife;
-            const a2 = particles[j].life / particles[j].maxLife;
-            const fadeA1 = a1 < 0.1 ? a1 / 0.1 : a1 > 0.8 ? (1 - a1) / 0.2 : 1;
-            const fadeA2 = a2 < 0.1 ? a2 / 0.1 : a2 > 0.8 ? (1 - a2) / 0.2 : 1;
-            const lineAlpha = (1 - dist / CONNECTION_DIST) * 0.15 * Math.min(fadeA1, fadeA2);
-
-            ctx.beginPath();
-            ctx.moveTo(particles[i].x, particles[i].y);
-            ctx.lineTo(particles[j].x, particles[j].y);
-            ctx.strokeStyle = `hsla(240, 60%, 60%, ${lineAlpha})`;
-            ctx.lineWidth = 0.5;
-            ctx.stroke();
-          }
-        }
       }
 
       animId = requestAnimationFrame(animate);
@@ -156,8 +172,8 @@ export function HeroParticles() {
   return (
     <canvas
       ref={canvasRef}
-      className="absolute inset-0 -z-10 h-full w-full"
-      style={{ opacity: 0.7 }}
+      className="absolute inset-0 h-full w-full"
+      style={{ zIndex: 0 }}
     />
   );
 }

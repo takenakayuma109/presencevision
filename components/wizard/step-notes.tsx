@@ -3,15 +3,12 @@
 import { useState } from "react";
 import { Button, Input, Textarea, Badge } from "@/components/ui";
 import { useStore } from "@/lib/store";
-import type { CmsConfig } from "@/lib/store";
-import { ArrowLeft, Sparkles, Loader2, Mail, Clock, Plus, X, Link2 } from "lucide-react";
+import { ArrowLeft, Sparkles, Loader2, Mail, Clock, Plus, X } from "lucide-react";
 import { useTranslation } from "@/lib/hooks/use-translation";
 
 export function StepNotes() {
   const { wizard, setWizardStep, setWizardNotes, setWizardReportConfig, generatePlan } = useStore();
   const [emailInput, setEmailInput] = useState("");
-  const [cmsEnabled, setCmsEnabled] = useState(false);
-  const [cmsConfig, setCmsConfig] = useState<CmsConfig>({ type: "wordpress", siteUrl: "", username: "", applicationPassword: "", defaultStatus: "draft" });
   const { t } = useTranslation();
 
   const addEmail = () => {
@@ -110,48 +107,6 @@ export function StepNotes() {
             </div>
           </div>
           <p className="text-xs text-muted-foreground">{t("wizard.dailyReport")}</p>
-        </div>
-
-        {/* CMS integration */}
-        <div className="space-y-3">
-          <div className="flex items-center gap-2">
-            <Link2 className="h-4 w-4 text-muted-foreground" />
-            <h3 className="text-sm font-semibold">{t("wizard.cmsIntegration")}</h3>
-          </div>
-          <p className="text-xs text-muted-foreground">{t("wizard.cmsDesc")}</p>
-          <label className="flex items-center gap-2 cursor-pointer">
-            <input
-              type="checkbox"
-              checked={cmsEnabled}
-              onChange={(e) => setCmsEnabled(e.target.checked)}
-              className="rounded border-gray-300"
-            />
-            <span className="text-sm">{t("wizard.enableCms")}</span>
-          </label>
-          {cmsEnabled && (
-            <div className="space-y-2 pl-6">
-              <Badge variant="secondary" className="text-xs opacity-60">WordPress</Badge>
-              <Input
-                value={cmsConfig.siteUrl}
-                onChange={(e) => setCmsConfig((c) => ({ ...c, siteUrl: e.target.value }))}
-                placeholder={t("project.cmsSiteUrl")}
-                className="h-9 text-sm"
-              />
-              <Input
-                value={cmsConfig.username}
-                onChange={(e) => setCmsConfig((c) => ({ ...c, username: e.target.value }))}
-                placeholder={t("project.cmsUsername")}
-                className="h-9 text-sm"
-              />
-              <Input
-                type="password"
-                value={cmsConfig.applicationPassword}
-                onChange={(e) => setCmsConfig((c) => ({ ...c, applicationPassword: e.target.value }))}
-                placeholder={t("project.cmsPassword")}
-                className="h-9 text-sm"
-              />
-            </div>
-          )}
         </div>
 
         {/* Notes */}

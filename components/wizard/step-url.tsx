@@ -43,6 +43,7 @@ export function StepUrl() {
             keywords: wizard.keywords,
             language: wizard.siteInfo!.language || "ja",
             brandDomain,
+            siteUrl: wizard.siteInfo!.url,
           }),
         });
         if (res.ok && !cancelled) {

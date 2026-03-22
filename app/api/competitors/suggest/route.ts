@@ -1,120 +1,123 @@
 import { NextRequest, NextResponse } from "next/server";
 
-interface Result {
-  domain: string;
-  title: string;
-  url: string;
-  snippet: string;
-}
-
-// Suggest competitor sites using DuckDuckGo HTML search (no API key needed, no blocking)
+// Suggest competitors by:
+// 1. Extracting external links from the brand's site (partners/competitors often linked)
+// 2. Matching industry-specific known competitors
 export async function POST(request: NextRequest) {
   try {
-    const { keywords, language, brandDomain } = await request.json();
+    const { keywords, language, brandDomain, siteUrl } = await request.json();
     if (!keywords?.length) {
       return NextResponse.json({ competitors: [] });
     }
 
-    const searchKeywords = keywords.slice(0, 3);
-    const allResults: Result[] = [];
+    const results: { domain: string; title: string; url: string; snippet: string; score: number }[] = [];
 
-    const skipDomains = [
+    const skipDomains = new Set([
       "google.com", "google.co.jp", "youtube.com", "wikipedia.org",
       "facebook.com", "twitter.com", "x.com", "instagram.com", "linkedin.com",
       "amazon.co.jp", "amazon.com", "tiktok.com", "pinterest.com",
-      "reddit.com", "note.com", "qiita.com", "duckduckgo.com",
+      "reddit.com", "note.com", "qiita.com", "github.com",
       "wixsite.com", "wix.com", "prtimes.jp", "atpress.ne.jp",
-    ];
+      "cloudflare.com", "googleapis.com", "gstatic.com", "w3.org",
+      "schema.org", "fonts.googleapis.com", "cdnjs.cloudflare.com",
+      "jquery.com", "bootstrapcdn.com", "vercel.app",
+      brandDomain?.replace("www.", "") || "",
+    ]);
 
-    for (const keyword of searchKeywords) {
+    // 1. Fetch the brand's site and extract external links
+    const targetUrl = siteUrl || (brandDomain ? `https://${brandDomain}` : null);
+    if (targetUrl) {
       try {
-        const query = encodeURIComponent(keyword);
-        // DuckDuckGo HTML-only endpoint (no JS needed, no blocking)
-        const searchUrl = `https://html.duckduckgo.com/html/?q=${query}&kl=${language === "ja" ? "jp-jp" : "us-en"}`;
-
-        const res = await fetch(searchUrl, {
-          headers: {
-            "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36",
-            "Accept": "text/html",
-          },
-          signal: AbortSignal.timeout(10000),
+        const res = await fetch(targetUrl, {
+          headers: { "User-Agent": "Mozilla/5.0 (compatible; PresenceVision/1.0)" },
+          signal: AbortSignal.timeout(8000),
         });
-
         const html = await res.text();
 
-        // DuckDuckGo HTML results have this pattern:
-        // <a rel="nofollow" class="result__a" href="URL">TITLE</a>
-        // <a class="result__snippet" href="...">SNIPPET</a>
-        const resultRegex = /<a[^>]*class="result__a"[^>]*href="([^"]+)"[^>]*>([^<]*(?:<[^>]*>[^<]*)*)<\/a>/gi;
+        // Find all external links
+        const linkRegex = /href=["'](https?:\/\/[^"']+)["']/gi;
         let match;
-        while ((match = resultRegex.exec(html)) !== null) {
+        const extDomains = new Map<string, number>();
+        while ((match = linkRegex.exec(html)) !== null) {
           try {
-            let resultUrl = match[1];
-            const title = match[2].replace(/<[^>]+>/g, "").trim();
-
-            // DuckDuckGo sometimes wraps URLs in redirect
-            if (resultUrl.includes("uddg=")) {
-              const uddgMatch = resultUrl.match(/uddg=(https?[^&]+)/);
-              if (uddgMatch) resultUrl = decodeURIComponent(uddgMatch[1]);
-            }
-
-            if (!resultUrl.startsWith("http")) continue;
-
-            const domain = new URL(resultUrl).hostname.replace("www.", "");
-
-            if (skipDomains.some((d) => domain.includes(d))) continue;
-            if (brandDomain && domain.includes(brandDomain.replace("www.", ""))) continue;
-
-            // Extract snippet (next sibling with class result__snippet)
-            const snippetIdx = html.indexOf("result__snippet", match.index);
-            let snippet = "";
-            if (snippetIdx > 0 && snippetIdx - match.index < 1000) {
-              const snippetMatch = html.substring(snippetIdx, snippetIdx + 500)
-                .match(/>([^<]{10,200})</);
-              if (snippetMatch) snippet = snippetMatch[1].trim();
-            }
-
-            if (!allResults.some((r) => r.domain === domain)) {
-              allResults.push({ domain, title: title || domain, url: `https://${domain}`, snippet });
-            }
-          } catch {
-            continue;
-          }
+            const domain = new URL(match[1]).hostname.replace("www.", "");
+            if (skipDomains.has(domain)) continue;
+            if (domain.includes("cdn") || domain.includes("static") || domain.includes("asset")) continue;
+            extDomains.set(domain, (extDomains.get(domain) || 0) + 1);
+          } catch { continue; }
         }
 
-        // Fallback: try simpler link pattern
-        if (allResults.length === 0) {
-          const simpleLinkRegex = /<a[^>]*href="(https?:\/\/[^"]+)"[^>]*class="[^"]*result[^"]*"[^>]*>/gi;
-          while ((match = simpleLinkRegex.exec(html)) !== null) {
-            try {
-              let resultUrl = match[1];
-              if (resultUrl.includes("uddg=")) {
-                const uddgMatch = resultUrl.match(/uddg=(https?[^&]+)/);
-                if (uddgMatch) resultUrl = decodeURIComponent(uddgMatch[1]);
-              }
-              if (!resultUrl.startsWith("http")) continue;
-              const domain = new URL(resultUrl).hostname.replace("www.", "");
-              if (skipDomains.some((d) => domain.includes(d))) continue;
-              if (brandDomain && domain.includes(brandDomain.replace("www.", ""))) continue;
-              if (!allResults.some((r) => r.domain === domain)) {
-                allResults.push({ domain, title: domain, url: `https://${domain}`, snippet: "" });
-              }
-            } catch { continue; }
-          }
-        }
+        // External domains linked multiple times are likely partners/competitors
+        [...extDomains.entries()]
+          .filter(([, count]) => count >= 1)
+          .sort((a, b) => b[1] - a[1])
+          .slice(0, 10)
+          .forEach(([domain, count]) => {
+            if (!results.some((r) => r.domain === domain)) {
+              results.push({
+                domain,
+                title: domain,
+                url: `https://${domain}`,
+                snippet: "",
+                score: count,
+              });
+            }
+          });
       } catch {
-        // Search failed for this keyword
+        // Site fetch failed
       }
     }
 
-    // Deduplicate by domain, take top 5
-    const seen = new Set<string>();
-    const competitors = allResults
-      .filter((r) => {
-        if (seen.has(r.domain)) return false;
-        seen.add(r.domain);
-        return true;
-      })
+    // 2. Industry-specific competitor databases
+    const kwText = keywords.join(" ").toLowerCase();
+    const industryCompetitors: Record<string, { domain: string; title: string; snippet: string }[]> = {
+      "ドローン": [
+        { domain: "skydio.com", title: "Skydio", snippet: "自律飛行ドローンメーカー" },
+        { domain: "dji.com", title: "DJI", snippet: "世界最大のドローンメーカー" },
+        { domain: "droneshow.co.jp", title: "ドローンショー", snippet: "ドローンショー・演出" },
+        { domain: "skymagic.show", title: "Sky Magic", snippet: "ドローンショー演出" },
+        { domain: "drone-entertainment.com", title: "Drone Entertainment", snippet: "ドローンエンターテインメント" },
+        { domain: "redcliffglobal.com", title: "Red Cliff Global", snippet: "ドローンショー企画" },
+      ],
+      "ロボット": [
+        { domain: "softbankrobotics.com", title: "SoftBank Robotics", snippet: "サービスロボット" },
+        { domain: "fanuc.co.jp", title: "FANUC", snippet: "産業用ロボット" },
+        { domain: "irobot.com", title: "iRobot", snippet: "家庭用ロボット" },
+      ],
+      "映像": [
+        { domain: "aob.co.jp", title: "AOI Pro.", snippet: "映像プロダクション" },
+        { domain: "tyo.co.jp", title: "TYO", snippet: "映像制作" },
+        { domain: "omnibus-jp.com", title: "OMNIBUS JAPAN", snippet: "ポストプロダクション" },
+      ],
+      "イベント": [
+        { domain: "hakuten.co.jp", title: "博展", snippet: "イベント・空間デザイン" },
+        { domain: "dentsu-live.co.jp", title: "電通ライブ", snippet: "イベントプロデュース" },
+        { domain: "cerespo.co.jp", title: "セレスポ", snippet: "イベント企画・運営" },
+      ],
+      "seo": [
+        { domain: "semrush.com", title: "SEMrush", snippet: "SEO・デジタルマーケティングツール" },
+        { domain: "ahrefs.com", title: "Ahrefs", snippet: "SEO分析ツール" },
+        { domain: "moz.com", title: "Moz", snippet: "SEOツール・リソース" },
+      ],
+      "saas": [
+        { domain: "hubspot.com", title: "HubSpot", snippet: "CRM・マーケティングプラットフォーム" },
+        { domain: "salesforce.com", title: "Salesforce", snippet: "CRMプラットフォーム" },
+      ],
+    };
+
+    for (const [industry, competitors] of Object.entries(industryCompetitors)) {
+      if (kwText.includes(industry)) {
+        for (const comp of competitors) {
+          if (!skipDomains.has(comp.domain) && !results.some((r) => r.domain === comp.domain)) {
+            results.push({ ...comp, url: `https://${comp.domain}`, score: 5 });
+          }
+        }
+      }
+    }
+
+    // Sort by score and take top 5
+    const competitors = results
+      .sort((a, b) => b.score - a.score)
       .slice(0, 5)
       .map((r, i) => ({
         rank: i + 1,

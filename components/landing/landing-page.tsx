@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useSession, signOut } from "next-auth/react";
 import { HeroParticles } from "./hero-particles";
 import {
   Search,
@@ -312,7 +313,9 @@ export function LandingPage() {
   const { dark, toggleTheme } = useThemeStore();
   const [isAnnual, setIsAnnual] = useState(false);
   const [checkoutLoading, setCheckoutLoading] = useState<string | null>(null);
+  const [showUserMenu, setShowUserMenu] = useState(false);
   const router = useRouter();
+  const { data: session } = useSession();
 
   const handlePricingCta = async (planSlug: string) => {
     setCheckoutLoading(planSlug);
@@ -398,9 +401,51 @@ export function LandingPage() {
               >
                 {dark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
               </button>
-              <Link href="/dashboard">
-                <Button size="sm">{t("landing.cta.start")}</Button>
-              </Link>
+              {session?.user ? (
+                <div className="relative">
+                  <button
+                    onClick={() => setShowUserMenu(!showUserMenu)}
+                    className="flex items-center gap-2 rounded-full border px-3 py-1.5 text-sm transition-colors hover:bg-accent"
+                  >
+                    {session.user.image ? (
+                      <img src={session.user.image} alt="" className="h-6 w-6 rounded-full" />
+                    ) : (
+                      <div className="flex h-6 w-6 items-center justify-center rounded-full bg-primary text-xs font-bold text-primary-foreground">
+                        {(session.user.name?.[0] || session.user.email?.[0] || "U").toUpperCase()}
+                      </div>
+                    )}
+                    <span className="max-w-[120px] truncate">{session.user.name || session.user.email}</span>
+                  </button>
+                  {showUserMenu && (
+                    <div className="absolute right-0 mt-2 w-48 rounded-md border bg-background shadow-lg">
+                      <Link
+                        href="/dashboard"
+                        className="block px-4 py-2 text-sm hover:bg-accent"
+                        onClick={() => setShowUserMenu(false)}
+                      >
+                        ダッシュボード
+                      </Link>
+                      <Link
+                        href="/settings"
+                        className="block px-4 py-2 text-sm hover:bg-accent"
+                        onClick={() => setShowUserMenu(false)}
+                      >
+                        設定
+                      </Link>
+                      <button
+                        onClick={() => signOut()}
+                        className="block w-full px-4 py-2 text-left text-sm text-destructive hover:bg-accent"
+                      >
+                        ログアウト
+                      </button>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <Link href="/sign-in">
+                  <Button size="sm">{t("landing.cta.start")}</Button>
+                </Link>
+              )}
             </div>
           </div>
         </nav>
@@ -446,9 +491,9 @@ export function LandingPage() {
             </p>
 
             <div className="animate-fade-in-up-delay-3 mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
-              <Link href="/dashboard">
+              <Link href={session?.user ? "/dashboard" : "/sign-in"}>
                 <Button size="lg" className="h-12 gap-2 px-8 text-base">
-                  {t("landing.cta.startFree")}
+                  {session?.user ? "ダッシュボード" : t("landing.cta.startFree")}
                   <ArrowRight className="h-4 w-4" />
                 </Button>
               </Link>

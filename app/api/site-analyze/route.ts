@@ -118,64 +118,109 @@ export async function POST(request: NextRequest) {
     const langMatch = html.match(/<html[^>]*lang=["']([^"']+)["']/i);
     const language = langMatch?.[1]?.substring(0, 2) || "ja";
 
-    // Build keyword candidates from all sources
+    // ---------------------------------------------------------------
+    // Build keyword candidates with strict quality filtering
+    // ---------------------------------------------------------------
+
+    // Quality check: is this a good keyword (not a sentence, not junk)?
+    const isKeywordQuality = (k: string): boolean => {
+      if (k.length < 2 || k.length > 25) return false;
+      if (/^[\d\s.,]+$/.test(k)) return false; // numbers only
+      if (/^(https?:\/\/|www\.|mailto:|tel:)/.test(k)) return false; // URLs/emails
+      if (/[@#]/.test(k)) return false; // email/social handles
+      if (/\.(com|co|jp|org|net|io)$/.test(k)) return false; // domains
+      // Too long = sentence, not keyword
+      if (k.split(/[\s　]/).length > 5) return false;
+      // Navigation/generic terms to exclude
+      const junk = [
+        "ホーム", "home", "トップ", "top", "メニュー", "menu", "閉じる", "close",
+        "プレスリリース", "ニュース", "news", "お知らせ", "一覧", "もっと見る",
+        "詳しく見る", "詳細はこちら", "read more", "click here", "こちら",
+        "会社概要", "company", "about", "about us", "お問い合わせ", "contact",
+        "採用情報", "careers", "プライバシーポリシー", "privacy", "利用規約",
+        "terms", "サイトマップ", "sitemap", "english", "japanese", "日本語",
+        "copyright", "all rights reserved", "株式会社", "inc", "co., ltd",
+      ];
+      if (junk.some((j) => k.toLowerCase() === j.toLowerCase())) return false;
+      return true;
+    };
+
     const candidates = new Set<string>();
 
-    // 1. Brand variations
+    // 1. Brand name (primary keyword)
     candidates.add(brand);
-    candidates.add(`${brand} とは`);
 
-    // 2. From title
-    if (title && title !== brand) {
-      candidates.add(title);
-      // Extract meaningful phrases from title
-      const titleParts = title.split(/[|\-–—:：・/]/).map((p) => p.trim()).filter((p) => p.length > 2);
-      titleParts.forEach((p) => candidates.add(p));
+    // 2. From meta keywords (highest quality — site owner chose these)
+    metaKeywords.filter(isKeywordQuality).forEach((k) => candidates.add(k));
+
+    // 3. From headings — extract short service/product names only
+    for (const h of headings) {
+      // Split compound headings by separators
+      const parts = h.split(/[|\-–—:：・/／、,]/).map((p) => p.trim());
+      for (const part of parts) {
+        if (isKeywordQuality(part)) {
+          candidates.add(part);
+        }
+      }
     }
 
-    // 3. From description
-    if (description) {
-      // Extract noun phrases from description (Japanese & English)
-      const descPhrases = description
-        .split(/[、。,.\n！!？?]/)
-        .map((p) => p.trim())
-        .filter((p) => p.length > 3 && p.length < 40);
-      descPhrases.slice(0, 8).forEach((p) => candidates.add(p));
-    }
-
-    // 4. From OG data
-    if (ogTitleMatch?.[1]) candidates.add(ogTitleMatch[1].trim());
-    if (ogDescMatch?.[1]) {
-      const ogPhrases = ogDescMatch[1].split(/[、。,.]/).map((p) => p.trim()).filter((p) => p.length > 3);
-      ogPhrases.slice(0, 5).forEach((p) => candidates.add(p));
-    }
-
-    // 5. From meta keywords
-    metaKeywords.forEach((k) => candidates.add(k));
-
-    // 6. From headings (high value)
-    headings.slice(0, 15).forEach((h) => candidates.add(h));
-
-    // 7. From structured data
-    structuredKeywords.filter((k) => k.length > 2 && k.length < 50).forEach((k) => candidates.add(k));
-
-    // 8. From navigation/link text (service names, features)
+    // 4. From link text — service/feature page names (very valuable)
+    const navJunk = new Set([
+      "ホーム", "home", "top", "トップ", "menu", "メニュー", "close", "閉じる",
+      "お問い合わせ", "contact", "english", "japanese", "日本語", "more",
+      "もっと見る", "詳細", "一覧", "news", "blog", "ブログ",
+      "会社概要", "about", "privacy", "採用", "recruit", "access",
+    ]);
     const uniqueLinks = [...new Set(linkTexts)];
     uniqueLinks
-      .filter((t) => !["ホーム", "Home", "トップ", "Top", "メニュー", "Menu", "閉じる", "Close"].includes(t))
-      .slice(0, 10)
-      .forEach((t) => candidates.add(t));
+      .filter((t) => t.length >= 2 && t.length <= 20)
+      .filter((t) => !navJunk.has(t.toLowerCase()))
+      .filter((t) => !/^\d+$/.test(t))
+      .slice(0, 15)
+      .forEach((t) => {
+        if (isKeywordQuality(t)) candidates.add(t);
+      });
 
-    // 9. SEO-oriented brand combinations
+    // 5. From structured data — service/product names only
+    structuredKeywords
+      .filter(isKeywordQuality)
+      .forEach((k) => candidates.add(k));
+
+    // 6. From title — extract short noun phrases, not full title
+    if (title) {
+      const titleParts = title.split(/[|\-–—:：・/／]/).map((p) => p.trim());
+      titleParts.filter(isKeywordQuality).forEach((p) => candidates.add(p));
+    }
+
+    // 7. From description — extract only short noun-like phrases
+    const allDescText = [description, ogDescMatch?.[1] || ""].join(" ");
+    if (allDescText) {
+      // Look for quoted terms or key nouns
+      const quotedMatch = allDescText.match(/「([^」]+)」/g);
+      if (quotedMatch) {
+        quotedMatch.forEach((q) => {
+          const term = q.replace(/[「」]/g, "").trim();
+          if (isKeywordQuality(term)) candidates.add(term);
+        });
+      }
+      // Split by delimiters and take only short, keyword-like phrases
+      allDescText
+        .split(/[、。,.\n！!？?／/]/)
+        .map((p) => p.trim())
+        .filter((p) => p.length >= 2 && p.length <= 15)
+        .filter(isKeywordQuality)
+        .slice(0, 5)
+        .forEach((p) => candidates.add(p));
+    }
+
+    // 8. SEO-oriented brand combinations
     const seoSuffixes = ["サービス", "評判", "料金", "使い方", "特徴", "メリット", "導入事例", "口コミ"];
     seoSuffixes.forEach((s) => candidates.add(`${brand} ${s}`));
 
-    // Filter and deduplicate
+    // Final filter pass
     const keywords = [...candidates]
-      .filter((k) => k.length > 1 && k.length < 60)
-      .filter((k) => !/^[\d\s]+$/.test(k)) // Remove number-only
-      .filter((k) => !/^(https?:\/\/|www\.)/.test(k)) // Remove URLs
-      .slice(0, 30);
+      .filter(isKeywordQuality)
+      .slice(0, 25);
 
     // Detect industry from content
     const contentText = (title + " " + description + " " + headings.join(" ")).toLowerCase();

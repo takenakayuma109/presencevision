@@ -125,17 +125,24 @@ export async function POST(request: NextRequest) {
     // Quality check: is this a good keyword (not a sentence, not junk)?
     const isKeywordQuality = (k: string): boolean => {
       if (k.length < 2 || k.length > 25) return false;
-      if (/^[\d\s.,]+$/.test(k)) return false; // numbers only
-      if (/^(https?:\/\/|www\.|mailto:|tel:)/.test(k)) return false; // URLs/emails
-      if (/[@#]/.test(k)) return false; // email/social handles
-      if (/\.(com|co|jp|org|net|io)$/.test(k)) return false; // domains
+      if (/^[\d\s.,]+$/.test(k)) return false;
+      if (/^(https?:\/\/|www\.|mailto:|tel:)/.test(k)) return false;
+      if (/[@#]/.test(k)) return false;
+      if (/\.(com|co|jp|org|net|io)\b/.test(k)) return false;
       // Too long = sentence, not keyword
-      if (k.split(/[\s　]/).length > 5) return false;
+      if (k.split(/[\s　]/).length > 4) return false;
+      // Ends with particle = not a keyword (e.g. "VISIONOIDは", "VISIONOIDの")
+      if (/[はがのをにへでとも]$/.test(k) && k.length > 3) return false;
+      // Contains "と" connecting two proper nouns (e.g. "東京都江戸川区とVISIONOID")
+      if (/[ァ-ヶA-Z].{2,}と[ァ-ヶA-Z]/.test(k)) return false;
+      // English navigation/CTA junk
+      if (/^(learn more|read more|click here|view more|see more|get started|sign up|log in)$/i.test(k)) return false;
       // Navigation/generic terms to exclude
       const junk = [
         "ホーム", "home", "トップ", "top", "メニュー", "menu", "閉じる", "close",
         "プレスリリース", "ニュース", "news", "お知らせ", "一覧", "もっと見る",
         "詳しく見る", "詳細はこちら", "read more", "click here", "こちら",
+        "learn more", "view all", "see all", "get started", "sign up",
         "会社概要", "company", "about", "about us", "お問い合わせ", "contact",
         "採用情報", "careers", "プライバシーポリシー", "privacy", "利用規約",
         "terms", "サイトマップ", "sitemap", "english", "japanese", "日本語",
@@ -213,49 +220,71 @@ export async function POST(request: NextRequest) {
         .forEach((p) => candidates.add(p));
     }
 
-    // 8. Extract service/product names from body text via frequency analysis
-    //    Strip all HTML tags, then find repeated meaningful Japanese compound nouns
-    const bodyText = html
-      .replace(/<script[\s\S]*?<\/script>/gi, "")
-      .replace(/<style[\s\S]*?<\/style>/gi, "")
-      .replace(/<[^>]+>/g, " ")
+    // 8. Extract service/product names via frequency analysis on RAW HTML
+    //    (Wix/SPA sites embed content in JSON inside <script> tags, so we
+    //     analyze the FULL HTML, not stripped text)
+    const rawText = html
+      .replace(/<[^>]+>/g, " ")      // strip tags but keep all text including JSON
+      .replace(/\\u[\da-fA-F]{4}/g, (m) => {
+        try { return JSON.parse(`"${m}"`); } catch { return m; }
+      })
+      .replace(/\\n|\\r|\\t/g, " ")
       .replace(/&[a-z]+;/gi, " ")
       .replace(/\s+/g, " ");
 
-    // Japanese compound nouns: katakana words, kanji+kana combos (2-10 chars)
-    const jpTermRegex = /[ァ-ヶー]{3,15}|[一-龥ぁ-んァ-ヶー]{2,10}[ァ-ヶー]{2,10}|[一-龥]{2,6}[ァ-ヶー]{2,10}|[ァ-ヶー]{2,10}[一-龥]{2,6}/g;
+    // Japanese compound nouns: katakana, kanji+katakana, katakana+kanji
+    const jpPatterns = [
+      /[ァ-ヶー]{3,12}/g,                                    // pure katakana (ドローンショー)
+      /[一-龥]{2,4}[ァ-ヶー]{2,8}/g,                          // kanji+katakana (映像制作 won't match, but 空撮ドローン)
+      /[ァ-ヶー]{2,8}[一-龥]{2,6}/g,                          // katakana+kanji (ドローン空撮, ドローン測量)
+      /[一-龥]{2,6}[一-龥ぁ-ん]{0,2}[一-龥]{2,6}/g,           // pure kanji compound (映像制作, 映像編集)
+      /[ァ-ヶー]{2,8}[一-龥ぁ-ん]{1,4}[ァ-ヶー]{2,8}/g,       // kata+kanji+kata (イベントプロデュース)
+    ];
+
     const termFreq = new Map<string, number>();
-    let termMatch;
-    while ((termMatch = jpTermRegex.exec(bodyText)) !== null) {
-      const term = termMatch[0];
-      if (term.length >= 3 && isKeywordQuality(term)) {
-        termFreq.set(term, (termFreq.get(term) || 0) + 1);
-      }
-    }
-    // Also look for English compound terms (2+ words, each capitalized or known patterns)
-    const enTermRegex = /[A-Z][a-z]+(?:\s[A-Z][a-z]+)+/g;
-    while ((termMatch = enTermRegex.exec(bodyText)) !== null) {
-      const term = termMatch[0];
-      if (term.length >= 4 && term.length <= 25 && isKeywordQuality(term)) {
-        termFreq.set(term, (termFreq.get(term) || 0) + 1);
+    for (const regex of jpPatterns) {
+      let termMatch;
+      while ((termMatch = regex.exec(rawText)) !== null) {
+        const term = termMatch[0];
+        if (term.length >= 3 && term.length <= 15) {
+          termFreq.set(term, (termFreq.get(term) || 0) + 1);
+        }
       }
     }
 
-    // Add terms that appear 3+ times (indicates they're important to the site)
+    // Generic terms to exclude from frequency analysis
+    const genericTerms = new Set([
+      "コンテンツ", "サービス", "テクノロジー", "プロジェクト", "カテゴリ",
+      "アクセス", "メニュー", "ページ", "リンク", "ボタン", "セクション",
+      "エラー", "ステータス", "コンポーネント", "レイアウト", "スタイル",
+      "デフォルト", "オプション", "パラメータ", "プロパティ", "アイテム",
+      "コンテナ", "ウィジェット", "モジュール", "プラグイン", "テンプレート",
+      "フッター", "ヘッダー", "サイドバー", "ナビゲーション",
+      "株式会社", "ホームページ", "ウェブサイト",
+    ]);
+
+    // Service names discovered from frequency analysis
+    const serviceNames: string[] = [];
     [...termFreq.entries()]
-      .filter(([, count]) => count >= 3)
+      .filter(([term, count]) => count >= 3)
+      .filter(([term]) => !genericTerms.has(term))
+      .filter(([term]) => term.toLowerCase() !== brand.toLowerCase())
+      .filter(([term]) => isKeywordQuality(term))
       .sort((a, b) => b[1] - a[1])
       .slice(0, 15)
       .forEach(([term]) => {
-        // Don't add if it's a subset of brand name or too generic
-        if (term.toLowerCase() !== brand.toLowerCase() && term !== "株式会社") {
-          candidates.add(term);
-        }
+        candidates.add(term);
+        serviceNames.push(term);
       });
 
-    // 9. SEO-oriented brand combinations
-    const seoSuffixes = ["サービス", "評判", "料金", "使い方", "特徴", "メリット", "導入事例", "口コミ"];
-    seoSuffixes.forEach((s) => candidates.add(`${brand} ${s}`));
+    // 9. SEO-oriented combinations: use SERVICE NAMES (not brand) + suffixes
+    const seoSuffixes = ["料金", "評判", "口コミ", "導入事例"];
+    // Top service names get SEO suffix combinations
+    serviceNames.slice(0, 5).forEach((svc) => {
+      seoSuffixes.slice(0, 2).forEach((s) => candidates.add(`${svc} ${s}`));
+    });
+    // Brand also gets basic SEO suffixes
+    ["サービス", "評判", "料金"].forEach((s) => candidates.add(`${brand} ${s}`));
 
     // Final filter pass
     const keywords = [...candidates]

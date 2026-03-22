@@ -6,4 +6,7 @@ export default defineConfig({
   migrate: {
     url: process.env.DATABASE_URL ?? "postgresql://postgres:postgres@localhost:5432/presencevision",
   },
+  datasource: {
+    url: process.env.DATABASE_URL ?? "postgresql://postgres:postgres@localhost:5432/presencevision",
+  },
 });

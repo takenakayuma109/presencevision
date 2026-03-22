@@ -213,7 +213,47 @@ export async function POST(request: NextRequest) {
         .forEach((p) => candidates.add(p));
     }
 
-    // 8. SEO-oriented brand combinations
+    // 8. Extract service/product names from body text via frequency analysis
+    //    Strip all HTML tags, then find repeated meaningful Japanese compound nouns
+    const bodyText = html
+      .replace(/<script[\s\S]*?<\/script>/gi, "")
+      .replace(/<style[\s\S]*?<\/style>/gi, "")
+      .replace(/<[^>]+>/g, " ")
+      .replace(/&[a-z]+;/gi, " ")
+      .replace(/\s+/g, " ");
+
+    // Japanese compound nouns: katakana words, kanji+kana combos (2-10 chars)
+    const jpTermRegex = /[ァ-ヶー]{3,15}|[一-龥ぁ-んァ-ヶー]{2,10}[ァ-ヶー]{2,10}|[一-龥]{2,6}[ァ-ヶー]{2,10}|[ァ-ヶー]{2,10}[一-龥]{2,6}/g;
+    const termFreq = new Map<string, number>();
+    let termMatch;
+    while ((termMatch = jpTermRegex.exec(bodyText)) !== null) {
+      const term = termMatch[0];
+      if (term.length >= 3 && isKeywordQuality(term)) {
+        termFreq.set(term, (termFreq.get(term) || 0) + 1);
+      }
+    }
+    // Also look for English compound terms (2+ words, each capitalized or known patterns)
+    const enTermRegex = /[A-Z][a-z]+(?:\s[A-Z][a-z]+)+/g;
+    while ((termMatch = enTermRegex.exec(bodyText)) !== null) {
+      const term = termMatch[0];
+      if (term.length >= 4 && term.length <= 25 && isKeywordQuality(term)) {
+        termFreq.set(term, (termFreq.get(term) || 0) + 1);
+      }
+    }
+
+    // Add terms that appear 3+ times (indicates they're important to the site)
+    [...termFreq.entries()]
+      .filter(([, count]) => count >= 3)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 15)
+      .forEach(([term]) => {
+        // Don't add if it's a subset of brand name or too generic
+        if (term.toLowerCase() !== brand.toLowerCase() && term !== "株式会社") {
+          candidates.add(term);
+        }
+      });
+
+    // 9. SEO-oriented brand combinations
     const seoSuffixes = ["サービス", "評判", "料金", "使い方", "特徴", "メリット", "導入事例", "口コミ"];
     seoSuffixes.forEach((s) => candidates.add(`${brand} ${s}`));
 

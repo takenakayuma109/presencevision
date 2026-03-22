@@ -26,7 +26,7 @@ export async function GET() {
       const plan = PLANS[sub.planId as PlanId];
       if (!plan) continue;
       if (sub.interval === "annual") {
-        mrr += plan.annualPrice;
+        mrr += plan.annualPrice / 12;
       } else {
         mrr += plan.monthlyPrice;
       }

@@ -6,7 +6,7 @@
  */
 
 import { NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "@/lib/db";
 
 const ENGINE_URL = process.env.NEXT_PUBLIC_ENGINE_URL ?? "http://localhost:4000";
 
@@ -17,9 +17,7 @@ export async function GET() {
   // --- Database Check ---
   try {
     const dbStart = Date.now();
-    const prisma = new PrismaClient();
     await prisma.$queryRaw`SELECT 1`;
-    await prisma.$disconnect();
     checks.database = { status: "ok", latency_ms: Date.now() - dbStart };
   } catch (err) {
     checks.database = {

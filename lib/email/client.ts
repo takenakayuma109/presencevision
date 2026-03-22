@@ -9,4 +9,4 @@ export function getResend(): Resend {
   return _resend;
 }
 
-export const FROM_EMAIL = "PresenceVision <noreply@presencevision.com>";
+export const FROM_EMAIL = process.env.EMAIL_FROM || "PresenceVision <noreply@visionoid.co>";

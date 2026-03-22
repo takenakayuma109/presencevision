@@ -25,7 +25,7 @@ export async function GET() {
       where: { workspaceId: { in: workspaceIds } },
       include: {
         credentials: {
-          select: { key: true, createdAt: true },
+          select: { key: true, value: true, createdAt: true },
         },
       },
       orderBy: { createdAt: "desc" },
@@ -40,7 +40,7 @@ export async function GET() {
         (c) => c.key === "expiresAt"
       );
       const isExpired = expiresAtCred
-        ? new Date(expiresAtCred.createdAt) < new Date()
+        ? new Date(expiresAtCred.value) < new Date()
         : false;
 
       return {

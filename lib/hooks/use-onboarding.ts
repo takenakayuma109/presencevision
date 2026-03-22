@@ -38,8 +38,11 @@ export function useOnboarding(): UseOnboardingResult {
     if (typeof window === "undefined") return;
 
     const completed = localStorage.getItem(STORAGE_KEY) === "true";
-    setNeedsOnboarding(!completed);
-    setIsLoaded(true);
+    const newNeedsOnboarding = !completed;
+    setNeedsOnboarding((prev) =>
+      prev !== newNeedsOnboarding ? newNeedsOnboarding : prev,
+    );
+    setIsLoaded((prev) => (prev !== true ? true : prev));
   }, []);
 
   const completeOnboarding = useCallback(() => {

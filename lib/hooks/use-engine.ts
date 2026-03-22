@@ -108,7 +108,9 @@ export function useEngineActivities(
   // -----------------------------------------------------------------------
   useEffect(() => {
     if (!enabled || !projectId) {
-      setConnectionStatus("disconnected");
+      setConnectionStatus((prev) =>
+        prev !== "disconnected" ? "disconnected" : prev,
+      );
       return;
     }
 

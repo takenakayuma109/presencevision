@@ -15,7 +15,7 @@ export async function requireAdmin() {
     return { error: NextResponse.json({ error: "Unauthorized" }, { status: 401 }), session: null };
   }
 
-  if (ADMIN_EMAILS.length > 0 && !ADMIN_EMAILS.includes(session.user.email)) {
+  if (ADMIN_EMAILS.length === 0 || !ADMIN_EMAILS.includes(session.user.email)) {
     return { error: NextResponse.json({ error: "Forbidden" }, { status: 403 }), session: null };
   }
 

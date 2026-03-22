@@ -1,10 +1,18 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button, Input, Badge } from "@/components/ui";
 import { useStore } from "@/lib/store";
-import { Globe, Loader2, CheckCircle2, ArrowRight, Plus, X, Search, Swords, Building2 } from "lucide-react";
+import { Globe, Loader2, CheckCircle2, ArrowRight, Plus, X, Search, Swords, Building2, Trophy, ExternalLink } from "lucide-react";
 import { useTranslation } from "@/lib/hooks/use-translation";
+
+interface SuggestedCompetitor {
+  rank: number;
+  domain: string;
+  url: string;
+  title: string;
+  snippet: string;
+}
 
 export function StepUrl() {
   const {
@@ -14,7 +22,43 @@ export function StepUrl() {
   const [url, setUrl] = useState("");
   const [keywordInput, setKeywordInput] = useState("");
   const [competitorInput, setCompetitorInput] = useState("");
+  const [suggestedCompetitors, setSuggestedCompetitors] = useState<SuggestedCompetitor[]>([]);
+  const [loadingCompetitors, setLoadingCompetitors] = useState(false);
   const { t } = useTranslation();
+
+  // Auto-fetch competitor suggestions when keywords are available
+  useEffect(() => {
+    if (wizard.keywords.length === 0 || !wizard.siteInfo) return;
+    let cancelled = false;
+
+    async function fetchCompetitors() {
+      setLoadingCompetitors(true);
+      try {
+        let brandDomain = "";
+        try { brandDomain = new URL(wizard.siteInfo!.url).hostname; } catch {}
+        const res = await fetch("/api/competitors/suggest", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            keywords: wizard.keywords,
+            language: wizard.siteInfo!.language || "ja",
+            brandDomain,
+          }),
+        });
+        if (res.ok && !cancelled) {
+          const data = await res.json();
+          setSuggestedCompetitors(data.competitors || []);
+        }
+      } catch {
+        // silently fail
+      } finally {
+        if (!cancelled) setLoadingCompetitors(false);
+      }
+    }
+
+    fetchCompetitors();
+    return () => { cancelled = true; };
+  }, [wizard.keywords, wizard.siteInfo]);
 
   const handleAnalyze = async () => {
     if (!url.trim()) return;
@@ -168,17 +212,80 @@ export function StepUrl() {
             </div>
 
             {/* Competitors */}
-            <div className="space-y-2">
+            <div className="space-y-3">
               <div className="flex items-center gap-2">
                 <Swords className="h-4 w-4 text-muted-foreground" />
                 <h3 className="text-sm font-semibold">{t("wizard.competitors")}</h3>
               </div>
               <p className="text-xs text-muted-foreground ml-6">{t("wizard.competitorsDesc")}</p>
+
+              {/* Auto-suggested competitors */}
+              {loadingCompetitors && (
+                <div className="flex items-center gap-2 rounded-lg border border-amber-200 bg-amber-50 dark:border-amber-800 dark:bg-amber-950/50 p-3">
+                  <Loader2 className="h-4 w-4 animate-spin text-amber-600 dark:text-amber-400" />
+                  <span className="text-xs text-amber-700 dark:text-amber-300">競合サイトを自動検出中...</span>
+                </div>
+              )}
+
+              {suggestedCompetitors.length > 0 && !loadingCompetitors && (
+                <div className="rounded-lg border bg-card/50 p-3 space-y-2">
+                  <div className="flex items-center gap-1.5 mb-2">
+                    <Trophy className="h-3.5 w-3.5 text-amber-500" />
+                    <span className="text-xs font-semibold text-muted-foreground">検索上位の競合サイト（クリックで追加）</span>
+                  </div>
+                  {suggestedCompetitors.map((comp) => {
+                    const isAdded = wizard.competitors.includes(comp.url);
+                    return (
+                      <button
+                        key={comp.domain}
+                        onClick={() => {
+                          if (!isAdded) {
+                            setWizardCompetitors([...wizard.competitors, comp.url]);
+                          } else {
+                            removeCompetitor(comp.url);
+                          }
+                        }}
+                        className={`w-full flex items-start gap-3 rounded-md p-2.5 text-left transition-colors ${
+                          isAdded
+                            ? "bg-blue-50 dark:bg-blue-950/50 border border-blue-200 dark:border-blue-800"
+                            : "hover:bg-accent border border-transparent"
+                        }`}
+                      >
+                        <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-muted text-xs font-bold">
+                          {comp.rank}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-1.5">
+                            <img
+                              src={`https://www.google.com/s2/favicons?domain=${comp.domain}&sz=32`}
+                              alt=""
+                              className="h-4 w-4 rounded"
+                            />
+                            <span className="text-sm font-medium truncate">{comp.title !== comp.domain ? comp.title : comp.domain}</span>
+                            {isAdded && (
+                              <CheckCircle2 className="h-3.5 w-3.5 text-blue-500 shrink-0" />
+                            )}
+                          </div>
+                          <span className="text-xs text-muted-foreground flex items-center gap-1">
+                            <ExternalLink className="h-2.5 w-2.5" />
+                            {comp.domain}
+                          </span>
+                          {comp.snippet && (
+                            <p className="text-xs text-muted-foreground mt-0.5 line-clamp-1">{comp.snippet}</p>
+                          )}
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+
+              {/* Already added competitors */}
               {wizard.competitors.length > 0 && (
                 <div className="flex flex-wrap gap-1.5">
                   {wizard.competitors.map((c) => (
                     <Badge key={c} variant="secondary" className="gap-1 text-xs py-1 px-2.5">
-                      {c}
+                      {c.replace(/^https?:\/\//, "")}
                       <button onClick={() => removeCompetitor(c)} className="ml-0.5 hover:text-red-500 transition-colors">
                         <X className="h-3 w-3" />
                       </button>
@@ -186,12 +293,13 @@ export function StepUrl() {
                   ))}
                 </div>
               )}
+
               <div className="flex gap-2">
                 <Input
                   value={competitorInput}
                   onChange={(e) => setCompetitorInput(e.target.value)}
                   onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addCompetitor(); } }}
-                  placeholder="https://competitor.com"
+                  placeholder="その他の競合サイトURL..."
                   className="h-9 text-sm flex-1"
                 />
                 <Button type="button" variant="outline" size="sm" onClick={addCompetitor} className="h-9 gap-1 text-xs px-3">

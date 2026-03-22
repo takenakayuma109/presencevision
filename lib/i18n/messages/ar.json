@@ -35,6 +35,8 @@
     "notFound": "المشروع غير موجود",
     "backToList": "العودة إلى القائمة",
     "demoData": "بيانات تجريبية",
+    "engineConnecting": "جارٍ الاتصال...",
+    "engineWaiting": "في الانتظار",
     "pause": "إيقاف مؤقت",
     "resume": "استئناف",
     "activeTasks": "المهام النشطة",

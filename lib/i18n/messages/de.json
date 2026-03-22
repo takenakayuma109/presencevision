@@ -35,6 +35,8 @@
     "notFound": "Projekt nicht gefunden",
     "backToList": "Zurück zur Liste",
     "demoData": "Demodaten",
+    "engineConnecting": "Verbinden...",
+    "engineWaiting": "Wartend",
     "pause": "Pausieren",
     "resume": "Fortsetzen",
     "activeTasks": "Aktive Aufgaben",

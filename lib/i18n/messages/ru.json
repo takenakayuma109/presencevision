@@ -35,6 +35,8 @@
     "notFound": "Проект не найден",
     "backToList": "Вернуться к списку",
     "demoData": "Демо-данные",
+    "engineConnecting": "Подключение...",
+    "engineWaiting": "Ожидание",
     "pause": "Пауза",
     "resume": "Возобновить",
     "activeTasks": "Активные задачи",

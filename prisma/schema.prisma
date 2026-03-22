@@ -123,9 +123,11 @@ model Project {
   id          String   @id @default(cuid())
   workspaceId String
   name        String
+  url         String?
   description String?  @db.Text
   locale      String   @default("ja")
   status      String   @default("active")
+  metadata    Json?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 

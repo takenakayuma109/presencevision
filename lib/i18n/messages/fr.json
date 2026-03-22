@@ -35,6 +35,8 @@
     "notFound": "Projet introuvable",
     "backToList": "Retour à la liste",
     "demoData": "Données de démo",
+    "engineConnecting": "Connexion...",
+    "engineWaiting": "En attente",
     "pause": "Pause",
     "resume": "Reprendre",
     "activeTasks": "Tâches actives",

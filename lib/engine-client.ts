@@ -154,18 +154,16 @@ export async function startEngine(project: {
   const res = await engineFetch("/engine/start", {
     method: "POST",
     body: JSON.stringify({
-      project: {
-        id: project.id,
-        name: project.name,
-        targetUrl: project.url,
-        brandName: project.brandName,
-        keywords: project.keywords,
-        targetCountries: project.targetCountries,
-        methods: mapMethodsToEngine(project.methods),
-        status: "active",
-        createdAt: new Date(),
-        cmsConfig: project.cmsConfig,
-      },
+      id: project.id,
+      name: project.name,
+      targetUrl: project.url,
+      brandName: project.brandName,
+      keywords: project.keywords,
+      targetCountries: project.targetCountries,
+      methods: mapMethodsToEngine(project.methods),
+      status: "active",
+      createdAt: new Date(),
+      cmsConfig: project.cmsConfig,
     }),
   });
   return res.json();
@@ -190,17 +188,15 @@ export async function runCycle(project: {
   const res = await engineFetch("/engine/run-cycle", {
     method: "POST",
     body: JSON.stringify({
-      project: {
-        id: project.id,
-        name: project.name,
-        targetUrl: project.url,
-        brandName: project.brandName,
-        keywords: project.keywords,
-        targetCountries: project.targetCountries,
-        methods: mapMethodsToEngine(project.methods),
-        status: "active",
-        createdAt: new Date(),
-      },
+      id: project.id,
+      name: project.name,
+      targetUrl: project.url,
+      brandName: project.brandName,
+      keywords: project.keywords,
+      targetCountries: project.targetCountries,
+      methods: mapMethodsToEngine(project.methods),
+      status: "active",
+      createdAt: new Date(),
     }),
   });
   return res.json();

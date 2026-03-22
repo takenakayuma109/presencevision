@@ -1,12 +1,14 @@
 "use client";
 
+import { useState } from "react";
 import { Button, Badge, Card, CardContent } from "@/components/ui";
 import { useStore, availableCountries } from "@/lib/store";
-import { ArrowLeft, Rocket, CheckCircle2, Zap, Repeat, Mail, Search, Swords, Building2 } from "lucide-react";
+import { ArrowLeft, Rocket, CheckCircle2, Zap, Repeat, Mail, Search, Swords, Building2, Loader2 } from "lucide-react";
 import { useTranslation, useLabels } from "@/lib/hooks/use-translation";
 
 export function StepPlan() {
   const { wizard, setWizardStep, confirmAndStartProject } = useStore();
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const plan = wizard.generatedPlan;
   const { t } = useTranslation();
   const { methodLabels } = useLabels();
@@ -133,8 +135,23 @@ export function StepPlan() {
         <Button variant="outline" onClick={() => setWizardStep(3)} className="gap-2">
           <ArrowLeft className="h-4 w-4" /> {t("wizard.back")}
         </Button>
-        <Button onClick={confirmAndStartProject} className="gap-2 bg-green-600 hover:bg-green-700 text-white">
-          <Rocket className="h-4 w-4" /> {t("wizard.startWork")}
+        <Button
+          disabled={isSubmitting}
+          onClick={async () => {
+            setIsSubmitting(true);
+            try {
+              await confirmAndStartProject();
+            } finally {
+              setIsSubmitting(false);
+            }
+          }}
+          className="gap-2 bg-green-600 hover:bg-green-700 text-white"
+        >
+          {isSubmitting ? (
+            <><Loader2 className="h-4 w-4 animate-spin" /> {t("wizard.startWork")}</>
+          ) : (
+            <><Rocket className="h-4 w-4" /> {t("wizard.startWork")}</>
+          )}
         </Button>
       </div>
     </div>

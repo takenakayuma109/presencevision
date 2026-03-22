@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/db";
+import type { Prisma } from "@prisma/client";
 
 export const projectRepository = {
   async findAll(workspaceId: string) {
@@ -22,11 +23,34 @@ export const projectRepository = {
     });
   },
 
-  async create(data: { workspaceId: string; name: string; description?: string; locale?: string }) {
-    return prisma.project.create({ data });
+  async create(data: {
+    workspaceId: string;
+    name: string;
+    url?: string;
+    description?: string;
+    locale?: string;
+    metadata?: Prisma.InputJsonValue;
+    competitors?: string[];
+  }) {
+    const { competitors, ...projectData } = data;
+
+    return prisma.project.create({
+      data: {
+        ...projectData,
+        competitors: competitors && competitors.length > 0
+          ? {
+              create: competitors.map((name) => ({ name })),
+            }
+          : undefined,
+      },
+      include: {
+        competitors: true,
+        _count: { select: { entities: true, topics: true, contentAssets: true } },
+      },
+    });
   },
 
-  async update(id: string, data: { name?: string; description?: string; status?: string }) {
+  async update(id: string, data: { name?: string; description?: string; status?: string; url?: string; metadata?: Prisma.InputJsonValue }) {
     return prisma.project.update({ where: { id }, data });
   },
 

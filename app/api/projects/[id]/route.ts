@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { projectRepository } from "@/server/repositories";
-import { getSession, getUserId } from "@/lib/stripe/get-session";
+import { getSession } from "@/lib/stripe/get-session";
 import { prisma } from "@/lib/db";
 
 async function verifyProjectAccess(projectId: string, userId: string) {

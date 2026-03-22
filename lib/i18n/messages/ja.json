@@ -35,6 +35,8 @@
     "notFound": "プロジェクトが見つかりません",
     "backToList": "一覧に戻る",
     "demoData": "デモデータ",
+    "engineConnecting": "接続中...",
+    "engineWaiting": "待機中",
     "pause": "一時停止",
     "resume": "再開",
     "activeTasks": "稼働タスク",

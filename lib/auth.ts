@@ -55,6 +55,37 @@ export const authOptions: NextAuthOptions = {
       },
     }),
   ],
+  events: {
+    async createUser({ user }) {
+      const baseName = user.name || user.email?.split("@")[0] || "workspace";
+      const baseSlug = baseName
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-|-$/g, "");
+
+      // Ensure slug uniqueness by appending a short suffix if needed
+      let slug = baseSlug;
+      let attempt = 0;
+      while (await prisma.workspace.findUnique({ where: { slug } })) {
+        attempt++;
+        slug = `${baseSlug}-${attempt}`;
+      }
+
+      await prisma.workspace.create({
+        data: {
+          name: baseName,
+          slug,
+          plan: "free",
+          memberships: {
+            create: {
+              userId: user.id,
+              role: "OWNER",
+            },
+          },
+        },
+      });
+    },
+  },
   callbacks: {
     async jwt({ token, user }) {
       if (user) {

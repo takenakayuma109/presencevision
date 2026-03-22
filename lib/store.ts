@@ -928,7 +928,7 @@ interface StoreActions {
   setWizardCmsConfig: (config: CmsConfig | undefined) => void;
   analyzeSiteUrl: (url: string) => Promise<void>;
   generatePlan: () => Promise<void>;
-  confirmAndStartProject: () => void;
+  confirmAndStartProject: () => Promise<void>;
   removeProject: (id: string) => void;
   updateProjectStatus: (id: string, status: ProjectStatus) => void;
   updateProjectReportConfig: (id: string, config: Partial<ReportConfig>) => void;
@@ -991,12 +991,51 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     } catch { setWizard((p) => ({ ...p, isGeneratingPlan: false })); }
   }, [wizard.methods, wizard.duration, wizard.presenceCountries]);
 
-  const confirmAndStartProject = useCallback(() => {
+  const confirmAndStartProject = useCallback(async () => {
     const w = wizard;
     if (!w.siteInfo || !w.generatedPlan) return;
+
+    const brandName = w.brandName || w.siteInfo.title || w.siteInfo.url;
+
+    // Persist to database via API
+    let dbProjectId: string | null = null;
+    try {
+      const res = await fetch("/api/projects", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: brandName,
+          url: w.siteInfo.url,
+          description: w.additionalNotes || undefined,
+          locale: w.siteInfo.language || "ja",
+          keywords: w.keywords,
+          competitors: w.competitors,
+          goals: w.goals,
+          businessCountries: w.businessCountries,
+          presenceCountries: w.presenceCountries,
+          audiences: w.audiences,
+          methods: w.methods,
+          duration: w.duration,
+          additionalNotes: w.additionalNotes,
+          brandName,
+          reportConfig: w.reportConfig,
+        }),
+      });
+      if (res.ok) {
+        const saved = await res.json();
+        dbProjectId = saved.id;
+      } else {
+        console.error("[Store] Failed to save project to DB:", await res.text());
+      }
+    } catch (err) {
+      console.error("[Store] Failed to save project to DB:", err);
+    }
+
+    const projectId = dbProjectId || nextId();
+
     const proj: Project = {
-      id: nextId(),
-      name: w.siteInfo.title || w.siteInfo.url,
+      id: projectId,
+      name: brandName,
       url: w.siteInfo.url,
       siteInfo: w.siteInfo,
       goals: w.goals,
@@ -1008,7 +1047,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       additionalNotes: w.additionalNotes,
       keywords: w.keywords,
       competitors: w.competitors,
-      brandName: w.brandName || w.siteInfo.title || w.siteInfo.url,
+      brandName,
       reportConfig: w.reportConfig,
       cmsConfig: w.cmsConfig,
       plan: w.generatedPlan,

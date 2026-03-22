@@ -57,6 +57,29 @@ export async function POST(request: Request) {
       },
     });
 
+    // Auto-create workspace for the new user
+    const baseName = name || email.split("@")[0];
+    const baseSlug = baseName
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-|-$/g, "");
+
+    let slug = baseSlug;
+    let attempt = 0;
+    while (await prisma.workspace.findUnique({ where: { slug } })) {
+      attempt++;
+      slug = `${baseSlug}-${attempt}`;
+    }
+
+    await prisma.workspace.create({
+      data: {
+        name: baseName,
+        slug,
+        plan: "free",
+        memberships: { create: { userId: user.id, role: "OWNER" } },
+      },
+    });
+
     return NextResponse.json(
       {
         id: user.id,

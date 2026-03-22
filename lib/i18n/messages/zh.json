@@ -35,6 +35,8 @@
     "notFound": "未找到项目",
     "backToList": "返回列表",
     "demoData": "演示数据",
+    "engineConnecting": "连接中...",
+    "engineWaiting": "等待中",
     "pause": "暂停",
     "resume": "恢复",
     "activeTasks": "活跃任务",

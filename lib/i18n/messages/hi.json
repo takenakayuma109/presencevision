@@ -35,6 +35,8 @@
     "notFound": "प्रोजेक्ट नहीं मिला",
     "backToList": "सूची पर वापस",
     "demoData": "डेमो डेटा",
+    "engineConnecting": "कनेक्ट हो रहा है...",
+    "engineWaiting": "प्रतीक्षा में",
     "pause": "रोकें",
     "resume": "फिर से शुरू करें",
     "activeTasks": "सक्रिय कार्य",

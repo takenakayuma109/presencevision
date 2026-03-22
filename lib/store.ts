@@ -777,7 +777,20 @@ function generateMockTasks(methods: PresenceMethod[], presenceCountries: string[
 // ---------------------------------------------------------------------------
 
 async function mockFetchSiteInfo(url: string): Promise<SiteInfo> {
-  await new Promise((r) => setTimeout(r, 1500));
+  try {
+    const res = await fetch("/api/site-analyze", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ url }),
+    });
+    if (res.ok) {
+      return await res.json();
+    }
+  } catch {
+    // Fallback to basic extraction
+  }
+
+  // Fallback
   let hostname: string;
   try {
     hostname = new URL(url.startsWith("http") ? url : `https://${url}`).hostname;
@@ -788,17 +801,11 @@ async function mockFetchSiteInfo(url: string): Promise<SiteInfo> {
   return {
     url: url.startsWith("http") ? url : `https://${url}`,
     title: brand,
-    description: `${hostname} のウェブサイト。コンテンツと構造を分析しました。`,
+    description: `${hostname} のウェブサイト`,
     favicon: `https://www.google.com/s2/favicons?domain=${hostname}&sz=64`,
     language: "ja",
     industry: "テクノロジー",
-    suggestedKeywords: [
-      brand,
-      `${brand} サービス`,
-      `${brand} 評判`,
-      `${brand} 料金`,
-      `${brand} 使い方`,
-    ],
+    suggestedKeywords: [brand, `${brand} サービス`, `${brand} 評判`, `${brand} 料金`],
   };
 }
 

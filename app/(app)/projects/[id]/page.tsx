@@ -23,10 +23,12 @@ import { cn } from "@/lib/utils";
 interface DbProject {
   id: string;
   name: string;
+  url: string | null;
   description: string | null;
   locale: string;
   status: string;
   workspaceId: string;
+  metadata: Record<string, unknown> | null;
   createdAt: string;
   updatedAt: string;
   entities: Array<{ id: string; name: string; type: string; description: string | null }>;
@@ -784,6 +786,16 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
   const [dbLoading, setDbLoading] = useState(true);
   const [dbError, setDbError] = useState<string | null>(null);
 
+  // Edit mode state for DB-only projects
+  const [dbEditing, setDbEditing] = useState(false);
+  const [dbSaving, setDbSaving] = useState(false);
+  const [dbSaveStatus, setDbSaveStatus] = useState<"idle" | "saved" | "error">("idle");
+  const [editName, setEditName] = useState("");
+  const [editUrl, setEditUrl] = useState("");
+  const [editDescription, setEditDescription] = useState("");
+  const [editKeywords, setEditKeywords] = useState<string[]>([]);
+  const [editCompetitors, setEditCompetitors] = useState<string[]>([]);
+
   useEffect(() => {
     async function fetchProject() {
       try {
@@ -804,6 +816,52 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
     fetchProject();
   }, [id]);
 
+  const startDbEditing = () => {
+    if (!dbProject) return;
+    setEditName(dbProject.name);
+    setEditUrl(dbProject.url ?? "");
+    setEditDescription(dbProject.description ?? "");
+    const meta = dbProject.metadata as Record<string, unknown> | null;
+    setEditKeywords((meta?.keywords as string[]) ?? []);
+    setEditCompetitors(dbProject.competitors.map((c) => c.name));
+    setDbEditing(true);
+    setDbSaveStatus("idle");
+  };
+
+  const cancelDbEditing = () => {
+    setDbEditing(false);
+    setDbSaveStatus("idle");
+  };
+
+  const saveDbProject = async () => {
+    if (!dbProject) return;
+    setDbSaving(true);
+    setDbSaveStatus("idle");
+    try {
+      const res = await fetch(`/api/projects/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: editName,
+          url: editUrl || null,
+          description: editDescription || null,
+          keywords: editKeywords,
+          competitors: editCompetitors,
+        }),
+      });
+      if (!res.ok) throw new Error("Save failed");
+      const updated = await res.json();
+      setDbProject(updated);
+      setDbEditing(false);
+      setDbSaveStatus("saved");
+      setTimeout(() => setDbSaveStatus("idle"), 3000);
+    } catch {
+      setDbSaveStatus("error");
+    } finally {
+      setDbSaving(false);
+    }
+  };
+
   // Use DB data for the project or fall back to store data
   const project = storeProject;
   const projectName = dbProject?.name ?? storeProject?.name;
@@ -814,6 +872,7 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
 
   // Auto-register project with the engine when we have DB data
   const [engineRegistered, setEngineRegistered] = useState(false);
+  const [expandedActivityIdx, setExpandedActivityIdx] = useState<number | null>(null);
   useEffect(() => {
     if (!dbProject || engineRegistered || engine.isLive) return;
     // Register project with engine (non-blocking)
@@ -878,10 +937,32 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
                   </Badge>
                 ) : null}
               </div>
+              {dbProject.url && <p className="text-sm text-muted-foreground flex items-center gap-1"><Globe className="h-3 w-3" /> {dbProject.url}</p>}
               {dbProject.description && <p className="text-sm text-muted-foreground">{dbProject.description}</p>}
             </div>
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-2 items-center">
+            {dbSaveStatus === "saved" && (
+              <span className="text-xs text-green-600 flex items-center gap-1"><CheckCircle2 className="h-3 w-3" /> {t("project.saved")}</span>
+            )}
+            {dbSaveStatus === "error" && (
+              <span className="text-xs text-red-600 flex items-center gap-1"><AlertTriangle className="h-3 w-3" /> {t("project.saveFailed")}</span>
+            )}
+            {!dbEditing && (
+              <Button variant="outline" size="sm" onClick={startDbEditing} className="gap-1.5">
+                <Pencil className="h-3.5 w-3.5" /> {t("project.edit")}
+              </Button>
+            )}
+            {dbEditing && (
+              <>
+                <Button variant="ghost" size="sm" onClick={cancelDbEditing} className="gap-1.5">
+                  {t("project.cancel")}
+                </Button>
+                <Button size="sm" onClick={saveDbProject} disabled={dbSaving} className="gap-1.5">
+                  {dbSaving ? <><Loader2 className="h-3.5 w-3.5 animate-spin" /> {t("project.saving")}</> : <>{t("project.save")}</>}
+                </Button>
+              </>
+            )}
             {dbProject.status === "active" && (
               <Button variant="outline" size="sm" onClick={async () => {
                 await fetch(`/api/projects/${id}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ status: "paused" }) });
@@ -896,6 +977,48 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
             )}
           </div>
         </div>
+
+        {/* Inline edit form */}
+        {dbEditing && (
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm font-semibold flex items-center gap-2">
+                <Pencil className="h-4 w-4" /> {t("project.editProject")}
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {/* Brand name */}
+              <div>
+                <p className="text-xs text-muted-foreground mb-1 flex items-center gap-1"><Building2 className="h-3 w-3" /> {t("project.brandName")}</p>
+                <Input value={editName} onChange={(e) => setEditName(e.target.value)} className="h-8 text-sm" />
+              </div>
+
+              {/* Site URL */}
+              <div>
+                <p className="text-xs text-muted-foreground mb-1 flex items-center gap-1"><Globe className="h-3 w-3" /> {t("project.siteUrl")}</p>
+                <Input value={editUrl} onChange={(e) => setEditUrl(e.target.value)} placeholder="https://example.com" className="h-8 text-sm" />
+              </div>
+
+              {/* Description / Goals */}
+              <div>
+                <p className="text-xs text-muted-foreground mb-1 flex items-center gap-1"><FileText className="h-3 w-3" /> {t("project.descriptionGoals")}</p>
+                <Textarea value={editDescription} onChange={(e) => setEditDescription(e.target.value)} rows={3} className="text-sm" />
+              </div>
+
+              {/* Keywords */}
+              <div>
+                <p className="text-xs text-muted-foreground mb-1 flex items-center gap-1"><Search className="h-3 w-3" /> {t("project.keywords")}</p>
+                <TagInput tags={editKeywords} onUpdate={setEditKeywords} placeholder={t("project.addKeyword")} />
+              </div>
+
+              {/* Competitors */}
+              <div>
+                <p className="text-xs text-muted-foreground mb-1 flex items-center gap-1"><Swords className="h-3 w-3" /> {t("project.competitors")}</p>
+                <TagInput tags={editCompetitors} onUpdate={setEditCompetitors} placeholder={t("project.addCompetitor")} variant="secondary" />
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Stats from DB */}
         <div className="grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
@@ -918,6 +1041,40 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
             </Card>
           ))}
         </div>
+
+        {/* Keywords & Competitors (view mode) */}
+        {!dbEditing && ((() => {
+          const meta = dbProject.metadata as Record<string, unknown> | null;
+          const kw = (meta?.keywords as string[]) ?? [];
+          return (kw.length > 0 || dbProject.competitors.length > 0) ? (
+            <div className="grid gap-3 grid-cols-1 sm:grid-cols-2">
+              {kw.length > 0 && (
+                <Card>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm font-semibold flex items-center gap-2"><Search className="h-4 w-4" /> {t("project.keywords")}</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex flex-wrap gap-1">
+                      {kw.map((k) => <Badge key={k} variant="info" className="text-xs">{k}</Badge>)}
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+              {dbProject.competitors.length > 0 && (
+                <Card>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm font-semibold flex items-center gap-2"><Swords className="h-4 w-4" /> {t("project.competitors")}</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex flex-wrap gap-1">
+                      {dbProject.competitors.map((c) => <Badge key={c.id} variant="secondary" className="text-xs">{c.name}</Badge>)}
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+            </div>
+          ) : null;
+        })())}
 
         {/* Entities list */}
         {dbProject.entities.length > 0 && (
@@ -975,23 +1132,87 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-1.5">
-              {engine.activities.slice(0, 20).map((activity, i) => (
-                <div key={i} className="flex items-center gap-3 rounded-lg border p-3">
-                  <div className={cn(
-                    "h-2.5 w-2.5 rounded-full shrink-0",
-                    activity.type === "success" ? "bg-green-500" : activity.type === "error" ? "bg-red-500" : "bg-blue-500",
-                    activity.type === "info" && "animate-pulse",
-                  )} />
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm">{activity.message}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {activity.timestamp.toLocaleString("ja-JP", {
-                        month: "short", day: "numeric", hour: "2-digit", minute: "2-digit",
-                      })}
-                    </p>
+              {engine.activities.slice(0, 20).map((activity, i) => {
+                const isExpanded = expandedActivityIdx === i;
+                const durationSec = activity.durationMs ? (activity.durationMs / 1000).toFixed(1) : null;
+                const hasArtifacts = activity.artifacts && activity.artifacts.length > 0;
+                const hasDetails = activity.error || hasArtifacts || durationSec || activity.status;
+                return (
+                  <div key={i} className="rounded-lg border overflow-hidden">
+                    <button
+                      onClick={() => setExpandedActivityIdx(isExpanded ? null : i)}
+                      className="w-full flex items-center gap-3 p-3 text-left transition-colors hover:bg-muted/50"
+                    >
+                      <div className={cn(
+                        "h-2.5 w-2.5 rounded-full shrink-0",
+                        activity.type === "success" ? "bg-green-500" : activity.type === "error" ? "bg-red-500" : "bg-blue-500",
+                        activity.type === "info" && "animate-pulse",
+                      )} />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm">{activity.message}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {activity.timestamp.toLocaleString("ja-JP", {
+                            month: "short", day: "numeric", hour: "2-digit", minute: "2-digit",
+                          })}
+                        </p>
+                      </div>
+                      {hasDetails && (
+                        <ChevronDown className={cn("h-4 w-4 text-muted-foreground shrink-0 transition-transform", isExpanded && "rotate-180")} />
+                      )}
+                    </button>
+                    {isExpanded && (
+                      <div className="border-t bg-muted/30 px-4 py-3 space-y-2 text-sm">
+                        {/* Status */}
+                        {activity.status && (
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs font-medium text-muted-foreground w-16 shrink-0">{t("project.statusLabel")}</span>
+                            <Badge variant={activity.status === "completed" ? "success" : activity.status === "failed" ? "destructive" : activity.status === "running" ? "info" : "secondary"} className="text-xs">
+                              {activity.status === "completed" ? t("project.statusCompleted") : activity.status === "failed" ? t("project.statusFailed") : activity.status === "running" ? t("project.statusRunning") : activity.status}
+                            </Badge>
+                          </div>
+                        )}
+                        {/* Duration */}
+                        {durationSec && (
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs font-medium text-muted-foreground w-16 shrink-0">{t("project.durationLabel")}</span>
+                            <span className="text-xs flex items-center gap-1"><Clock className="h-3 w-3" /> {durationSec}s</span>
+                          </div>
+                        )}
+                        {/* Error */}
+                        {activity.error && (
+                          <div className="flex items-start gap-2">
+                            <span className="text-xs font-medium text-muted-foreground w-16 shrink-0">{t("project.errorLabel")}</span>
+                            <p className="text-xs text-red-500 break-all">{activity.error}</p>
+                          </div>
+                        )}
+                        {/* Artifacts */}
+                        {hasArtifacts && (
+                          <div className="flex items-start gap-2">
+                            <span className="text-xs font-medium text-muted-foreground w-16 shrink-0">{t("project.artifactsLabel")}</span>
+                            <div className="space-y-1 flex-1 min-w-0">
+                              {activity.artifacts!.map((art, j) => (
+                                <div key={j} className="flex items-center gap-2 text-xs">
+                                  {art.url ? (
+                                    <a href={art.url} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline flex items-center gap-1 truncate">
+                                      <ExternalLink className="h-3 w-3 shrink-0" />
+                                      {art.title || art.url}
+                                    </a>
+                                  ) : (
+                                    <span className="flex items-center gap-1 truncate">
+                                      <FileText className="h-3 w-3 shrink-0 text-muted-foreground" />
+                                      {art.title}{art.content ? `: ${art.content.slice(0, 100)}${art.content.length > 100 ? "…" : ""}` : ""}
+                                    </span>
+                                  )}
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </CardContent>
           </Card>
         )}

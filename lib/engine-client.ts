@@ -406,5 +406,17 @@ export function activitiesToTaskActivities(
           : a.status === "running"
             ? "info"
             : "warning",
+    status: a.status,
+    durationMs: a.durationMs,
+    artifacts: a.artifacts.map((art) => ({
+      type: art.type,
+      title: art.title,
+      content: art.content,
+      url: art.type === "url" ? art.content : undefined,
+    })),
+    error: a.error,
+    completedAt: a.completedAt ? new Date(a.completedAt) : undefined,
+    method: a.method,
+    country: a.country,
   }));
 }

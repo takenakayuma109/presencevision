@@ -58,14 +58,37 @@ export async function PATCH(
     }
 
     const body = await request.json();
-    const { name, description, status } = body;
+    const { name, description, status, url, keywords, competitors } = body;
+
+    // Build metadata update if keywords provided
+    let metadata: Record<string, unknown> | undefined;
+    if (keywords !== undefined) {
+      const existingMeta = (existing.metadata as Record<string, unknown>) ?? {};
+      metadata = { ...existingMeta, keywords };
+    }
+
     const updated = await projectRepository.update(id, {
       name,
       description,
       status,
+      url,
+      metadata: metadata as import("@prisma/client").Prisma.InputJsonValue,
     });
 
-    return NextResponse.json(updated);
+    // Handle competitors update if provided
+    if (competitors !== undefined) {
+      // Delete existing competitors and recreate
+      await prisma.competitor.deleteMany({ where: { projectId: id } });
+      if (competitors.length > 0) {
+        await prisma.competitor.createMany({
+          data: competitors.map((c: string) => ({ projectId: id, name: c })),
+        });
+      }
+    }
+
+    // Re-fetch with relations to return full data
+    const result = await projectRepository.findById(id);
+    return NextResponse.json(result);
   } catch (error) {
     console.error("PATCH /api/projects/[id]:", error);
     return NextResponse.json(

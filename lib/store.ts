@@ -77,10 +77,31 @@ export const availableCountries: Country[] = [
 
 export type TaskStatus = "running" | "waiting" | "completed" | "error";
 
+export interface TaskActivityArtifact {
+  type: string;
+  title: string;
+  content?: string;
+  url?: string;
+}
+
 export interface TaskActivity {
   timestamp: Date;
   message: string;
   type: "info" | "success" | "warning" | "error";
+  /** Original engine status */
+  status?: "running" | "completed" | "failed" | "skipped";
+  /** Duration in milliseconds */
+  durationMs?: number;
+  /** Artifacts produced by this activity */
+  artifacts?: TaskActivityArtifact[];
+  /** Error message if failed */
+  error?: string;
+  /** Completed-at timestamp */
+  completedAt?: Date;
+  /** Engine method (e.g. "blog", "qa") */
+  method?: string;
+  /** Country code */
+  country?: string;
 }
 
 export type ArtifactType = "screenshot" | "link" | "content" | "code" | "data";

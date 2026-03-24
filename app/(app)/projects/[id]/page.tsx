@@ -965,17 +965,21 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
   const [engineRegistered, setEngineRegistered] = useState(false);
   const [expandedActivityIdx, setExpandedActivityIdx] = useState<number | null>(null);
   useEffect(() => {
-    if (!dbProject || engineRegistered || engine.isLive) return;
+    if (!dbProject || engineRegistered || engine.isLive || dbProject.status !== "active") return;
+    // Get keywords from store or metadata
+    const storeKw = storeProject?.keywords ?? [];
+    const metaKw = (dbProject.metadata as Record<string, unknown>)?.keywords as string[] ?? [];
+    const kw = storeKw.length > 0 ? storeKw : metaKw;
     // Register project with engine (non-blocking)
     fetch(`/api/projects/${id}/engine`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         brandName: dbProject.name,
-        url: dbProject.description || "",
-        keywords: [],
+        url: dbProject.url || "",
+        keywords: kw,
         targetCountries: ["JP"],
-        methods: ["SEO"],
+        methods: ["SEO", "AEO", "GEO", "Schema.org", "FAQ"],
       }),
     })
       .then((res) => {
@@ -1057,12 +1061,23 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
             {dbProject.status === "active" && (
               <Button variant="outline" size="sm" onClick={async () => {
                 await fetch(`/api/projects/${id}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ status: "paused" }) });
+                // エンジンにも停止を通知
+                await fetch(`/api/engine/engine/stop`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ projectId: id }) }).catch(() => {});
                 setDbProject((p) => p ? { ...p, status: "paused" } : p);
               }} className="gap-1.5"><Pause className="h-3.5 w-3.5" /> {t("project.pause")}</Button>
             )}
             {dbProject.status === "paused" && (
               <Button size="sm" onClick={async () => {
                 await fetch(`/api/projects/${id}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ status: "active" }) });
+                // エンジンにプロジェクトを再登録
+                const meta = dbProject.metadata as Record<string, unknown> | null;
+                await fetch(`/api/projects/${id}/engine`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({
+                  brandName: dbProject.name,
+                  url: dbProject.url || "",
+                  keywords: (meta?.keywords as string[]) ?? [],
+                  targetCountries: ["JP"],
+                  methods: ["SEO", "AEO", "GEO", "Schema.org", "FAQ"],
+                }) }).catch(() => {});
                 setDbProject((p) => p ? { ...p, status: "active" } : p);
               }} className="gap-1.5"><Play className="h-3.5 w-3.5" /> {t("project.resume")}</Button>
             )}

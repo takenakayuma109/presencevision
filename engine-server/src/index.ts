@@ -14,6 +14,7 @@ import { setDBAvailable } from "./engine/activity-logger.js";
 import engineRoutes from "./routes/engine.js";
 import activitiesRoutes from "./routes/activities.js";
 import healthRoutes from "./routes/health.js";
+import { restoreProjects } from "./engine/presence-engine.js";
 
 // ---------------------------------------------------------------------------
 // Configuration
@@ -126,6 +127,9 @@ async function start() {
     await initDB();
     setDBAvailable(true);
     console.log("[DB] PostgreSQL connected");
+
+    // DB接続成功時、稼働中プロジェクトを復帰
+    await restoreProjects();
   } catch (err) {
     console.warn("[DB] PostgreSQL unavailable, running in-memory only:", (err as Error).message);
     setDBAvailable(false);

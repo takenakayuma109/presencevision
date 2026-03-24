@@ -39,6 +39,7 @@ import {
   type ActivityEntry,
 } from "./activity-logger.js";
 import { getBrowserPool } from "./browser-pool.js";
+import { saveProject, removeProject, getActiveProjectsFromDB } from "../db/index.js";
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -475,7 +476,7 @@ async function runCycle(project: PresenceProject): Promise<CycleResult> {
 // ---------------------------------------------------------------------------
 
 /** プロジェクトを開始（24/7ループ） */
-export function startProject(project: PresenceProject): void {
+export function startProject(project: PresenceProject, skipInitialCycle = false): void {
   if (activeProjects.has(project.id)) {
     console.log(`[Engine] Project "${project.name}" is already running`);
     return;
@@ -484,10 +485,17 @@ export function startProject(project: PresenceProject): void {
   const state = { project, intervalId: null as ReturnType<typeof setInterval> | null, running: true };
   activeProjects.set(project.id, state);
 
-  // 初回実行
-  runCycle(project).catch((err) =>
-    console.error(`[Engine] Initial cycle failed:`, err),
+  // DBに保存（再起動時に復帰できるように）
+  saveProject(project.id, project as unknown as Record<string, unknown>).catch((err) =>
+    console.error(`[Engine] Failed to save project to DB:`, err),
   );
+
+  // 初回実行（復帰時はスキップ可能）
+  if (!skipInitialCycle) {
+    runCycle(project).catch((err) =>
+      console.error(`[Engine] Initial cycle failed:`, err),
+    );
+  }
 
   // 定期実行（デフォルト: 6時間ごと）
   const intervalMs = parseInt(process.env.ENGINE_CYCLE_INTERVAL_MS ?? String(6 * 60 * 60 * 1000));
@@ -511,7 +519,34 @@ export function stopProject(projectId: string): void {
   if (state.intervalId) clearInterval(state.intervalId);
   activeProjects.delete(projectId);
 
+  // DBからも停止状態にする
+  removeProject(projectId).catch((err) =>
+    console.error(`[Engine] Failed to remove project from DB:`, err),
+  );
+
   console.log(`[Engine] Project "${state.project.name}" stopped`);
+}
+
+/** エンジン起動時にDBから稼働中プロジェクトを復帰 */
+export async function restoreProjects(): Promise<void> {
+  try {
+    const projects = await getActiveProjectsFromDB();
+    if (projects.length === 0) {
+      console.log("[Engine] No projects to restore");
+      return;
+    }
+    console.log(`[Engine] Restoring ${projects.length} project(s) from DB...`);
+    for (const data of projects) {
+      const project = data as unknown as PresenceProject;
+      project.createdAt = new Date(project.createdAt);
+      project.status = "active";
+      // 復帰時は初回サイクルをスキップ（次のインターバルで実行）
+      startProject(project, true);
+      console.log(`[Engine] Restored project "${project.name}"`);
+    }
+  } catch (error) {
+    console.error("[Engine] Failed to restore projects:", error);
+  }
 }
 
 /** 手動で1サイクル実行 */

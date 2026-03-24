@@ -354,6 +354,16 @@ const PLATFORM_HANDLERS: Partial<
 export async function postToSocial(
   params: SocialPostParams,
 ): Promise<PostResult> {
+  // 認証情報チェック
+  if (params.channel.requiresAuth && !params.channel.credentials?.username) {
+    return {
+      success: false,
+      error: `${params.channel.name}: 認証情報が未設定です。設定画面でアカウント情報を追加してください。`,
+      channel: params.channel.type,
+      action: params.action.type,
+    };
+  }
+
   const activity = startActivity({
     projectId: params.projectId,
     taskId: params.taskId,
@@ -416,6 +426,15 @@ export async function searchAndEngage(params: {
   channel: ChannelConfig;
   maxEngagements: number;
 }): Promise<PostResult[]> {
+  if (params.channel.requiresAuth && !params.channel.credentials?.username) {
+    return [{
+      success: false,
+      error: `${params.channel.name}: 認証情報が未設定です`,
+      channel: params.channel.type,
+      action: "search_engage",
+    }];
+  }
+
   const activity = startActivity({
     projectId: params.projectId,
     taskId: params.taskId,

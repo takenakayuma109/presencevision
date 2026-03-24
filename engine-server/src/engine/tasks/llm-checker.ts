@@ -35,43 +35,54 @@ async function checkPerplexity(
   query: string,
   targetBrand: string,
 ): Promise<Partial<LlmCheckResult>> {
-  await page.goto("https://www.perplexity.ai/", { waitUntil: "networkidle", timeout: 30000 });
+  // domcontentloaded で十分（networkidle はPerplexityのストリーミングで詰まる）
+  await page.goto("https://www.perplexity.ai/", { waitUntil: "domcontentloaded", timeout: 45000 });
+
+  // ページの初期化を待つ
+  await page.waitForTimeout(3000);
 
   // 検索ボックスに入力
-  const searchInput = page.locator('textarea, input[placeholder*="Ask"]').first();
-  await searchInput.waitFor({ timeout: 10000 });
+  const searchInput = page.locator('textarea, input[placeholder*="Ask"], input[placeholder*="ask"]').first();
+  await searchInput.waitFor({ timeout: 15000 });
   await searchInput.fill(query);
   await searchInput.press("Enter");
 
-  // 回答を待つ
-  await page.waitForTimeout(15000); // LLMの回答生成を待つ
+  // 回答生成を待つ（proseセレクタが出るまで、最大60秒）
+  try {
+    await page.waitForSelector('[class*="prose"], [class*="answer"], .markdown', { timeout: 60000 });
+    // 生成完了を待つ（テキストが安定するまで）
+    await page.waitForTimeout(5000);
+  } catch {
+    // セレクタが見つからなくてもページのテキストを取る
+    await page.waitForTimeout(10000);
+  }
 
   // 回答テキストを取得
-  const responseText = await page.evaluate('() => {\
-    var answerEl = document.querySelector(\'[class*="prose"], [class*="answer"], .markdown\');\
-    return (answerEl && answerEl.textContent || document.body.innerText).trim();\
-  }') as string;
+  const responseText = await page.evaluate(() => {
+    const answerEl = document.querySelector('[class*="prose"], [class*="answer"], .markdown');
+    return (answerEl?.textContent || document.body.innerText || "").trim();
+  }) as string;
 
   // 引用URLを取得
-  const citedUrls = await page.evaluate('() => {\
-    var urls = [];\
-    document.querySelectorAll(\'a[href^="http"]\').forEach(function(a) {\
-      var href = a.getAttribute("href") || "";\
-      if (href && !href.includes("perplexity.ai")) {\
-        urls.push(href);\
-      }\
-    });\
-    return Array.from(new Set(urls));\
-  }') as string[];
+  const citedUrls = await page.evaluate(() => {
+    const urls: string[] = [];
+    document.querySelectorAll('a[href^="http"]').forEach((a) => {
+      const href = a.getAttribute("href") || "";
+      if (href && !href.includes("perplexity.ai")) {
+        urls.push(href);
+      }
+    });
+    return Array.from(new Set(urls));
+  }) as string[];
 
   const brandLower = targetBrand.toLowerCase();
-  const responseLower = responseText.toLowerCase();
+  const responseLower = (responseText || "").toLowerCase();
   const mentioned = responseLower.includes(brandLower);
-  const mentionCount = responseLower.split(brandLower).length - 1;
+  const mentionCount = mentioned ? responseLower.split(brandLower).length - 1 : 0;
 
   return {
     platform: "perplexity",
-    responseText: responseText.slice(0, 5000),
+    responseText: (responseText || "").slice(0, 5000),
     citedUrls,
     mentioned,
     mentionCount,
@@ -89,45 +100,59 @@ async function checkGoogleAI(
 ): Promise<Partial<LlmCheckResult>> {
   const googleDomains: Record<string, string> = {
     JP: "google.co.jp", US: "google.com", GB: "google.co.uk",
+    DE: "google.de", FR: "google.fr", KR: "google.co.kr",
+    CN: "google.com", IN: "google.co.in", BR: "google.com.br",
   };
   const domain = googleDomains[country] ?? "google.com";
 
   await page.goto(
     `https://www.${domain}/search?q=${encodeURIComponent(query)}&hl=${language}`,
-    { waitUntil: "networkidle", timeout: 30000 },
+    { waitUntil: "domcontentloaded", timeout: 45000 },
   );
 
   // Cookie同意
   try {
     const btn = page.locator('#L2AGLb, button:has-text("Accept"), button:has-text("同意")');
-    if (await btn.isVisible({ timeout: 2000 })) await btn.click();
+    if (await btn.isVisible({ timeout: 3000 })) await btn.click();
   } catch { /* */ }
 
-  await page.waitForTimeout(3000);
+  // ページ読み込み＋AI Overview生成を待つ
+  await page.waitForTimeout(5000);
 
-  // AI Overview セクションを探す
-  const aiOverview = await page.evaluate('(brand) => {\
-    var aiEl = document.querySelector(\
-      \'[data-attrid*="ai"], [class*="ai-overview"], #kp-wp-tab-overview, .wDYxhc\'\
-    );\
-    var text = (aiEl && aiEl.textContent || "").trim();\
-    var brandLower = brand.toLowerCase();\
-    var mentioned = text.toLowerCase().includes(brandLower);\
-    return {\
-      hasAiOverview: !!aiEl && text.length > 0,\
-      responseText: text.slice(0, 3000),\
-      mentioned: mentioned,\
-      mentionCount: text.toLowerCase().split(brandLower).length - 1,\
-    };\
-  }', targetBrand) as { hasAiOverview: boolean; responseText: string; mentioned: boolean; mentionCount: number };
+  // AI Overview セクションを探す（null安全）
+  const aiOverview = await page.evaluate((brand) => {
+    const selectors = [
+      '[data-attrid*="ai"]',
+      '[class*="ai-overview"]',
+      '#kp-wp-tab-overview',
+      '.wDYxhc',
+      '[data-sgrd]',
+      '.ILfuVd',
+    ];
+    let aiEl: Element | null = null;
+    for (const sel of selectors) {
+      aiEl = document.querySelector(sel);
+      if (aiEl && (aiEl.textContent || "").trim().length > 50) break;
+    }
+    const text = (aiEl?.textContent || "").trim();
+    const brandLower = brand.toLowerCase();
+    const textLower = text.toLowerCase();
+    const mentioned = textLower.includes(brandLower);
+    return {
+      hasAiOverview: !!aiEl && text.length > 0,
+      responseText: text.slice(0, 3000),
+      mentioned,
+      mentionCount: mentioned ? textLower.split(brandLower).length - 1 : 0,
+    };
+  }, targetBrand);
 
   return {
     platform: "google-ai-overview",
-    responseText: aiOverview.responseText,
+    responseText: aiOverview?.responseText ?? "",
     citedUrls: [],
-    mentioned: aiOverview.mentioned,
-    mentionCount: aiOverview.mentionCount,
-    sentiment: aiOverview.mentioned ? "neutral" : "unknown",
+    mentioned: aiOverview?.mentioned ?? false,
+    mentionCount: aiOverview?.mentionCount ?? 0,
+    sentiment: aiOverview?.mentioned ? "neutral" : "unknown",
   };
 }
 

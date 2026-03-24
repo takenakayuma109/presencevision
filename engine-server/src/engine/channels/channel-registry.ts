@@ -297,6 +297,25 @@ export function getChannelsForCountry(country: string): ChannelConfig[] {
   return all.filter((ch) => ch.regions.includes(country));
 }
 
+/**
+ * チャネルが認証済み（利用可能）かどうかを判定する。
+ * requiresAuth === true のチャネルで credentials が未設定ならfalse。
+ */
+export function isChannelReady(channel: ChannelConfig): boolean {
+  if (!channel.enabled) return false;
+  if (!channel.requiresAuth) return true;
+
+  const creds = channel.credentials;
+  if (!creds) return false;
+
+  // APIキーがあればOK（DEV.to, Qiita, Hashnode等）
+  if (creds.apiKey) return true;
+  // ユーザー名+パスワードがあればOK（Playwright系）
+  if (creds.username && creds.password) return true;
+
+  return false;
+}
+
 // ---------------------------------------------------------------------------
 // Get channels relevant for a specific category
 // ---------------------------------------------------------------------------

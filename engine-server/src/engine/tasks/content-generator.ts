@@ -17,6 +17,25 @@ import {
   addArtifact,
 } from "../activity-logger.js";
 
+/** 言語コード → 自然言語名マッピング（LLMが確実に理解できる形式） */
+const languageNames: Record<string, string> = {
+  ja: "Japanese (日本語)",
+  en: "English",
+  zh: "Chinese (中文)",
+  ko: "Korean (한국어)",
+  es: "Spanish (Español)",
+  fr: "French (Français)",
+  de: "German (Deutsch)",
+  pt: "Portuguese (Português)",
+  ru: "Russian (Русский)",
+  ar: "Arabic (العربية)",
+  hi: "Hindi (हिन्दी)",
+};
+
+function getLanguageName(code: string): string {
+  return languageNames[code] ?? code;
+}
+
 export interface GeneratedContent {
   type: "article" | "faq" | "schema" | "meta_tags" | "multilingual";
   title: string;
@@ -51,6 +70,8 @@ export async function generateSeoArticle(params: {
   try {
     const ai = getAIProvider();
 
+    const langName = getLanguageName(params.language);
+
     const article = await ai.completeJSON<{
       title: string;
       body: string;
@@ -59,7 +80,9 @@ export async function generateSeoArticle(params: {
     }>([
       {
         role: "user",
-        content: `Write an SEO article in ${params.language}.
+        content: `Write an SEO-optimized article entirely in ${langName}.
+
+IMPORTANT: The entire article (title, body, metaTitle, metaDescription) MUST be written in ${langName}. Do NOT write in English unless the target language is English.
 
 Topic: ${params.topic}
 Keywords: ${params.keywords.join(", ")}
@@ -130,12 +153,17 @@ export async function generateFaq(params: {
   try {
     const ai = getAIProvider();
 
+    const langName = getLanguageName(params.language);
+
     const faq = await ai.completeJSON<{
       questions: { question: string; answer: string }[];
     }>([
       {
         role: "user",
-        content: `Generate 5 FAQ questions and answers about "${params.topic}" for ${params.brandName} in ${params.language}.
+        content: `Generate 5 FAQ questions and answers about "${params.topic}" for ${params.brandName}.
+
+IMPORTANT: Write ALL questions and answers entirely in ${langName}. Do NOT write in English unless the target language is English.
+
 Each answer should be 40-60 words.
 ${params.existingQuestions.length ? `Do not repeat these: ${params.existingQuestions.join(", ")}` : ""}
 
@@ -202,6 +230,8 @@ export async function generateSchema(params: {
   try {
     const ai = getAIProvider();
 
+    const langName = getLanguageName(params.language);
+
     const schema = await ai.completeJSON<Record<string, unknown>>([
       {
         role: "user",
@@ -211,10 +241,10 @@ URL: ${params.pageUrl}
 Title: ${params.pageTitle}
 Type: ${params.pageType}
 Brand: ${params.brandName}
-Language: ${params.language}
+Language: ${langName}
 ${params.content ? `Content: ${params.content.slice(0, 500)}` : ""}
 
-Include @context, @type, and recommended properties.
+Include @context, @type, and recommended properties. Use the correct language for text fields.
 
 Example for Organization type:
 {"@context": "https://schema.org", "@type": "Organization", "name": "Brand", "url": "https://example.com", "logo": "https://example.com/logo.png"}
@@ -276,14 +306,19 @@ export async function translateContent(params: {
   try {
     const ai = getAIProvider();
 
+    const sourceLangName = getLanguageName(params.sourceLanguage);
+    const targetLangName = getLanguageName(params.targetLanguage);
+
     const translated = await ai.completeJSON<{
       title: string;
       body: string;
     }>([
       {
         role: "user",
-        content: `Translate from ${params.sourceLanguage} to ${params.targetLanguage} for ${params.targetCountry}.
+        content: `Translate from ${sourceLangName} to ${targetLangName} for ${params.targetCountry}.
 Keep "${params.brandName}" unchanged. Localize for the target market.
+
+IMPORTANT: The output MUST be entirely in ${targetLangName}.
 
 Content:
 ${params.sourceContent.slice(0, 3000)}

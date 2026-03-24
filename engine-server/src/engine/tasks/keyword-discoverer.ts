@@ -100,9 +100,10 @@ async function fetchAutocomplete(
     return await pool.withPage(
       async (page) => {
         await page.goto(`https://www.${googleDomain}/?hl=${language}`, {
-          waitUntil: "networkidle",
-          timeout: 30000,
+          waitUntil: "domcontentloaded",
+          timeout: 45000,
         });
+        await page.waitForTimeout(2000);
 
         // Handle consent dialog
         try {
@@ -197,7 +198,8 @@ async function fetchSerpKeywords(
         const searchUrl = `https://www.${googleDomain}/search?q=${encodeURIComponent(
           seedKeyword,
         )}&hl=${language}&gl=${country.toLowerCase()}&num=20`;
-        await page.goto(searchUrl, { waitUntil: "networkidle", timeout: 30000 });
+        await page.goto(searchUrl, { waitUntil: "domcontentloaded", timeout: 45000 });
+        await page.waitForTimeout(2000);
 
         // Handle consent dialog
         try {

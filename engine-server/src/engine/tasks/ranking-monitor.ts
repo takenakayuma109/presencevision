@@ -170,7 +170,8 @@ export async function monitorRankings(params: RankingMonitorParams): Promise<Ran
       const result = await pool.withPage(
         async (page) => {
           const searchUrl = `https://www.${googleDomain}/search?q=${encodeURIComponent(item.keyword)}&hl=${item.language}&gl=${params.country.toLowerCase()}&num=100`;
-          await page.goto(searchUrl, { waitUntil: "networkidle", timeout: 30000 });
+          await page.goto(searchUrl, { waitUntil: "domcontentloaded", timeout: 45000 });
+          await page.waitForTimeout(2000);
 
           // Cookie consent handling
           try {

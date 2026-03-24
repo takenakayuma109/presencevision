@@ -137,7 +137,8 @@ export async function checkSerp(params: {
       async (page) => {
         // Google検索
         const searchUrl = `https://www.${googleDomain}/search?q=${encodeURIComponent(params.keyword)}&hl=${params.language}&gl=${params.country.toLowerCase()}&num=20`;
-        await page.goto(searchUrl, { waitUntil: "networkidle", timeout: 30000 });
+        await page.goto(searchUrl, { waitUntil: "domcontentloaded", timeout: 45000 });
+        await page.waitForTimeout(2000);
 
         // Cookie同意ダイアログ処理
         try {

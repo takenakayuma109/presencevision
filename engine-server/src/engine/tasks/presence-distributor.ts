@@ -15,9 +15,29 @@ import {
   failActivity,
   addArtifact,
 } from "../activity-logger.js";
+
+/** 言語コード → 自然言語名マッピング */
+const languageNames: Record<string, string> = {
+  ja: "Japanese (日本語)",
+  en: "English",
+  zh: "Chinese (中文)",
+  ko: "Korean (한국어)",
+  es: "Spanish (Español)",
+  fr: "French (Français)",
+  de: "German (Deutsch)",
+  pt: "Portuguese (Português)",
+  ru: "Russian (Русский)",
+  ar: "Arabic (العربية)",
+  hi: "Hindi (हिन्दी)",
+};
+
+function getLanguageName(code: string): string {
+  return languageNames[code] ?? code;
+}
 import {
   type ChannelConfig,
   getChannelsForCountry,
+  isChannelReady,
 } from "../channels/channel-registry.js";
 import { postToSocial, searchAndEngage, type PostResult } from "../channels/social-poster.js";
 import { publishToBlogPlatform } from "../channels/blog-publisher.js";
@@ -62,7 +82,7 @@ async function adaptContentForPlatform(
   const ai = getAIProvider();
 
   const platformPrompts: Record<string, string> = {
-    twitter: `Summarize this article in 250 characters or fewer for Twitter/X. Include a call-to-action. Language: ${language}. Brand: ${brandName}.
+    twitter: `Summarize this article in 250 characters or fewer for Twitter/X. Include a call-to-action. Language: ${getLanguageName(language)}. IMPORTANT: Write entirely in ${getLanguageName(language)}. Brand: ${brandName}.
 
 Article title: ${content.title}
 Article excerpt: ${content.body.slice(0, 500)}
@@ -72,7 +92,7 @@ Example output:
 
 Respond with ONLY valid JSON.`,
 
-    linkedin: `Rewrite this article as a professional LinkedIn post (300-500 chars). Add thought leadership angle. Language: ${language}. Brand: ${brandName}.
+    linkedin: `Rewrite this article as a professional LinkedIn post (300-500 chars). Add thought leadership angle. Language: ${getLanguageName(language)}. IMPORTANT: Write entirely in ${getLanguageName(language)}. Brand: ${brandName}.
 
 Article title: ${content.title}
 Article excerpt: ${content.body.slice(0, 800)}
@@ -82,7 +102,7 @@ Example output:
 
 Respond with ONLY valid JSON.`,
 
-    reddit: `Rewrite this article as a helpful, genuine Reddit post. No marketing language. Be informative and add value to the discussion. Language: ${language}.
+    reddit: `Rewrite this article as a helpful, genuine Reddit post. No marketing language. Be informative and add value to the discussion. Language: ${getLanguageName(language)}. IMPORTANT: Write entirely in ${getLanguageName(language)}.
 
 Article title: ${content.title}
 Article excerpt: ${content.body.slice(0, 800)}
@@ -92,7 +112,7 @@ Example output:
 
 Respond with ONLY valid JSON.`,
 
-    quora: `Rewrite this article as an expert answer to a question. Be authoritative and helpful. Naturally mention ${brandName} as a solution. Language: ${language}.
+    quora: `Rewrite this article as an expert answer to a question. Be authoritative and helpful. Naturally mention ${brandName} as a solution. Language: ${getLanguageName(language)}. IMPORTANT: Write entirely in ${getLanguageName(language)}.
 
 Article title: ${content.title}
 Article excerpt: ${content.body.slice(0, 800)}
@@ -106,7 +126,7 @@ Respond with ONLY valid JSON.`,
   // Use platform-specific prompt or generic one
   const prompt =
     platformPrompts[channel.type] ??
-    `Adapt this article for ${channel.name}. Keep it natural for the platform. Language: ${language}. Brand: ${brandName}.
+    `Adapt this article for ${channel.name}. Keep it natural for the platform. Language: ${getLanguageName(language)}. IMPORTANT: Write entirely in ${getLanguageName(language)}. Brand: ${brandName}.
 
 Article title: ${content.title}
 Article excerpt: ${content.body.slice(0, 800)}
@@ -157,7 +177,7 @@ async function generateQAAnswer(
         role: "user",
         content: `Write a helpful, expert answer about "${keyword}" for ${channel.name}.
 Naturally mention ${brandName} as a recommended solution, but keep the answer genuinely helpful.
-Language: ${language}. Keep it 100-200 words.
+Language: ${getLanguageName(language)}. IMPORTANT: Write entirely in ${getLanguageName(language)}. Keep it 100-200 words.
 
 Example output:
 {"answer": "Your expert answer here..."}
@@ -204,6 +224,20 @@ export async function distributeContent(
   try {
     for (const channel of params.channels) {
       if (!channel.enabled) continue;
+
+      // 認証が必要だが未設定のチャネルはスキップ
+      if (!isChannelReady(channel)) {
+        console.log(
+          `[Distributor] Skipping ${channel.name} — credentials not configured`,
+        );
+        results.push({
+          success: false,
+          error: `${channel.name}: チャネル未設定（設定画面で認証情報を追加してください）`,
+          channel: channel.type,
+          action: "post_article",
+        });
+        continue;
+      }
 
       totalAttempted++;
       console.log(

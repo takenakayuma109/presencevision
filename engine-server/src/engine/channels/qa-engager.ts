@@ -410,6 +410,16 @@ const QA_HANDLERS: Partial<
 // ---------------------------------------------------------------------------
 
 export async function engageOnQA(params: QAEngageParams): Promise<PostResult> {
+  // 認証情報チェック
+  if (params.channel.requiresAuth && !params.channel.credentials?.username) {
+    return {
+      success: false,
+      error: `${params.channel.name}: 認証情報が未設定です。設定画面でアカウント情報を追加してください。`,
+      channel: params.channel.type,
+      action: "answer_question",
+    };
+  }
+
   const activity = startActivity({
     projectId: params.projectId,
     taskId: params.taskId,

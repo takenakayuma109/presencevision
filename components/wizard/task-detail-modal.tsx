@@ -9,8 +9,36 @@ import {
   CheckCircle2, AlertTriangle, ChevronDown, ChevronUp,
   Image, ExternalLink, FileText, Code2, Database, Eye,
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useTranslation, useLabels } from "@/lib/hooks/use-translation";
+
+/** URLを検出してリンク化する */
+function Linkify({ text }: { text: string }) {
+  const parts = text.split(/(https?:\/\/[^\s"',}\]]+)/g);
+  return (
+    <>
+      {parts.map((part, i) =>
+        /^https?:\/\//.test(part) ? (
+          <a key={i} href={part} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline break-all">
+            {part}
+          </a>
+        ) : (
+          <span key={i}>{part}</span>
+        ),
+      )}
+    </>
+  );
+}
+
+/** JSONを人間が読みやすい形式にフォーマット */
+function formatArtifactContent(content: string): string {
+  try {
+    const parsed = JSON.parse(content);
+    return JSON.stringify(parsed, null, 2);
+  } catch {
+    return content;
+  }
+}
 
 const statusColor: Record<string, string> = {
   running: "bg-green-500",
@@ -115,7 +143,7 @@ function ArtifactPreview({ artifact }: { artifact: ExecutionArtifact }) {
                   ? "bg-gray-900 text-gray-100 font-mono"
                   : "bg-muted/50 text-foreground",
               )}>
-                {artifact.content}
+                <Linkify text={formatArtifactContent(artifact.content)} />
               </pre>
               {artifact.language && (
                 <p className="text-[10px] text-muted-foreground mt-1.5">{t("taskDetail.language")}: {artifact.language}</p>
@@ -126,9 +154,9 @@ function ArtifactPreview({ artifact }: { artifact: ExecutionArtifact }) {
           {/* Link */}
           {artifact.type === "link" && artifact.url && (
             <div className="p-3">
-              <p className="text-xs text-blue-500 flex items-center gap-1">
+              <a href={artifact.url} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-500 hover:underline flex items-center gap-1">
                 <ExternalLink className="h-3 w-3" /> {artifact.url}
-              </p>
+              </a>
             </div>
           )}
         </div>

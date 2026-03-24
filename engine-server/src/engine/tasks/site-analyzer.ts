@@ -149,7 +149,8 @@ export async function analyzeSite(params: {
     const result = await pool.withPage(
       async (page) => {
         const startTime = Date.now();
-        await page.goto(params.url, { waitUntil: "networkidle", timeout: 30000 });
+        await page.goto(params.url, { waitUntil: "domcontentloaded", timeout: 45000 });
+        await page.waitForTimeout(2000);
         const loadTimeMs = Date.now() - startTime;
 
         const pageData = await extractPageData(page);

@@ -58,6 +58,97 @@ const artifactColors: Record<string, string> = {
 
 type TabId = "overview" | "work" | "timeline";
 
+/** URLを検出してリンク化する */
+function Linkify({ text }: { text: string }) {
+  const parts = text.split(/(https?:\/\/[^\s"',}\]]+)/g);
+  return (
+    <>
+      {parts.map((part, i) =>
+        /^https?:\/\//.test(part) ? (
+          <a key={i} href={part} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline break-all">
+            {part}
+          </a>
+        ) : (
+          <span key={i}>{part}</span>
+        ),
+      )}
+    </>
+  );
+}
+
+/** JSONを人間が読みやすい形式にフォーマット */
+function formatArtifactContent(content: string): string {
+  try {
+    const parsed = JSON.parse(content);
+    return JSON.stringify(parsed, null, 2);
+  } catch {
+    return content;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Inline artifact display (for task accordion)
+// ---------------------------------------------------------------------------
+function ArtifactInline({ artifact: art }: { artifact: { type?: string; title?: string; content?: string; url?: string } }) {
+  const [expanded, setExpanded] = useState(false);
+
+  // Link type or has URL → show clickable link
+  if (art.url) {
+    return (
+      <div className="rounded-md border bg-muted/20 p-2">
+        <a href={art.url} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-500 hover:underline flex items-center gap-1.5">
+          <ExternalLink className="h-3.5 w-3.5 shrink-0" />
+          <span className="font-medium">{art.title || art.url}</span>
+        </a>
+      </div>
+    );
+  }
+
+  // Content-bearing artifact
+  if (art.content) {
+    const formatted = formatArtifactContent(art.content);
+    const isLong = formatted.length > 150;
+    const preview = isLong ? formatted.slice(0, 150) + "…" : formatted;
+
+    return (
+      <div className="rounded-md border bg-muted/20 overflow-hidden">
+        <button
+          onClick={() => isLong && setExpanded(!expanded)}
+          className={cn("w-full text-left p-2", isLong && "hover:bg-muted/40 cursor-pointer")}
+        >
+          <p className="text-[10px] font-medium text-muted-foreground mb-1 flex items-center gap-1">
+            <FileText className="h-3 w-3" />
+            {art.title}
+            {isLong && (
+              <ChevronDown className={cn("h-3 w-3 ml-auto transition-transform", expanded && "rotate-180")} />
+            )}
+          </p>
+          {!expanded && (
+            <p className="text-xs text-foreground/80 whitespace-pre-wrap break-all leading-relaxed">
+              <Linkify text={preview} />
+            </p>
+          )}
+        </button>
+        {expanded && (
+          <div className="border-t p-2">
+            <pre className="text-xs whitespace-pre-wrap break-all leading-relaxed max-h-60 overflow-y-auto bg-muted/30 rounded p-2">
+              <Linkify text={formatted} />
+            </pre>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // Fallback: title only
+  return (
+    <div className="flex items-center gap-1.5 text-xs">
+      <FileText className="h-3 w-3 shrink-0 text-muted-foreground" />
+      <span>{art.title}</span>
+    </div>
+  );
+}
+
 // ---------------------------------------------------------------------------
 // Artifact full card (for gallery view)
 // ---------------------------------------------------------------------------
@@ -101,13 +192,13 @@ function ArtifactCard({ artifact, taskTitle, region, completedAt }: {
       )}
       {artifact.type === "code" && artifact.content && (
         <div className="bg-gray-900 p-3 max-h-32 overflow-hidden relative">
-          <pre className="text-[10px] text-gray-300 font-mono leading-relaxed whitespace-pre-wrap">{artifact.content.slice(0, 300)}</pre>
+          <pre className="text-[10px] text-gray-300 font-mono leading-relaxed whitespace-pre-wrap">{formatArtifactContent(artifact.content).slice(0, 300)}</pre>
           <div className="absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-gray-900 to-transparent" />
         </div>
       )}
       {(artifact.type === "content" || artifact.type === "data") && artifact.content && !expanded && (
         <div className="bg-muted/30 p-3 max-h-28 overflow-hidden relative">
-          <p className="text-[11px] text-muted-foreground leading-relaxed whitespace-pre-wrap">{artifact.content.slice(0, 250)}</p>
+          <p className="text-[11px] text-muted-foreground leading-relaxed whitespace-pre-wrap"><Linkify text={formatArtifactContent(artifact.content).slice(0, 250)} /></p>
           <div className="absolute bottom-0 left-0 right-0 h-6 bg-gradient-to-t from-muted/80 to-transparent" />
         </div>
       )}
@@ -178,7 +269,7 @@ function ArtifactCard({ artifact, taskTitle, region, completedAt }: {
             "text-xs leading-relaxed whitespace-pre-wrap rounded-lg p-3 max-h-80 overflow-y-auto",
             artifact.type === "code" ? "bg-gray-900 text-gray-100 font-mono" : "bg-muted/50",
           )}>
-            {artifact.content}
+            <Linkify text={formatArtifactContent(artifact.content)} />
           </pre>
         </div>
       )}
@@ -1189,21 +1280,9 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
                         {hasArtifacts && (
                           <div className="flex items-start gap-2">
                             <span className="text-xs font-medium text-muted-foreground w-16 shrink-0">{t("project.artifactsLabel")}</span>
-                            <div className="space-y-1 flex-1 min-w-0">
+                            <div className="space-y-2 flex-1 min-w-0">
                               {activity.artifacts!.map((art, j) => (
-                                <div key={j} className="flex items-center gap-2 text-xs">
-                                  {art.url ? (
-                                    <a href={art.url} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline flex items-center gap-1 truncate">
-                                      <ExternalLink className="h-3 w-3 shrink-0" />
-                                      {art.title || art.url}
-                                    </a>
-                                  ) : (
-                                    <span className="flex items-center gap-1 truncate">
-                                      <FileText className="h-3 w-3 shrink-0 text-muted-foreground" />
-                                      {art.title}{art.content ? `: ${art.content.slice(0, 100)}${art.content.length > 100 ? "…" : ""}` : ""}
-                                    </span>
-                                  )}
-                                </div>
+                                <ArtifactInline key={j} artifact={art} />
                               ))}
                             </div>
                           </div>

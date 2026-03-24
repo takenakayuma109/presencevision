@@ -642,6 +642,17 @@ const API_HANDLERS: Partial<
 export async function publishToBlogPlatform(
   params: BlogPublishParams,
 ): Promise<PostResult> {
+  // 認証情報チェック：APIキーもログイン情報もなければスキップ
+  const creds = params.channel.credentials;
+  if (params.channel.requiresAuth && !creds?.apiKey && !creds?.username) {
+    return {
+      success: false,
+      error: `${params.channel.name}: 認証情報が未設定です。設定画面でAPIキーまたはアカウント情報を追加してください。`,
+      channel: params.channel.type,
+      action: "post_article",
+    };
+  }
+
   const activity = startActivity({
     projectId: params.projectId,
     taskId: params.taskId,

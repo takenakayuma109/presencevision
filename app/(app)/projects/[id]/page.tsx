@@ -266,6 +266,196 @@ function ArticlePreviewView({ title, content }: { title?: string; content: strin
 }
 
 // ---------------------------------------------------------------------------
+// Screenshot renderer (base64 → actual image)
+// ---------------------------------------------------------------------------
+function ScreenshotView({ content, title }: { content: string; title?: string }) {
+  const [expanded, setExpanded] = useState(false);
+  // Detect mime type from base64 header bytes
+  const mime = content.startsWith("/9j/") ? "image/jpeg" : "image/png";
+  const src = `data:${mime};base64,${content}`;
+
+  return (
+    <div className="space-y-2">
+      {title && (
+        <p className="text-[10px] font-medium text-muted-foreground flex items-center gap-1">
+          <Image className="h-3 w-3" />
+          {title}
+        </p>
+      )}
+      <div className="relative group">
+        <img
+          src={src}
+          alt={title || "Screenshot"}
+          className={cn(
+            "rounded-md border object-contain w-full transition-all cursor-pointer",
+            expanded ? "max-h-[600px]" : "max-h-[200px]",
+          )}
+          onClick={() => setExpanded(!expanded)}
+        />
+        <button
+          onClick={() => setExpanded(!expanded)}
+          className="absolute top-2 right-2 p-1 rounded bg-black/50 text-white opacity-0 group-hover:opacity-100 transition-opacity"
+        >
+          <Maximize2 className="h-3.5 w-3.5" />
+        </button>
+      </div>
+      <p className="text-[10px] text-muted-foreground">
+        {expanded ? "クリックで縮小" : "クリックで拡大"}
+      </p>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Site Analysis renderer (SEO分析レポート)
+// ---------------------------------------------------------------------------
+function SiteAnalysisView({ data, title }: { data: Record<string, unknown>; title?: string }) {
+  const url = String(data.url ?? data.siteUrl ?? "");
+  const siteTitle = String(data.title ?? data.siteTitle ?? "不明");
+  const description = String(data.description ?? data.metaDescription ?? "");
+  const loadTime = Number(data.loadTimeMs ?? data.loadTime ?? data.responseTime ?? 0);
+  const httpStatus = data.httpStatus ?? data.statusCode ?? data.status;
+  const h1Count = Number(data.h1Count ?? data.h1Tags ?? 0);
+  const h2Count = Number(data.h2Count ?? data.h2Tags ?? 0);
+  const imageCount = Number(data.imageCount ?? data.images ?? 0);
+  const linkCount = Number(data.linkCount ?? data.links ?? data.internalLinks ?? 0);
+  const hasRobots = data.robotsTxt !== undefined ? Boolean(data.robotsTxt) : data.hasRobotsTxt;
+  const hasSitemap = data.sitemap !== undefined ? Boolean(data.sitemap) : data.hasSitemap;
+
+  const domain = url ? url.replace(/^https?:\/\//, "").replace(/\/.*$/, "") : "";
+
+  // Build natural language summary
+  const summaryParts = [];
+  if (domain) summaryParts.push(`${domain}を分析しました`);
+  if (siteTitle !== "不明") summaryParts.push(`タイトル: 「${siteTitle}」`);
+  if (loadTime > 0) summaryParts.push(`読み込み時間: ${loadTime}ms`);
+  if (httpStatus) summaryParts.push(`HTTP状態: ${httpStatus}`);
+  const summary = summaryParts.join("、") + "。";
+
+  const metrics = [
+    { label: "HTTP", value: httpStatus ?? "—", color: httpStatus === 200 ? "text-green-600" : "text-yellow-600" },
+    { label: "読み込み", value: loadTime > 0 ? `${loadTime}ms` : "—", color: loadTime < 2000 ? "text-green-600" : loadTime < 5000 ? "text-yellow-600" : "text-red-500" },
+    { label: "H1", value: h1Count, color: h1Count === 1 ? "text-green-600" : "text-yellow-600" },
+    { label: "H2", value: h2Count, color: "text-foreground" },
+    { label: "画像", value: imageCount, color: "text-foreground" },
+    { label: "リンク", value: linkCount, color: "text-foreground" },
+  ];
+
+  return (
+    <div className="space-y-2.5">
+      <p className="text-[10px] font-medium text-muted-foreground flex items-center gap-1">
+        <BarChart3 className="h-3 w-3" />
+        {title || "SEO分析レポート"}
+      </p>
+      {/* Natural language summary */}
+      <p className="text-xs text-foreground/80 leading-relaxed">{summary}</p>
+      {/* Title & description */}
+      {siteTitle !== "不明" && (
+        <div className="text-xs space-y-0.5">
+          <p className="font-semibold text-foreground">{siteTitle}</p>
+          {description && <p className="text-foreground/60 line-clamp-2">{description}</p>}
+        </div>
+      )}
+      {/* Metrics grid */}
+      <div className="grid grid-cols-3 gap-1.5">
+        {metrics.map((m) => (
+          <div key={m.label} className="rounded border bg-muted/30 px-2 py-1.5 text-center">
+            <p className="text-[10px] text-muted-foreground">{m.label}</p>
+            <p className={cn("text-sm font-bold", m.color)}>{String(m.value)}</p>
+          </div>
+        ))}
+      </div>
+      {/* Robots / Sitemap */}
+      <div className="flex gap-3 text-[10px]">
+        {hasRobots !== undefined && (
+          <span className={cn("flex items-center gap-1", hasRobots ? "text-green-600" : "text-red-400")}>
+            {hasRobots ? <CheckCircle2 className="h-3 w-3" /> : <AlertTriangle className="h-3 w-3" />}
+            robots.txt
+          </span>
+        )}
+        {hasSitemap !== undefined && (
+          <span className={cn("flex items-center gap-1", hasSitemap ? "text-green-600" : "text-red-400")}>
+            {hasSitemap ? <CheckCircle2 className="h-3 w-3" /> : <AlertTriangle className="h-3 w-3" />}
+            sitemap.xml
+          </span>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// SERP Result renderer (検索順位データ)
+// ---------------------------------------------------------------------------
+function SerpResultView({ data, title }: { data: Record<string, unknown>; title?: string }) {
+  const keyword = String(data.keyword ?? data.query ?? "");
+  const country = String(data.country ?? data.region ?? data.gl ?? "");
+  const position = data.position != null ? Number(data.position) : null;
+  const topResults = (data.topResults ?? data.results ?? data.organicResults ?? []) as Array<{ title?: string; url?: string; link?: string; position?: number; rank?: number }>;
+  const targetUrl = String(data.targetUrl ?? data.url ?? data.target ?? "");
+
+  const positionLabel = position != null && position > 0 ? `${position}位` : "圏外";
+  const positionColor = position != null && position > 0
+    ? position <= 3 ? "bg-green-500 text-white" : position <= 10 ? "bg-blue-500 text-white" : "bg-yellow-500 text-white"
+    : "bg-muted text-muted-foreground";
+
+  // Natural language summary
+  const domain = targetUrl ? targetUrl.replace(/^https?:\/\//, "").replace(/\/.*$/, "") : "";
+  const summaryParts = [];
+  if (keyword) summaryParts.push(`「${keyword}」で検索した結果`);
+  if (domain) summaryParts.push(`${domain}は${positionLabel}でした`);
+  else summaryParts.push(`順位は${positionLabel}でした`);
+  if (country) summaryParts.push(`(対象: ${country})`);
+  const summary = summaryParts.join("、") + "。";
+
+  return (
+    <div className="space-y-2.5">
+      <p className="text-[10px] font-medium text-muted-foreground flex items-center gap-1">
+        <Search className="h-3 w-3" />
+        {title || "SERP結果"}
+      </p>
+      {/* Position badge + summary */}
+      <div className="flex items-center gap-2">
+        <span className={cn("text-xs font-bold px-2 py-0.5 rounded-full", positionColor)}>
+          {positionLabel}
+        </span>
+        {keyword && <Badge variant="outline" className="text-[10px]">{keyword}</Badge>}
+        {country && <Badge variant="outline" className="text-[10px]">{country}</Badge>}
+      </div>
+      <p className="text-xs text-foreground/80 leading-relaxed">{summary}</p>
+      {/* Top results list */}
+      {topResults.length > 0 && (
+        <div className="space-y-1">
+          <p className="text-[10px] font-medium text-muted-foreground">上位結果:</p>
+          {topResults.slice(0, 10).map((r, i) => {
+            const rank = r.position ?? r.rank ?? i + 1;
+            const resultUrl = r.url ?? r.link ?? "";
+            const resultTitle = r.title ?? resultUrl;
+            return (
+              <div key={i} className="flex items-start gap-2 text-xs">
+                <span className="text-muted-foreground font-mono w-5 text-right shrink-0">{rank}.</span>
+                <div className="min-w-0">
+                  {resultUrl ? (
+                    <a href={resultUrl} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline line-clamp-1">
+                      {resultTitle}
+                    </a>
+                  ) : (
+                    <span className="text-foreground/80 line-clamp-1">{resultTitle}</span>
+                  )}
+                  {resultUrl && resultUrl !== resultTitle && (
+                    <p className="text-[10px] text-muted-foreground truncate">{resultUrl}</p>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
 // Inline artifact display (for task accordion) — smart renderer
 // ---------------------------------------------------------------------------
 function ArtifactInline({ artifact: art }: { artifact: { type?: string; title?: string; content?: string; url?: string } }) {
@@ -287,6 +477,44 @@ function ArtifactInline({ artifact: art }: { artifact: { type?: string; title?: 
   if (art.content) {
     const parsed = tryParseJSON(art.content);
     const title = art.title ?? "";
+    const contentTrimmed = art.content.trim();
+
+    // 0a) Screenshot — base64 image data
+    const isBase64Image = /^(iVBORw0|\/9j\/|R0lGOD)/.test(contentTrimmed) || (art.type === "screenshot") || title.includes("スクリーンショット") || title.toLowerCase().includes("screenshot");
+    if (isBase64Image && !parsed) {
+      return (
+        <div className="rounded-md border bg-muted/20 p-3">
+          <ScreenshotView content={contentTrimmed} title={title || "スクリーンショット"} />
+        </div>
+      );
+    }
+
+    // 0b) Site Analysis (SEO分析レポート) — JSON with url + loadTimeMs / h1Count etc.
+    if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
+      const keys = Object.keys(parsed as Record<string, unknown>);
+      const siteAnalysisKeys = ["loadTimeMs", "loadTime", "responseTime", "h1Count", "h1Tags", "httpStatus", "statusCode", "imageCount", "linkCount"];
+      const isSiteAnalysis = siteAnalysisKeys.some((k) => keys.includes(k)) || (keys.includes("url") && (keys.includes("title") || keys.includes("siteTitle")) && (keys.includes("h1Count") || keys.includes("h2Count") || keys.includes("loadTimeMs")));
+      if (isSiteAnalysis) {
+        return (
+          <div className="rounded-md border bg-muted/20 p-3">
+            <SiteAnalysisView data={parsed as Record<string, unknown>} title={title || "SEO分析レポート"} />
+          </div>
+        );
+      }
+    }
+
+    // 0c) SERP Result (検索順位データ) — JSON with keyword + position / topResults
+    if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
+      const keys = Object.keys(parsed as Record<string, unknown>);
+      const isSerpResult = (keys.includes("keyword") || keys.includes("query")) && (keys.includes("position") || keys.includes("topResults") || keys.includes("results") || keys.includes("organicResults"));
+      if (isSerpResult) {
+        return (
+          <div className="rounded-md border bg-muted/20 p-3">
+            <SerpResultView data={parsed as Record<string, unknown>} title={title || "SERP結果"} />
+          </div>
+        );
+      }
+    }
 
     // 1) Distribution result (配信結果サマリー)
     if (parsed && typeof parsed === "object" && "totalAttempted" in (parsed as Record<string, unknown>) && "channels" in (parsed as Record<string, unknown>)) {

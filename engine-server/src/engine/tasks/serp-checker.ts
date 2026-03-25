@@ -183,6 +183,14 @@ export async function checkSerp(params: {
       content: JSON.stringify(result, null, 2),
     });
 
+    // 空結果の検出（Google検索ブロック等）
+    const isEmptyResult = !result.position && (!result.topResults || result.topResults.length === 0);
+    if (isEmptyResult) {
+      const msg = "SERP結果が空です（Google検索がブロックされた可能性があります）";
+      failActivity(activity.id, msg);
+      return { ...result, position: null, topResults: [] };
+    }
+
     completeActivity(activity.id, {
       metrics: {
         position: result.position ?? -1,

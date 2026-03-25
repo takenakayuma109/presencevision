@@ -110,6 +110,65 @@ function getGoogleDomain(country: string): string {
   return domains[country] ?? "google.com";
 }
 
+// ---------------------------------------------------------------------------
+// Google Custom Search API (無料枠: 100回/日、CAPTCHAなし)
+// ---------------------------------------------------------------------------
+const GOOGLE_CSE_API_KEY = process.env.GOOGLE_CSE_API_KEY ?? "";
+const GOOGLE_CSE_CX = process.env.GOOGLE_CSE_CX ?? "";
+
+async function checkSerpViaAPI(
+  keyword: string,
+  targetDomain: string,
+  country: string,
+  language: string,
+  num = 20,
+): Promise<Partial<SerpResult>> {
+  const url = new URL("https://www.googleapis.com/customsearch/v1");
+  url.searchParams.set("key", GOOGLE_CSE_API_KEY);
+  url.searchParams.set("cx", GOOGLE_CSE_CX);
+  url.searchParams.set("q", keyword);
+  url.searchParams.set("gl", country.toLowerCase());
+  url.searchParams.set("hl", language);
+  url.searchParams.set("num", String(Math.min(num, 10))); // API max is 10 per request
+
+  const response = await fetch(url.toString(), { signal: AbortSignal.timeout(15000) });
+  if (!response.ok) {
+    const text = await response.text();
+    throw new Error(`Google CSE API error (${response.status}): ${text}`);
+  }
+
+  const data = (await response.json()) as {
+    searchInformation?: { totalResults?: string };
+    items?: Array<{ title: string; link: string; snippet?: string }>;
+  };
+
+  const items = data.items ?? [];
+  let position: number | null = null;
+  const topResults = items.map((item, i) => {
+    const pos = i + 1;
+    try {
+      if (new URL(item.link).hostname.includes(targetDomain)) {
+        position = pos;
+      }
+    } catch { /* */ }
+    return {
+      position: pos,
+      title: item.title,
+      url: item.link,
+      snippet: item.snippet ?? "",
+    };
+  });
+
+  return {
+    position,
+    totalResults: data.searchInformation?.totalResults ?? "",
+    topResults,
+    featuredSnippet: undefined,
+    peopleAlsoAsk: [],
+    relatedSearches: [],
+  };
+}
+
 export async function checkSerp(params: {
   projectId: string;
   taskId: string;
@@ -128,54 +187,77 @@ export async function checkSerp(params: {
     description: `SERP順位チェック: "${params.keyword}" (${params.country})`,
   });
 
-  const pool = getBrowserPool();
   const targetDomain = new URL(params.targetUrl).hostname;
-  const googleDomain = getGoogleDomain(params.country);
+  const useAPI = !!(GOOGLE_CSE_API_KEY && GOOGLE_CSE_CX);
 
   try {
-    const result = await pool.withPage(
-      async (page) => {
-        // Google検索
-        const searchUrl = `https://www.${googleDomain}/search?q=${encodeURIComponent(params.keyword)}&hl=${params.language}&gl=${params.country.toLowerCase()}&num=20`;
-        await page.goto(searchUrl, { waitUntil: "domcontentloaded", timeout: 45000 });
-        await page.waitForTimeout(2000);
+    let result: SerpResult;
 
-        // Cookie同意ダイアログ処理
-        try {
-          const consentBtn = page.locator('button:has-text("Accept"), button:has-text("同意"), #L2AGLb');
-          if (await consentBtn.isVisible({ timeout: 2000 })) {
-            await consentBtn.click();
-            await page.waitForTimeout(1000);
-          }
-        } catch { /* no consent dialog */ }
+    if (useAPI) {
+      // --- Google Custom Search API (推奨: CAPTCHAなし、高速) ---
+      console.log(`[SERP] Using Google CSE API for "${params.keyword}"`);
+      const serpData = await checkSerpViaAPI(params.keyword, targetDomain, params.country, params.language);
 
-        const serpData = await extractSerpData(page, targetDomain) || {};
+      result = {
+        keyword: params.keyword,
+        country: params.country,
+        language: params.language,
+        targetUrl: params.targetUrl,
+        position: serpData.position ?? null,
+        totalResults: serpData.totalResults ?? "",
+        topResults: serpData.topResults ?? [],
+        featuredSnippet: serpData.featuredSnippet,
+        peopleAlsoAsk: serpData.peopleAlsoAsk ?? [],
+        relatedSearches: serpData.relatedSearches ?? [],
+        checkedAt: new Date(),
+      };
+    } else {
+      // --- Playwright フォールバック (CAPTCHAリスクあり) ---
+      console.log(`[SERP] Using Playwright for "${params.keyword}" (no API key configured)`);
+      const pool = getBrowserPool();
+      const googleDomain = getGoogleDomain(params.country);
 
-        // スクリーンショット
-        const screenshot = await page.screenshot({ fullPage: false, type: "png" });
-        addArtifact(activity.id, {
-          type: "screenshot",
-          title: `SERP: "${params.keyword}" (${params.country})`,
-          content: screenshot.toString("base64"),
-          mimeType: "image/png",
-        });
+      result = await pool.withPage(
+        async (page) => {
+          const searchUrl = `https://www.${googleDomain}/search?q=${encodeURIComponent(params.keyword)}&hl=${params.language}&gl=${params.country.toLowerCase()}&num=20`;
+          await page.goto(searchUrl, { waitUntil: "domcontentloaded", timeout: 45000 });
+          await page.waitForTimeout(2000);
 
-        return {
-          keyword: params.keyword,
-          country: params.country,
-          language: params.language,
-          targetUrl: params.targetUrl,
-          position: serpData.position ?? null,
-          totalResults: serpData.totalResults ?? "",
-          topResults: serpData.topResults ?? [],
-          featuredSnippet: serpData.featuredSnippet,
-          peopleAlsoAsk: serpData.peopleAlsoAsk ?? [],
-          relatedSearches: serpData.relatedSearches ?? [],
-          checkedAt: new Date(),
-        };
-      },
-      { country: params.country, locale: params.language },
-    );
+          try {
+            const consentBtn = page.locator('button:has-text("Accept"), button:has-text("同意"), #L2AGLb');
+            if (await consentBtn.isVisible({ timeout: 2000 })) {
+              await consentBtn.click();
+              await page.waitForTimeout(1000);
+            }
+          } catch { /* no consent dialog */ }
+
+          const serpData = await extractSerpData(page, targetDomain) || {};
+
+          const screenshot = await page.screenshot({ fullPage: false, type: "png" });
+          addArtifact(activity.id, {
+            type: "screenshot",
+            title: `SERP: "${params.keyword}" (${params.country})`,
+            content: screenshot.toString("base64"),
+            mimeType: "image/png",
+          });
+
+          return {
+            keyword: params.keyword,
+            country: params.country,
+            language: params.language,
+            targetUrl: params.targetUrl,
+            position: serpData.position ?? null,
+            totalResults: serpData.totalResults ?? "",
+            topResults: serpData.topResults ?? [],
+            featuredSnippet: serpData.featuredSnippet,
+            peopleAlsoAsk: serpData.peopleAlsoAsk ?? [],
+            relatedSearches: serpData.relatedSearches ?? [],
+            checkedAt: new Date(),
+          };
+        },
+        { country: params.country, locale: params.language },
+      );
+    }
 
     addArtifact(activity.id, {
       type: "json",
@@ -183,10 +265,12 @@ export async function checkSerp(params: {
       content: JSON.stringify(result, null, 2),
     });
 
-    // 空結果の検出（Google検索ブロック等）
+    // 空結果の検出
     const isEmptyResult = !result.position && (!result.topResults || result.topResults.length === 0);
     if (isEmptyResult) {
-      const msg = "SERP結果が空です（Google検索がブロックされた可能性があります）";
+      const msg = useAPI
+        ? "SERP結果が空です（該当する検索結果がありません）"
+        : "SERP結果が空です（Google検索がブロックされた可能性があります）";
       failActivity(activity.id, msg);
       return { ...result, position: null, topResults: [] };
     }
@@ -200,6 +284,7 @@ export async function checkSerp(params: {
       details: {
         hasFeaturedSnippet: !!result.featuredSnippet,
         position: result.position,
+        source: useAPI ? "Google CSE API" : "Playwright",
       },
     });
 

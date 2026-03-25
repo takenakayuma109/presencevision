@@ -32,7 +32,7 @@ import {
   distributeContent,
   type DistributionResult,
 } from "./tasks/presence-distributor.js";
-import { getChannelsForCountry } from "./channels/channel-registry.js";
+import { getChannelsForCountry, isChannelReady } from "./channels/channel-registry.js";
 import {
   getActivities,
   getActivityStats,
@@ -407,9 +407,11 @@ async function runCycle(project: PresenceProject): Promise<CycleResult> {
     // --- Distributed Presence: 各プラットフォームへ配信 ---
     if (contentGenerated.length > 0) {
       const channels = getChannelsForCountry(country);
-      const enabledChannels = channels.filter((c) => c.enabled);
+      const readyChannels = channels.filter((c) => isChannelReady(c));
 
-      if (enabledChannels.length > 0) {
+      if (readyChannels.length === 0) {
+        console.log(`[Engine] Skipping distribution — no configured channels for ${country}`);
+      } else {
         // サイクルあたり最大2コンテンツまで配信（レート制限回避）
         const contentsToDistribute = contentGenerated
           .filter((c) => c.type === "article")
@@ -429,7 +431,7 @@ async function runCycle(project: PresenceProject): Promise<CycleResult> {
                 keyword: project.keywords[0] ?? project.brandName,
                 language,
               },
-              channels: enabledChannels,
+              channels: readyChannels,
               brandName: project.brandName,
               targetUrl: project.targetUrl,
               country,

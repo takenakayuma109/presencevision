@@ -206,13 +206,98 @@ class OllamaProvider implements AIProvider {
 }
 
 // ---------------------------------------------------------------------------
-// Singleton
+// Anthropic Provider — Claude Haiku for high-quality content generation
+// ---------------------------------------------------------------------------
+class AnthropicProvider implements AIProvider {
+  private apiKey: string;
+  private defaultModel: string;
+
+  constructor() {
+    this.apiKey = process.env.ANTHROPIC_API_KEY ?? "";
+    this.defaultModel = process.env.ANTHROPIC_MODEL ?? "claude-haiku-4-5-20251001";
+  }
+
+  async complete(messages: AIMessage[], options?: AICompletionOptions): Promise<string> {
+    const timeoutMs = options?.timeoutMs ?? 30_000;
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), timeoutMs);
+
+    try {
+      const response = await fetch("https://api.anthropic.com/v1/messages", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-api-key": this.apiKey,
+          "anthropic-version": "2023-06-01",
+        },
+        body: JSON.stringify({
+          model: options?.model ?? this.defaultModel,
+          max_tokens: options?.maxTokens ?? 4096,
+          temperature: options?.temperature ?? 0.3,
+          ...(options?.system ? { system: options.system } : {}),
+          messages: messages.map((m) => ({ role: m.role, content: m.content })),
+        }),
+        signal: controller.signal,
+      });
+
+      if (!response.ok) {
+        const text = await response.text();
+        throw new Error(`Anthropic error (${response.status}): ${text}`);
+      }
+
+      const data = (await response.json()) as {
+        content?: Array<{ type: string; text?: string }>;
+      };
+      return data.content?.[0]?.text ?? "";
+    } finally {
+      clearTimeout(timer);
+    }
+  }
+
+  async completeJSON<T>(messages: AIMessage[], options?: AICompletionOptions): Promise<T> {
+    for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+      console.log(`[Anthropic] Attempt ${attempt}/${MAX_RETRIES}...`);
+
+      const systemPrompt = [
+        options?.system ?? "",
+        "You MUST respond with valid JSON only. No markdown, no explanations, just JSON.",
+      ]
+        .filter(Boolean)
+        .join("\n\n");
+
+      try {
+        const raw = await this.complete(messages, {
+          ...options,
+          system: systemPrompt,
+          timeoutMs: options?.timeoutMs ?? 30_000,
+        });
+
+        return extractJSON(raw) as T;
+      } catch (error) {
+        console.warn(`[Anthropic] Attempt ${attempt}/${MAX_RETRIES} failed:`, error);
+        if (attempt === MAX_RETRIES) throw error;
+        await new Promise((resolve) => setTimeout(resolve, 500));
+      }
+    }
+
+    throw new Error("[Anthropic] completeJSON exhausted all retries");
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Singleton — Anthropic if API key is set, otherwise Ollama
 // ---------------------------------------------------------------------------
 let providerInstance: AIProvider | null = null;
 
 export function getAIProvider(): AIProvider {
   if (!providerInstance) {
-    providerInstance = new OllamaProvider();
+    if (process.env.ANTHROPIC_API_KEY) {
+      providerInstance = new AnthropicProvider();
+      console.log("[AI] Using Anthropic Claude Haiku (high-quality, fast)");
+    } else {
+      providerInstance = new OllamaProvider();
+      console.log("[AI] Using Ollama (local, no API cost)");
+    }
   }
   return providerInstance;
 }

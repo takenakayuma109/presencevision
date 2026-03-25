@@ -36,6 +36,62 @@ function getLanguageName(code: string): string {
   return languageNames[code] ?? code;
 }
 
+// ---------------------------------------------------------------------------
+// LLM出力品質バリデーション（日本語ガベージ検出）
+// ---------------------------------------------------------------------------
+function validateJapaneseContent(
+  text: string,
+  language: string,
+): { valid: boolean; reason?: string } {
+  if (!language.startsWith("ja")) return { valid: true };
+
+  // Too short for meaningful content
+  if (text.length < 100) {
+    return { valid: false, reason: "生成されたテキストが短すぎます" };
+  }
+
+  // Count character types
+  const hiraganaCount = (text.match(/[\u3040-\u309F]/g) || []).length;
+  const katakanaCount = (text.match(/[\u30A0-\u30FF]/g) || []).length;
+  const kanjiCount = (text.match(/[\u4E00-\u9FFF]/g) || []).length;
+  const totalKana = hiraganaCount + katakanaCount;
+
+  // Japanese text always contains hiragana/katakana particles and okurigana.
+  // If there are many kanji but very little kana, it's likely Chinese or gibberish.
+  if (kanjiCount > 10 && totalKana < kanjiCount * 0.3) {
+    return {
+      valid: false,
+      reason: "日本語として不正なテキスト（ひらがな/カタカナが不足）",
+    };
+  }
+
+  // Check for repetition loops (same 10+ char phrase appearing 3+ times)
+  const sample = text.slice(0, 500);
+  for (let len = 10; len < 50 && len < sample.length; len++) {
+    for (let i = 0; i <= sample.length - len; i++) {
+      const phrase = sample.slice(i, i + len);
+      const count = sample.split(phrase).length - 1;
+      if (count >= 3) {
+        return {
+          valid: false,
+          reason: "テキストにループ（同じフレーズの繰り返し）が検出されました",
+        };
+      }
+    }
+  }
+
+  // HTML tags mixed with content (sign of broken output)
+  const htmlTagCount = (text.match(/<[a-z][a-z0-9]*[^>]*>/gi) || []).length;
+  if (htmlTagCount > 5 && kanjiCount + totalKana < text.length * 0.2) {
+    return {
+      valid: false,
+      reason: "HTMLタグ混在の不正な出力が検出されました",
+    };
+  }
+
+  return { valid: true };
+}
+
 export interface GeneratedContent {
   type: "article" | "faq" | "schema" | "meta_tags" | "multilingual";
   title: string;
@@ -97,6 +153,13 @@ Example output format:
 Respond with ONLY valid JSON. No markdown, no explanation.`,
       },
     ], { maxTokens: 4096 });
+
+    // LLM出力品質チェック
+    const articleValidation = validateJapaneseContent(article.body, params.language);
+    if (!articleValidation.valid) {
+      failActivity(activity.id, `LLMの出力品質が低い: ${articleValidation.reason}`);
+      throw new Error(articleValidation.reason);
+    }
 
     const result: GeneratedContent = {
       type: "article",
@@ -173,6 +236,19 @@ Example output format:
 Respond with ONLY valid JSON. No markdown, no explanation.`,
       },
     ], { maxTokens: 2048 });
+
+    // LLM出力品質チェック（最初の回答で判定）
+    if (faq.questions.length > 0) {
+      const faqValidation = validateJapaneseContent(
+        faq.questions[0].answer,
+        params.language,
+      );
+      // FAQ answers are shorter, so skip the length check — only catch gibberish/loops
+      if (!faqValidation.valid && faqValidation.reason !== "生成されたテキストが短すぎます") {
+        failActivity(activity.id, `LLMの出力品質が低い: ${faqValidation.reason}`);
+        throw new Error(faqValidation.reason);
+      }
+    }
 
     const body = faq.questions
       .map((q) => `## ${q.question}\n\n${q.answer}`)
@@ -329,6 +405,13 @@ Example output format:
 Respond with ONLY valid JSON. No markdown, no explanation.`,
       },
     ], { maxTokens: 4096 });
+
+    // LLM出力品質チェック
+    const transValidation = validateJapaneseContent(translated.body, params.targetLanguage);
+    if (!transValidation.valid) {
+      failActivity(activity.id, `LLMの出力品質が低い: ${transValidation.reason}`);
+      throw new Error(transValidation.reason);
+    }
 
     const result: GeneratedContent = {
       type: "multilingual",

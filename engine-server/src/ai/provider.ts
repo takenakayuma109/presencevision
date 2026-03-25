@@ -5,8 +5,8 @@
  * Zero per-request cost. Supports any GGUF model.
  */
 
-const MAX_RETRIES = 3;
-const DEFAULT_TIMEOUT_MS = 120_000; // 120 seconds
+const MAX_RETRIES = 2;
+const DEFAULT_TIMEOUT_MS = 300_000; // 300 seconds (CPU-only inference is slow)
 
 export interface AIMessage {
   role: "user" | "assistant";

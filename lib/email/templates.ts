@@ -245,6 +245,107 @@ export function weeklyReport(
   };
 }
 
+// ---------------------------------------------------------------------------
+// Daily Report
+// ---------------------------------------------------------------------------
+
+export interface DailyReportStats {
+  totalTasks: number;
+  completed: number;
+  failed: number;
+  skipped: number;
+}
+
+export interface DailyReportHighlight {
+  title: string;
+  status: "completed" | "failed" | "running" | "skipped" | string;
+  description: string;
+  url?: string;
+}
+
+export function dailyReport(
+  userName: string,
+  projectName: string,
+  date: string,
+  stats: DailyReportStats,
+  highlights: DailyReportHighlight[],
+): { subject: string; html: string } {
+  const statusColor: Record<string, string> = {
+    completed: "#059669",
+    failed: "#DC2626",
+    running: "#D97706",
+    skipped: "#6B7280",
+  };
+
+  const statusLabel: Record<string, string> = {
+    completed: "完了",
+    failed: "失敗",
+    running: "実行中",
+    skipped: "スキップ",
+  };
+
+  const highlightRows = highlights
+    .map((h) => {
+      const color = statusColor[h.status] ?? TEXT_MUTED;
+      const label = statusLabel[h.status] ?? h.status;
+      const titleHtml = h.url
+        ? `<a href="${h.url}" style="color:${BRAND_COLOR};text-decoration:underline;">${h.title}</a>`
+        : h.title;
+      return `
+      <tr>
+        <td style="padding:10px 16px;font-size:13px;border-bottom:1px solid #E5E7EB;">
+          ${titleHtml}
+          <br /><span style="font-size:12px;color:${TEXT_MUTED};">${h.description}</span>
+        </td>
+        <td style="padding:10px 16px;font-size:13px;text-align:center;border-bottom:1px solid #E5E7EB;">
+          <span style="color:${color};font-weight:600;">${label}</span>
+        </td>
+      </tr>`;
+    })
+    .join("");
+
+  return {
+    subject: `日次レポート: ${projectName}（${date}）`,
+    html: layout(`
+      ${heading(`${userName}さん、本日のレポートです`)}
+      ${paragraph(`プロジェクト「<strong>${projectName}</strong>」の ${date} のエンジン活動レポートをお届けします。`)}
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 24px;">
+        <tr>
+          <td style="padding:16px;text-align:center;background-color:${BRAND_COLOR_BG};border-radius:8px;width:25%;">
+            <p style="margin:0;font-size:28px;font-weight:700;color:${BRAND_COLOR};">${stats.totalTasks}</p>
+            <p style="margin:4px 0 0;font-size:12px;color:${TEXT_MUTED};">合計タスク</p>
+          </td>
+          <td style="width:8px;"></td>
+          <td style="padding:16px;text-align:center;background-color:#ECFDF5;border-radius:8px;width:25%;">
+            <p style="margin:0;font-size:28px;font-weight:700;color:#059669;">${stats.completed}</p>
+            <p style="margin:4px 0 0;font-size:12px;color:${TEXT_MUTED};">完了</p>
+          </td>
+          <td style="width:8px;"></td>
+          <td style="padding:16px;text-align:center;background-color:#FEF2F2;border-radius:8px;width:25%;">
+            <p style="margin:0;font-size:28px;font-weight:700;color:#DC2626;">${stats.failed}</p>
+            <p style="margin:4px 0 0;font-size:12px;color:${TEXT_MUTED};">失敗</p>
+          </td>
+          <td style="width:8px;"></td>
+          <td style="padding:16px;text-align:center;background-color:#F9FAFB;border-radius:8px;width:25%;">
+            <p style="margin:0;font-size:28px;font-weight:700;color:${TEXT_MUTED};">${stats.skipped}</p>
+            <p style="margin:4px 0 0;font-size:12px;color:${TEXT_MUTED};">スキップ</p>
+          </td>
+        </tr>
+      </table>
+      ${highlights.length > 0 ? `${heading("アクティビティ詳細")}
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 24px;border:1px solid #E5E7EB;border-radius:8px;overflow:hidden;">
+        <tr style="background-color:${BRAND_COLOR_BG};">
+          <td style="padding:10px 16px;font-size:13px;font-weight:700;color:${BRAND_COLOR};border-bottom:1px solid #E5E7EB;">タスク</td>
+          <td style="padding:10px 16px;font-size:13px;font-weight:700;color:${BRAND_COLOR};text-align:center;border-bottom:1px solid #E5E7EB;">ステータス</td>
+        </tr>
+        ${highlightRows}
+      </table>` : paragraph("本日はエンジンによるアクティビティはありませんでした。")}
+      ${ctaButton("ダッシュボードで詳細を確認", `${BASE_URL}/dashboard`)}
+      ${muted("このメールはPresenceVisionのデイリーレポートです。")}
+    `),
+  };
+}
+
 export function entityVerified(
   userName: string,
   projectName: string,

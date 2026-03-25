@@ -4,9 +4,12 @@ import {
   trialStarted,
   trialEnding,
   weeklyReport,
+  dailyReport,
   entityVerified,
   entityRejected,
   type WeeklyStats,
+  type DailyReportStats,
+  type DailyReportHighlight,
 } from "./templates";
 
 // ---------------------------------------------------------------------------
@@ -74,6 +77,18 @@ export async function sendWeeklyReport(
   stats: WeeklyStats,
 ): Promise<void> {
   const { subject, html } = weeklyReport(name, stats);
+  await send(email, subject, html);
+}
+
+export async function sendDailyReport(
+  email: string,
+  userName: string,
+  projectName: string,
+  date: string,
+  stats: DailyReportStats,
+  highlights: DailyReportHighlight[],
+): Promise<void> {
+  const { subject, html } = dailyReport(userName, projectName, date, stats, highlights);
   await send(email, subject, html);
 }
 

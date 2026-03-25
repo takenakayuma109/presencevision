@@ -86,8 +86,187 @@ function formatArtifactContent(content: string): string {
   }
 }
 
+/** Channel type → human-friendly display name */
+const channelDisplayNames: Record<string, string> = {
+  twitter: "Twitter / X",
+  linkedin: "LinkedIn",
+  facebook: "Facebook",
+  medium: "Medium",
+  note_com: "note.com",
+  dev_to: "DEV.to",
+  qiita: "Qiita",
+  hashnode: "Hashnode",
+  reddit: "Reddit",
+  quora: "Quora",
+  yahoo_chiebukuro: "Yahoo!知恵袋",
+  zhihu: "知乎 (Zhihu)",
+  stack_overflow: "Stack Overflow",
+  google_business: "Google Business",
+  press_release: "プレスリリース",
+  naver_blog: "NAVERブログ",
+  tistory: "Tistory",
+  csdn: "CSDN",
+  xing: "XING",
+};
+
+/** Try to parse JSON, return null on failure */
+function tryParseJSON(content: string): unknown | null {
+  try {
+    return JSON.parse(content);
+  } catch {
+    return null;
+  }
+}
+
 // ---------------------------------------------------------------------------
-// Inline artifact display (for task accordion)
+// Distribution result renderer (配信結果サマリー)
+// ---------------------------------------------------------------------------
+function DistributionResultView({ data }: { data: { totalAttempted: number; totalSucceeded: number; totalFailed?: number; channels: Array<{ channel: string; success: boolean; url?: string; error?: string }> } }) {
+  const succeeded = data.totalSucceeded;
+  const attempted = data.totalAttempted;
+  const pct = attempted > 0 ? Math.round((succeeded / attempted) * 100) : 0;
+
+  return (
+    <div className="space-y-2">
+      {/* Summary bar */}
+      <div className="flex items-center gap-2">
+        <div className="flex-1 h-2 rounded-full bg-muted overflow-hidden">
+          <div
+            className={cn("h-full rounded-full transition-all", pct >= 50 ? "bg-green-500" : pct > 0 ? "bg-yellow-500" : "bg-red-400")}
+            style={{ width: `${pct}%` }}
+          />
+        </div>
+        <span className="text-xs font-medium text-muted-foreground whitespace-nowrap">
+          {attempted}チャネル中 {succeeded}件成功
+        </span>
+      </div>
+      {/* Channel list */}
+      <div className="space-y-1">
+        {data.channels.map((ch, i) => (
+          <div key={i} className="flex items-center gap-2 text-xs">
+            {ch.success ? (
+              <CheckCircle2 className="h-3.5 w-3.5 text-green-500 shrink-0" />
+            ) : (
+              <AlertTriangle className="h-3.5 w-3.5 text-red-400 shrink-0" />
+            )}
+            <span className="font-medium min-w-[100px]">{channelDisplayNames[ch.channel] ?? ch.channel}</span>
+            {ch.success && ch.url ? (
+              <a href={ch.url} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline flex items-center gap-1 truncate">
+                <ExternalLink className="h-3 w-3 shrink-0" />
+                <span className="truncate">{ch.url}</span>
+              </a>
+            ) : ch.success ? (
+              <span className="text-green-600">投稿成功</span>
+            ) : (
+              <span className="text-red-400">{ch.error || "失敗"}</span>
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// FAQ renderer
+// ---------------------------------------------------------------------------
+function FaqResultView({ questions }: { questions: Array<{ question?: string; q?: string; answer?: string; a?: string }> }) {
+  return (
+    <div className="space-y-2">
+      {questions.map((item, i) => {
+        const q = item.question ?? item.q ?? "";
+        const a = item.answer ?? item.a ?? "";
+        return (
+          <div key={i} className="rounded-md border bg-muted/10 p-2">
+            <p className="text-xs font-semibold text-foreground flex items-start gap-1.5">
+              <span className="text-blue-500 shrink-0 font-bold">Q.</span>
+              {q}
+            </p>
+            <p className="text-xs text-foreground/70 mt-1 ml-5 leading-relaxed">{a}</p>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Schema.org renderer
+// ---------------------------------------------------------------------------
+function SchemaResultView({ content }: { content: string }) {
+  const [showFull, setShowFull] = useState(false);
+  // Extract schema type from the JSON-LD content
+  const parsed = tryParseJSON(content.replace(/<\/?script[^>]*>/g, "").trim());
+  const schemaObj = parsed as Record<string, unknown> | null;
+  const schemaType = schemaObj?.["@type"] as string | undefined;
+
+  return (
+    <div className="space-y-2">
+      {schemaType && (
+        <div className="flex items-center gap-2">
+          <Code2 className="h-3.5 w-3.5 text-amber-500" />
+          <span className="text-xs font-semibold">@type: {schemaType}</span>
+          {schemaObj?.["name"] ? <span className="text-xs text-muted-foreground">- {String(schemaObj["name"])}</span> : null}
+        </div>
+      )}
+      <button onClick={() => setShowFull(!showFull)} className="text-[10px] text-blue-500 hover:underline flex items-center gap-1">
+        <Code2 className="h-3 w-3" />
+        {showFull ? "コードを隠す" : "JSON-LDを表示"}
+        <ChevronDown className={cn("h-3 w-3 transition-transform", showFull && "rotate-180")} />
+      </button>
+      {showFull && (
+        <pre className="text-[11px] bg-muted/40 border rounded-md p-2 overflow-x-auto max-h-48 overflow-y-auto leading-relaxed">
+          {schemaObj ? JSON.stringify(schemaObj, null, 2) : content}
+        </pre>
+      )}
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Article / markdown preview renderer
+// ---------------------------------------------------------------------------
+function ArticlePreviewView({ title, content }: { title?: string; content: string }) {
+  const [expanded, setExpanded] = useState(false);
+  // Extract article title from the artifact title (e.g., "SEO記事: My Title")
+  const articleTitle = title?.replace(/^SEO記事:\s*/, "");
+  const preview = content.length > 200 ? content.slice(0, 200) + "..." : content;
+
+  // Simple markdown-to-text: strip headings, bold, etc. for preview
+  const cleanPreview = preview
+    .replace(/^#{1,6}\s+/gm, "")
+    .replace(/\*\*(.*?)\*\*/g, "$1")
+    .replace(/\*(.*?)\*/g, "$1")
+    .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1");
+
+  return (
+    <div className="space-y-1.5">
+      {articleTitle && (
+        <p className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+          <FileText className="h-3.5 w-3.5 text-green-500 shrink-0" />
+          {articleTitle}
+        </p>
+      )}
+      {!expanded && (
+        <p className="text-xs text-foreground/70 leading-relaxed">{cleanPreview}</p>
+      )}
+      {content.length > 200 && (
+        <button onClick={() => setExpanded(!expanded)} className="text-[10px] text-blue-500 hover:underline flex items-center gap-1">
+          {expanded ? "閉じる" : "全文を表示"}
+          <ChevronDown className={cn("h-3 w-3 transition-transform", expanded && "rotate-180")} />
+        </button>
+      )}
+      {expanded && (
+        <div className="text-xs text-foreground/80 whitespace-pre-wrap leading-relaxed max-h-60 overflow-y-auto bg-muted/20 rounded-md p-2 border">
+          <Linkify text={content} />
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Inline artifact display (for task accordion) — smart renderer
 // ---------------------------------------------------------------------------
 function ArtifactInline({ artifact: art }: { artifact: { type?: string; title?: string; content?: string; url?: string } }) {
   const [expanded, setExpanded] = useState(false);
@@ -104,11 +283,92 @@ function ArtifactInline({ artifact: art }: { artifact: { type?: string; title?: 
     );
   }
 
-  // Content-bearing artifact
+  // Content-bearing artifact — try smart rendering
   if (art.content) {
-    const formatted = formatArtifactContent(art.content);
-    const isLong = formatted.length > 150;
-    const preview = isLong ? formatted.slice(0, 150) + "…" : formatted;
+    const parsed = tryParseJSON(art.content);
+    const title = art.title ?? "";
+
+    // 1) Distribution result (配信結果サマリー)
+    if (parsed && typeof parsed === "object" && "totalAttempted" in (parsed as Record<string, unknown>) && "channels" in (parsed as Record<string, unknown>)) {
+      const data = parsed as { totalAttempted: number; totalSucceeded: number; totalFailed?: number; channels: Array<{ channel: string; success: boolean; url?: string; error?: string }> };
+      return (
+        <div className="rounded-md border bg-muted/20 p-3 space-y-1">
+          <p className="text-[10px] font-medium text-muted-foreground flex items-center gap-1">
+            <Radio className="h-3 w-3" />
+            {title || "配信結果"}
+          </p>
+          <DistributionResultView data={data} />
+        </div>
+      );
+    }
+
+    // 2) FAQ data (array of questions)
+    if (parsed && Array.isArray(parsed) && parsed.length > 0 && ("question" in parsed[0] || "q" in parsed[0])) {
+      return (
+        <div className="rounded-md border bg-muted/20 p-3 space-y-1">
+          <p className="text-[10px] font-medium text-muted-foreground flex items-center gap-1">
+            <FileText className="h-3 w-3" />
+            {title || "FAQ"} ({parsed.length}件)
+          </p>
+          <FaqResultView questions={parsed} />
+        </div>
+      );
+    }
+
+    // 3) Schema.org JSON-LD (code type or title contains Schema)
+    if (art.type === "code" || title.includes("Schema.org") || title.includes("JSON-LD")) {
+      return (
+        <div className="rounded-md border bg-muted/20 p-3 space-y-1">
+          <p className="text-[10px] font-medium text-muted-foreground flex items-center gap-1">
+            <Code2 className="h-3 w-3" />
+            {title || "Schema.org"}
+          </p>
+          <SchemaResultView content={art.content} />
+        </div>
+      );
+    }
+
+    // 4) SEO article / markdown content (text type with title containing SEO記事)
+    if (title.includes("SEO記事") || (art.type === "text" && art.content.length > 100)) {
+      return (
+        <div className="rounded-md border bg-muted/20 p-3">
+          <ArticlePreviewView title={title} content={art.content} />
+        </div>
+      );
+    }
+
+    // 5) Generic JSON — render formatted with expand/collapse
+    if (parsed && typeof parsed === "object") {
+      const formatted = JSON.stringify(parsed, null, 2);
+      return (
+        <div className="rounded-md border bg-muted/20 overflow-hidden">
+          <button
+            onClick={() => setExpanded(!expanded)}
+            className="w-full text-left p-2 hover:bg-muted/40 cursor-pointer"
+          >
+            <p className="text-[10px] font-medium text-muted-foreground mb-1 flex items-center gap-1">
+              <Database className="h-3 w-3" />
+              {title || "データ"}
+              <ChevronDown className={cn("h-3 w-3 ml-auto transition-transform", expanded && "rotate-180")} />
+            </p>
+            {!expanded && (
+              <p className="text-xs text-foreground/80 truncate">{formatted.slice(0, 120)}...</p>
+            )}
+          </button>
+          {expanded && (
+            <div className="border-t p-2">
+              <pre className="text-[11px] whitespace-pre-wrap break-all leading-relaxed max-h-60 overflow-y-auto bg-muted/30 rounded p-2">
+                <Linkify text={formatted} />
+              </pre>
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    // 6) Fallback: plain text with expand/collapse
+    const isLong = art.content.length > 150;
+    const preview = isLong ? art.content.slice(0, 150) + "..." : art.content;
 
     return (
       <div className="rounded-md border bg-muted/20 overflow-hidden">
@@ -118,7 +378,7 @@ function ArtifactInline({ artifact: art }: { artifact: { type?: string; title?: 
         >
           <p className="text-[10px] font-medium text-muted-foreground mb-1 flex items-center gap-1">
             <FileText className="h-3 w-3" />
-            {art.title}
+            {title}
             {isLong && (
               <ChevronDown className={cn("h-3 w-3 ml-auto transition-transform", expanded && "rotate-180")} />
             )}
@@ -132,7 +392,7 @@ function ArtifactInline({ artifact: art }: { artifact: { type?: string; title?: 
         {expanded && (
           <div className="border-t p-2">
             <pre className="text-xs whitespace-pre-wrap break-all leading-relaxed max-h-60 overflow-y-auto bg-muted/30 rounded p-2">
-              <Linkify text={formatted} />
+              <Linkify text={art.content} />
             </pre>
           </div>
         )}

@@ -65,13 +65,13 @@ function validateJapaneseContent(
     };
   }
 
-  // Check for repetition loops (same 10+ char phrase appearing 3+ times)
+  // Check for repetition loops (same 20+ char phrase appearing 4+ times)
   const sample = text.slice(0, 500);
-  for (let len = 10; len < 50 && len < sample.length; len++) {
+  for (let len = 20; len < 60 && len < sample.length; len++) {
     for (let i = 0; i <= sample.length - len; i++) {
       const phrase = sample.slice(i, i + len);
       const count = sample.split(phrase).length - 1;
-      if (count >= 3) {
+      if (count >= 4) {
         return {
           valid: false,
           reason: "テキストにループ（同じフレーズの繰り返し）が検出されました",

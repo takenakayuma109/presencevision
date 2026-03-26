@@ -248,7 +248,25 @@ export async function checkLlm(params: {
 
     return result;
   } catch (error) {
-    failActivity(activity.id, error instanceof Error ? error.message : String(error));
-    throw error;
+    // エラーでもクラッシュさせない — スキップ扱い
+    const msg = error instanceof Error ? error.message : String(error);
+    console.warn(`[LLM] Skipping ${params.platform} "${params.query}": ${msg}`);
+    completeActivity(activity.id, {
+      metrics: { mentioned: 0, mentionCount: 0, citedUrlCount: 0 },
+      details: { note: `スキップ: ${msg}` },
+    });
+    return {
+      query: params.query,
+      platform: params.platform,
+      country: params.country,
+      language: params.language,
+      targetBrand: params.targetBrand,
+      mentioned: false,
+      mentionCount: 0,
+      responseText: "",
+      citedUrls: [],
+      sentiment: "unknown",
+      checkedAt: new Date(),
+    };
   }
 }

@@ -191,27 +191,34 @@ export async function checkSerp(params: {
   const useAPI = !!(GOOGLE_CSE_API_KEY && GOOGLE_CSE_CX);
 
   try {
-    let result: SerpResult;
+    let result!: SerpResult;
 
+    let usedAPI = false;
     if (useAPI) {
       // --- Google Custom Search API (推奨: CAPTCHAなし、高速) ---
-      console.log(`[SERP] Using Google CSE API for "${params.keyword}"`);
-      const serpData = await checkSerpViaAPI(params.keyword, targetDomain, params.country, params.language);
+      try {
+        console.log(`[SERP] Using Google CSE API for "${params.keyword}"`);
+        const serpData = await checkSerpViaAPI(params.keyword, targetDomain, params.country, params.language);
 
-      result = {
-        keyword: params.keyword,
-        country: params.country,
-        language: params.language,
-        targetUrl: params.targetUrl,
-        position: serpData.position ?? null,
-        totalResults: serpData.totalResults ?? "",
-        topResults: serpData.topResults ?? [],
-        featuredSnippet: serpData.featuredSnippet,
-        peopleAlsoAsk: serpData.peopleAlsoAsk ?? [],
-        relatedSearches: serpData.relatedSearches ?? [],
-        checkedAt: new Date(),
-      };
-    } else {
+        result = {
+          keyword: params.keyword,
+          country: params.country,
+          language: params.language,
+          targetUrl: params.targetUrl,
+          position: serpData.position ?? null,
+          totalResults: serpData.totalResults ?? "",
+          topResults: serpData.topResults ?? [],
+          featuredSnippet: serpData.featuredSnippet,
+          peopleAlsoAsk: serpData.peopleAlsoAsk ?? [],
+          relatedSearches: serpData.relatedSearches ?? [],
+          checkedAt: new Date(),
+        };
+        usedAPI = true;
+      } catch (apiErr) {
+        console.warn(`[SERP] Google CSE API failed, falling back to Playwright:`, apiErr);
+      }
+    }
+    if (!usedAPI) {
       // --- Playwright フォールバック (CAPTCHAリスクあり) ---
       console.log(`[SERP] Using Playwright for "${params.keyword}" (no API key configured)`);
       const pool = getBrowserPool();

@@ -39,12 +39,23 @@ async function checkPerplexity(
   await page.goto("https://www.perplexity.ai/", { waitUntil: "domcontentloaded", timeout: 45000 });
 
   // ページの初期化を待つ
-  await page.waitForTimeout(3000);
+  await page.waitForTimeout(5000);
 
-  // 検索ボックスに入力
-  const searchInput = page.locator('textarea, input[placeholder*="Ask"], input[placeholder*="ask"]').first();
-  await searchInput.waitFor({ timeout: 15000 });
+  // 検索ボックスに入力（Perplexity UIは頻繁に変わるため複数パターン対応）
+  const searchInput = page.locator([
+    'textarea[placeholder*="Ask"]',
+    'textarea[placeholder*="ask"]',
+    'textarea[placeholder*="Search"]',
+    'textarea[placeholder*="search"]',
+    'textarea',
+    'input[placeholder*="Ask"]',
+    'input[placeholder*="ask"]',
+    'input[type="text"]',
+    '[contenteditable="true"]',
+  ].join(", ")).first();
+  await searchInput.waitFor({ timeout: 30000 });
   await searchInput.fill(query);
+  await page.waitForTimeout(500);
   await searchInput.press("Enter");
 
   // 回答生成を待つ（proseセレクタが出るまで、最大60秒）

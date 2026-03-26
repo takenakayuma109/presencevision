@@ -39,7 +39,7 @@ import {
   type ActivityEntry,
 } from "./activity-logger.js";
 import { getBrowserPool } from "./browser-pool.js";
-import { saveProject, removeProject, getActiveProjectsFromDB } from "../db/index.js";
+import { saveProject, removeProject, getActiveProjectsFromDB, saveArticle } from "../db/index.js";
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -344,6 +344,25 @@ async function runCycle(project: PresenceProject): Promise<CycleResult> {
         if (article) {
           contentGenerated.push(article);
           tasksExecuted++;
+
+          // Hub公開（自サイトブログに保存）
+          try {
+            await saveArticle({
+              id: `${cycleId}-article-${country}-${keyword.slice(0, 30)}`,
+              projectId: project.id,
+              title: article.title,
+              body: article.body,
+              metaTitle: article.metadata?.metaTitle as string,
+              metaDescription: article.metadata?.metaDescription as string,
+              keyword,
+              language,
+              country,
+              brandName: project.brandName,
+            });
+            console.log(`[Engine] Article "${keyword}" saved to Hub blog (${country})`);
+          } catch (err) {
+            console.warn(`[Engine] Failed to save article to Hub:`, err);
+          }
 
           // CMS公開
           if (project.cmsConfig) {

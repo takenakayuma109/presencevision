@@ -108,7 +108,12 @@ const activeProjects = new Map<string, {
   project: PresenceProject;
   intervalId: ReturnType<typeof setInterval> | null;
   running: boolean;
+  cycleCount: number;
 }>();
+
+// SERP/LLMチェックは重いのでN回に1回だけ実行（CAPTCHA回避）
+// 30分サイクル × 48 = 1日1回
+const SERP_LLM_EVERY_N_CYCLES = 48;
 
 // ---------------------------------------------------------------------------
 // Fetch channel configs from dashboard API (with credentials)
@@ -235,9 +240,13 @@ async function runWithRetry<T>(
 // ---------------------------------------------------------------------------
 // 1サイクルの実行
 // ---------------------------------------------------------------------------
-async function runCycle(project: PresenceProject): Promise<CycleResult> {
+async function runCycle(project: PresenceProject, cycleNumber = 0): Promise<CycleResult> {
   const cycleId = uuidv4();
   const startedAt = new Date();
+  const runSerpLlm = cycleNumber % SERP_LLM_EVERY_N_CYCLES === 0;
+  if (!runSerpLlm) {
+    console.log(`[Engine] Cycle ${cycleId}: Skipping SERP/LLM checks (next at cycle ${Math.ceil((cycleNumber + 1) / SERP_LLM_EVERY_N_CYCLES) * SERP_LLM_EVERY_N_CYCLES})`);
+  }
   let tasksExecuted = 0;
   let tasksFailed = 0;
   let tasksSkipped = 0;
@@ -264,8 +273,8 @@ async function runCycle(project: PresenceProject): Promise<CycleResult> {
   for (const country of project.targetCountries) {
     const language = COUNTRY_LANGUAGES[country] ?? "en";
 
-    // --- SEO: サイト分析 + SERP順位チェック ---
-    if (project.methods.includes("SEO")) {
+    // --- SEO: サイト分析 + SERP順位チェック（1日1回のみ） ---
+    if (project.methods.includes("SEO") && runSerpLlm) {
       // サイト分析（国ごとに1回）
       try {
         await analyzeSite({
@@ -299,13 +308,13 @@ async function runCycle(project: PresenceProject): Promise<CycleResult> {
           tasksFailed++;
         }
 
-        // レート制限回避
-        await sleep(2000 + Math.random() * 3000);
+        // レート制限回避（10〜20秒のランダム間隔でCAPTCHA回避）
+        await sleep(10000 + Math.random() * 10000);
       }
     }
 
-    // --- GEO: LLMでの言及チェック ---
-    if (project.methods.includes("GEO")) {
+    // --- GEO: LLMでの言及チェック（1日1回のみ） ---
+    if (project.methods.includes("GEO") && runSerpLlm) {
       const queries = [
         `${project.brandName}について教えて`,
         `${project.keywords[0] ?? project.brandName} おすすめ`,
@@ -331,7 +340,7 @@ async function runCycle(project: PresenceProject): Promise<CycleResult> {
             tasksFailed++;
           }
 
-          await sleep(3000 + Math.random() * 5000);
+          await sleep(10000 + Math.random() * 10000);
         }
       }
     }
@@ -606,7 +615,7 @@ export function startProject(project: PresenceProject, skipInitialCycle = false)
     return;
   }
 
-  const state = { project, intervalId: null as ReturnType<typeof setInterval> | null, running: true };
+  const state = { project, intervalId: null as ReturnType<typeof setInterval> | null, running: true, cycleCount: 0 };
   activeProjects.set(project.id, state);
 
   // DBに保存（再起動時に復帰できるように）
@@ -616,7 +625,7 @@ export function startProject(project: PresenceProject, skipInitialCycle = false)
 
   // 初回実行（復帰時はスキップ可能）
   if (!skipInitialCycle) {
-    runCycle(project).catch((err) =>
+    runCycle(project, state.cycleCount++).catch((err) =>
       console.error(`[Engine] Initial cycle failed:`, err),
     );
   }
@@ -625,7 +634,7 @@ export function startProject(project: PresenceProject, skipInitialCycle = false)
   const intervalMs = parseInt(process.env.ENGINE_CYCLE_INTERVAL_MS ?? String(6 * 60 * 60 * 1000));
   state.intervalId = setInterval(() => {
     if (state.running) {
-      runCycle(project).catch((err) =>
+      runCycle(project, state.cycleCount++).catch((err) =>
         console.error(`[Engine] Cycle failed:`, err),
       );
     }

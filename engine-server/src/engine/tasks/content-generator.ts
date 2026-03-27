@@ -70,7 +70,7 @@ function validateJapaneseContent(
     for (let i = 0; i <= sample.length - len; i++) {
       const phrase = sample.slice(i, i + len);
       const count = sample.split(phrase).length - 1;
-      if (count >= 4) {
+      if (count >= 8) {
         return {
           valid: false,
           reason: "テキストにループ（同じフレーズの繰り返し）が検出されました",

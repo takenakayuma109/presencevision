@@ -115,21 +115,27 @@ async function runWithRetry<T>(
   label: string,
   fn: () => Promise<T>,
   maxFailures: number = CONTENT_GEN_MAX_FAILURES,
-): Promise<T | null> {
+): Promise<{ result: T | null; retryLog: string[] }> {
+  const retryLog: string[] = [];
   for (let attempt = 1; attempt <= maxFailures; attempt++) {
     try {
-      return await fn();
+      const result = await fn();
+      if (attempt > 1) {
+        retryLog.push(`${attempt}回目で成功`);
+      }
+      return { result, retryLog };
     } catch (error) {
-      console.warn(`[Engine] ${label} — attempt ${attempt}/${maxFailures} failed:`, error);
+      const msg = error instanceof Error ? error.message.slice(0, 200) : String(error).slice(0, 200);
+      retryLog.push(`${attempt}/${maxFailures}回目失敗: ${msg}`);
+      console.warn(`[Engine] ${label} — attempt ${attempt}/${maxFailures} failed:`, msg);
       if (attempt === maxFailures) {
         console.warn(`[Engine] ${label} — skipping after ${maxFailures} failures`);
-        return null;
+        return { result: null, retryLog };
       }
-      // Brief cooldown before retry
       await sleep(OLLAMA_COOLDOWN_MS);
     }
   }
-  return null;
+  return { result: null, retryLog };
 }
 
 // ---------------------------------------------------------------------------
@@ -236,7 +242,7 @@ async function runCycle(project: PresenceProject): Promise<CycleResult> {
     // --- AEO: FAQ生成 ---
     if (project.methods.includes("AEO") || project.methods.includes("FAQ")) {
       await sleep(OLLAMA_COOLDOWN_MS);
-      const faq = await runWithRetry(`FAQ generation (${country})`, () =>
+      const { result: faq } = await runWithRetry(`FAQ generation (${country})`, () =>
         generateFaq({
           projectId: project.id,
           taskId: `${cycleId}-faq-${country}`,
@@ -281,7 +287,7 @@ async function runCycle(project: PresenceProject): Promise<CycleResult> {
     // --- Schema.org ---
     if (project.methods.includes("Schema.org")) {
       await sleep(OLLAMA_COOLDOWN_MS);
-      const schema = await runWithRetry(`Schema generation (${country})`, () =>
+      const { result: schema } = await runWithRetry(`Schema generation (${country})`, () =>
         generateSchema({
           projectId: project.id,
           taskId: `${cycleId}-schema-${country}`,
@@ -328,7 +334,7 @@ async function runCycle(project: PresenceProject): Promise<CycleResult> {
     if (project.methods.includes("SEO") || project.methods.includes("ContentMarketing")) {
       for (const keyword of project.keywords.slice(0, 3)) {
         await sleep(OLLAMA_COOLDOWN_MS);
-        const article = await runWithRetry(`SEO article "${keyword}" (${country})`, () =>
+        const { result: article, retryLog: articleRetryLog } = await runWithRetry(`SEO article "${keyword}" (${country})`, () =>
           generateSeoArticle({
             projectId: project.id,
             taskId: `${cycleId}-content-${country}`,
@@ -395,7 +401,7 @@ async function runCycle(project: PresenceProject): Promise<CycleResult> {
               if (otherLang === language) continue; // 同じ言語ならスキップ
 
               await sleep(OLLAMA_COOLDOWN_MS);
-              const translated = await runWithRetry(
+              const { result: translated } = await runWithRetry(
                 `Translation ${language}->${otherLang} (${otherCountry})`,
                 () =>
                   translateContent({

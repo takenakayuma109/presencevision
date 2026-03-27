@@ -11,7 +11,6 @@ import { getBrowserPool } from "../browser-pool.js";
 import {
   startActivity,
   completeActivity,
-  failActivity,
   addArtifact,
 } from "../activity-logger.js";
 

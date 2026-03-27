@@ -13,7 +13,6 @@ import { getAIProvider } from "../../ai/provider.js";
 import {
   startActivity,
   completeActivity,
-  failActivity,
   addArtifact,
 } from "../activity-logger.js";
 
@@ -157,8 +156,7 @@ Respond with ONLY valid JSON. No markdown, no explanation.`,
     // LLM出力品質チェック
     const articleValidation = validateJapaneseContent(article.body, params.language);
     if (!articleValidation.valid) {
-      failActivity(activity.id, `LLMの出力品質が低い: ${articleValidation.reason}`);
-      throw new Error(articleValidation.reason);
+      throw new Error(`LLMの出力品質が低い: ${articleValidation.reason}`);
     }
 
     const result: GeneratedContent = {
@@ -186,7 +184,12 @@ Respond with ONLY valid JSON. No markdown, no explanation.`,
 
     return result;
   } catch (error) {
-    failActivity(activity.id, error instanceof Error ? error.message : String(error));
+    // リトライされるので、ここではactivityをスキップ完了にする（赤エラーにしない）
+    const msg = error instanceof Error ? error.message : String(error);
+    completeActivity(activity.id, {
+      metrics: { wordCount: 0 },
+      details: { note: `スキップ: ${msg.slice(0, 200)}` },
+    });
     throw error;
   }
 }
@@ -245,8 +248,7 @@ Respond with ONLY valid JSON. No markdown, no explanation.`,
       );
       // FAQ answers are shorter, so skip the length check — only catch gibberish/loops
       if (!faqValidation.valid && faqValidation.reason !== "生成されたテキストが短すぎます") {
-        failActivity(activity.id, `LLMの出力品質が低い: ${faqValidation.reason}`);
-        throw new Error(faqValidation.reason);
+        throw new Error(`LLMの出力品質が低い: ${faqValidation.reason}`);
       }
     }
 
@@ -274,7 +276,10 @@ Respond with ONLY valid JSON. No markdown, no explanation.`,
 
     return result;
   } catch (error) {
-    failActivity(activity.id, error instanceof Error ? error.message : String(error));
+    const msg = error instanceof Error ? error.message : String(error);
+    completeActivity(activity.id, {
+      details: { note: `スキップ: ${msg.slice(0, 200)}` },
+    });
     throw error;
   }
 }
@@ -351,7 +356,10 @@ Respond with ONLY valid JSON. No markdown, no explanation.`,
 
     return result;
   } catch (error) {
-    failActivity(activity.id, error instanceof Error ? error.message : String(error));
+    const msg = error instanceof Error ? error.message : String(error);
+    completeActivity(activity.id, {
+      details: { note: `スキップ: ${msg.slice(0, 200)}` },
+    });
     throw error;
   }
 }
@@ -409,8 +417,7 @@ Respond with ONLY valid JSON. No markdown, no explanation.`,
     // LLM出力品質チェック
     const transValidation = validateJapaneseContent(translated.body, params.targetLanguage);
     if (!transValidation.valid) {
-      failActivity(activity.id, `LLMの出力品質が低い: ${transValidation.reason}`);
-      throw new Error(transValidation.reason);
+      throw new Error(`LLMの出力品質が低い: ${transValidation.reason}`);
     }
 
     const result: GeneratedContent = {
@@ -437,7 +444,10 @@ Respond with ONLY valid JSON. No markdown, no explanation.`,
 
     return result;
   } catch (error) {
-    failActivity(activity.id, error instanceof Error ? error.message : String(error));
+    const msg = error instanceof Error ? error.message : String(error);
+    completeActivity(activity.id, {
+      details: { note: `スキップ: ${msg.slice(0, 200)}` },
+    });
     throw error;
   }
 }

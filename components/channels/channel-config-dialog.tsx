@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useMemo } from "react";
 import {
   Dialog,
   Button,
@@ -196,16 +196,27 @@ export function ChannelConfigDialog({
     setTimeout(() => setTestResult("idle"), 3000);
   }, [channel.fields, credentials]);
 
+  // Check if all required credentials are filled
+  const hasRequiredCredentials = useMemo(() => {
+    if (channel.method === "oauth") return state.status === "connected";
+    if (!channel.fields) return true;
+    return channel.fields
+      .filter((f) => f.required !== false)
+      .every((f) => credentials[f.key]?.trim());
+  }, [channel, credentials, state.status]);
+
   const handleSave = useCallback(() => {
+    // Only mark as connected if required credentials are provided
+    const newStatus = hasRequiredCredentials ? "connected" : "disconnected";
     onSave({
       credentials,
       autoPublish,
       contentFormat: contentFormat || undefined,
-      status: "connected",
-      enabled: true,
+      status: newStatus,
+      enabled: hasRequiredCredentials,
     });
     onClose();
-  }, [credentials, autoPublish, contentFormat, onSave, onClose]);
+  }, [credentials, autoPublish, contentFormat, hasRequiredCredentials, onSave, onClose]);
 
   const formatConfig = CONTENT_FORMATS[channel.id];
 
@@ -395,7 +406,7 @@ export function ChannelConfigDialog({
             <Button variant="outline" onClick={onClose}>
               {t("common.cancel")}
             </Button>
-            <Button onClick={handleSave}>
+            <Button onClick={handleSave} disabled={channel.method !== "oauth" && !hasRequiredCredentials}>
               <Key className="h-3.5 w-3.5 mr-1.5" />
               {t("common.save")}
             </Button>

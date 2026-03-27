@@ -5,13 +5,17 @@ import { prisma } from "@/lib/db";
 
 /**
  * GET /api/channels — List channels for the user's workspace with connection status
+ * Optional query param: ?projectId=xxx to filter by project
  */
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
+
+    const { searchParams } = request.nextUrl;
+    const projectId = searchParams.get("projectId");
 
     // Find all workspaces the user belongs to
     const memberships = await prisma.membership.findMany({
@@ -21,8 +25,13 @@ export async function GET() {
 
     const workspaceIds = memberships.map((m) => m.workspaceId);
 
+    const where: Record<string, unknown> = { workspaceId: { in: workspaceIds } };
+    if (projectId) {
+      where.projectId = projectId;
+    }
+
     const channels = await prisma.channel.findMany({
-      where: { workspaceId: { in: workspaceIds } },
+      where,
       include: {
         credentials: {
           select: { key: true, value: true, createdAt: true },

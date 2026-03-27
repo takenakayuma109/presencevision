@@ -12,10 +12,11 @@ import {
   ArrowLeft, Globe, Building2, Target, BarChart3, Clock, TrendingUp, FileText,
   Pause, Play, Mail, Repeat, ChevronRight, ChevronDown, Activity, CheckCircle2, AlertTriangle,
   History, Plus, X, Pencil, Image, Code2, Database, Eye, FolderOpen, Radio,
-  Search, Swords, Users, Wrench, Settings, Maximize2, ExternalLink, Cpu, Upload, CircleDot, Loader2, Link2,
+  Search, Swords, Users, Wrench, Settings, Maximize2, ExternalLink, Cpu, Upload, CircleDot, Loader2, Link2, Wifi,
 } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
+import { ChannelManager } from "@/components/channels/channel-manager";
 
 // ---------------------------------------------------------------------------
 // Types for API data
@@ -56,7 +57,7 @@ const artifactColors: Record<string, string> = {
   data: "text-purple-500 bg-purple-500/10 border-purple-500/20",
 };
 
-type TabId = "overview" | "work" | "timeline";
+type TabId = "overview" | "work" | "timeline" | "channels";
 
 /** URLを検出してリンク化する */
 function Linkify({ text }: { text: string }) {
@@ -1866,6 +1867,7 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
     { id: "overview", label: t("project.overview"), icon: Activity },
     { id: "work", label: `${t("project.allWork")} (${allArtifacts.length})`, icon: FolderOpen },
     { id: "timeline", label: `${t("project.timeline")} (${allExecutions.length})`, icon: History },
+    { id: "channels", label: "チャネル接続", icon: Wifi },
   ];
 
   return (
@@ -2208,6 +2210,14 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
             })}
           </div>
         </div>
+      )}
+
+      {/* ============ TAB: Channels ============ */}
+      {activeTab === "channels" && (
+        <ChannelManager
+          projectId={dbProject?.id ?? id}
+          workspaceId={dbProject?.workspaceId}
+        />
       )}
 
       {/* Task detail modal */}

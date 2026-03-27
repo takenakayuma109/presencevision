@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo, useEffect } from "react";
 import {
   Card,
   CardContent,
@@ -453,7 +453,12 @@ function ChannelGridCard({
 /*  Channel Manager                                                    */
 /* ------------------------------------------------------------------ */
 
-export function ChannelManager() {
+interface ChannelManagerProps {
+  projectId?: string;
+  workspaceId?: string;
+}
+
+export function ChannelManager({ projectId, workspaceId }: ChannelManagerProps = {}) {
   const { t, locale } = useTranslation();
   const isJa = locale === "ja";
 
@@ -473,6 +478,35 @@ export function ChannelManager() {
   const [selectedChannel, setSelectedChannel] = useState<ChannelDef | null>(null);
   const [filterCategory, setFilterCategory] = useState<CategoryKey>("all");
   const [searchQuery, setSearchQuery] = useState("");
+  // Map channel type -> saved DB id for disconnect/delete
+  const [savedChannelIds, setSavedChannelIds] = useState<Record<string, string>>({});
+
+  // Load saved channels from the API on mount
+  useEffect(() => {
+    const url = projectId
+      ? `/api/channels?projectId=${projectId}`
+      : "/api/channels";
+    fetch(url)
+      .then((r) => r.ok ? r.json() : [])
+      .then((channels: Array<{ id: string; type: string; config: Record<string, unknown> | null; connected: boolean }>) => {
+        const ids: Record<string, string> = {};
+        for (const ch of channels) {
+          ids[ch.type] = ch.id;
+          setStates((prev) => ({
+            ...prev,
+            [ch.type]: {
+              ...prev[ch.type],
+              status: ch.connected ? "connected" : "disconnected",
+              enabled: ch.connected,
+              autoPublish: (ch.config as Record<string, unknown>)?.autoPublish === true,
+              credentials: {}, // credentials not returned for security
+            },
+          }));
+        }
+        setSavedChannelIds(ids);
+      })
+      .catch(() => {});
+  }, [projectId]);
 
   const updateState = useCallback(
     (id: string, patch: Partial<ChannelState>) => {
@@ -482,6 +516,56 @@ export function ChannelManager() {
       }));
     },
     [],
+  );
+
+  // Persist a channel save to the API
+  const saveChannelToApi = useCallback(
+    async (channelId: string, patch: Partial<ChannelState>) => {
+      if (!workspaceId) return;
+      try {
+        const res = await fetch("/api/channels", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            workspaceId,
+            projectId: projectId ?? undefined,
+            name: CHANNELS.find((c) => c.id === channelId)?.name ?? channelId,
+            type: channelId,
+            credentials: patch.credentials ?? {},
+            config: {
+              autoPublish: patch.autoPublish ?? false,
+              contentFormat: patch.contentFormat,
+            },
+          }),
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setSavedChannelIds((prev) => ({ ...prev, [channelId]: data.id }));
+        }
+      } catch {
+        // silent
+      }
+    },
+    [workspaceId, projectId],
+  );
+
+  // Delete a channel via the API
+  const deleteChannelFromApi = useCallback(
+    async (channelId: string) => {
+      const dbId = savedChannelIds[channelId];
+      if (!dbId) return;
+      try {
+        await fetch(`/api/channels?id=${dbId}`, { method: "DELETE" });
+        setSavedChannelIds((prev) => {
+          const next = { ...prev };
+          delete next[channelId];
+          return next;
+        });
+      } catch {
+        // silent
+      }
+    },
+    [savedChannelIds],
   );
 
   const connectedCount = useMemo(
@@ -631,8 +715,11 @@ export function ChannelManager() {
           state={states[selectedChannel.id]}
           open={!!selectedChannel}
           onClose={() => setSelectedChannel(null)}
-          onSave={(patch) => updateState(selectedChannel.id, patch)}
-          onDisconnect={() =>
+          onSave={(patch) => {
+            updateState(selectedChannel.id, patch);
+            saveChannelToApi(selectedChannel.id, patch);
+          }}
+          onDisconnect={() => {
             updateState(selectedChannel.id, {
               status: "disconnected",
               enabled: false,
@@ -640,8 +727,9 @@ export function ChannelManager() {
               credentials: {},
               lastSyncAt: undefined,
               contentFormat: undefined,
-            })
-          }
+            });
+            deleteChannelFromApi(selectedChannel.id);
+          }}
           onConnect={() => {
             // Simulate OAuth connection
             updateState(selectedChannel.id, {

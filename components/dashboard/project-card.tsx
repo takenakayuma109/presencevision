@@ -58,9 +58,6 @@ export function ProjectCard({ project, onDelete, onToggleStatus }: ProjectCardPr
                   )}
                 </div>
               </div>
-              <span className={cn("inline-flex rounded-full px-2 py-0.5 text-xs font-medium", statusStyles[project.status] ?? statusStyles.active)}>
-                {statusLabels[project.status] ?? project.status}
-              </span>
             </div>
 
             {/* Active indicator */}

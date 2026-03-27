@@ -14,6 +14,11 @@ export type ChannelType =
   | "twitter"
   | "linkedin"
   | "facebook"
+  | "instagram"
+  | "tiktok"
+  | "youtube"
+  | "pinterest"
+  | "threads"
   // Blogging Platforms
   | "medium"
   | "note_com"
@@ -30,6 +35,14 @@ export type ChannelType =
   | "google_business"
   // Press/News
   | "press_release"
+  // CMS/Site Builder
+  | "wordpress"
+  | "wix"
+  | "shopify"
+  | "squarespace"
+  | "webflow"
+  | "ghost"
+  | "microcms"
   // Regional platforms
   | "naver_blog"
   | "tistory"
@@ -39,7 +52,7 @@ export type ChannelType =
 export interface ChannelConfig {
   type: ChannelType;
   name: string;
-  category: "social" | "blog" | "qa" | "directory" | "press" | "forum";
+  category: "social" | "blog" | "qa" | "directory" | "press" | "forum" | "cms";
   regions: string[]; // which countries this channel is relevant for
   languages: string[];
   requiresAuth: boolean;
@@ -47,6 +60,8 @@ export interface ChannelConfig {
     username?: string;
     password?: string;
     apiKey?: string;
+    accessToken?: string;
+    siteUrl?: string;
   };
   enabled: boolean;
   rateLimit: { maxPerHour: number; cooldownMs: number };
@@ -114,6 +129,56 @@ export function getDefaultChannels(): ChannelConfig[] {
       requiresAuth: true,
       enabled: false, // disabled by default -- strict bot detection
       rateLimit: { maxPerHour: 2, cooldownMs: 60_000 },
+    },
+    {
+      type: "instagram",
+      name: "Instagram",
+      category: "social",
+      regions: ALL_REGIONS,
+      languages: ["en", "ja", "de", "fr", "ko", "zh", "pt", "es", "it", "nl", "sv", "id", "th", "vi"],
+      requiresAuth: true,
+      enabled: true,
+      rateLimit: { maxPerHour: 3, cooldownMs: 30_000 },
+    },
+    {
+      type: "tiktok",
+      name: "TikTok",
+      category: "social",
+      regions: ALL_REGIONS,
+      languages: ["en", "ja", "de", "fr", "ko", "zh", "pt", "es", "it", "nl", "sv", "id", "th", "vi"],
+      requiresAuth: true,
+      enabled: true,
+      rateLimit: { maxPerHour: 2, cooldownMs: 60_000 },
+    },
+    {
+      type: "youtube",
+      name: "YouTube",
+      category: "social",
+      regions: ALL_REGIONS,
+      languages: ["en", "ja", "de", "fr", "ko", "zh", "pt", "es", "it"],
+      requiresAuth: true,
+      enabled: true,
+      rateLimit: { maxPerHour: 1, cooldownMs: 120_000 },
+    },
+    {
+      type: "pinterest",
+      name: "Pinterest",
+      category: "social",
+      regions: ALL_REGIONS.filter((r) => r !== "CN"),
+      languages: ["en", "ja", "de", "fr", "ko", "zh", "pt", "es", "it"],
+      requiresAuth: true,
+      enabled: true,
+      rateLimit: { maxPerHour: 3, cooldownMs: 30_000 },
+    },
+    {
+      type: "threads",
+      name: "Threads",
+      category: "social",
+      regions: ALL_REGIONS,
+      languages: ["en", "ja", "de", "fr", "ko", "zh", "pt", "es", "it", "nl", "sv", "id", "th", "vi"],
+      requiresAuth: true,
+      enabled: true,
+      rateLimit: { maxPerHour: 5, cooldownMs: 15_000 },
     },
 
     // --- Blogging Platforms ---
@@ -244,6 +309,78 @@ export function getDefaultChannels(): ChannelConfig[] {
       rateLimit: { maxPerHour: 1, cooldownMs: 3600_000 },
     },
 
+    // --- CMS/Site Builder ---
+    {
+      type: "wordpress",
+      name: "WordPress",
+      category: "cms",
+      regions: ALL_REGIONS,
+      languages: ["en", "ja", "de", "fr", "ko", "zh", "pt", "es"],
+      requiresAuth: true,
+      enabled: true,
+      rateLimit: { maxPerHour: 5, cooldownMs: 15_000 },
+    },
+    {
+      type: "wix",
+      name: "Wix",
+      category: "cms",
+      regions: ALL_REGIONS,
+      languages: ["en", "ja", "de", "fr", "ko", "zh", "pt", "es"],
+      requiresAuth: true,
+      enabled: true,
+      rateLimit: { maxPerHour: 3, cooldownMs: 30_000 },
+    },
+    {
+      type: "shopify",
+      name: "Shopify",
+      category: "cms",
+      regions: ALL_REGIONS,
+      languages: ["en", "ja", "de", "fr", "ko", "zh", "pt", "es"],
+      requiresAuth: true,
+      enabled: true,
+      rateLimit: { maxPerHour: 3, cooldownMs: 30_000 },
+    },
+    {
+      type: "squarespace",
+      name: "Squarespace",
+      category: "cms",
+      regions: ALL_REGIONS,
+      languages: ["en", "ja", "de", "fr", "ko", "zh", "pt", "es"],
+      requiresAuth: true,
+      enabled: true,
+      rateLimit: { maxPerHour: 3, cooldownMs: 30_000 },
+    },
+    {
+      type: "webflow",
+      name: "Webflow",
+      category: "cms",
+      regions: ALL_REGIONS,
+      languages: ["en", "ja", "de", "fr", "ko", "zh", "pt", "es"],
+      requiresAuth: true,
+      enabled: true,
+      rateLimit: { maxPerHour: 3, cooldownMs: 30_000 },
+    },
+    {
+      type: "ghost",
+      name: "Ghost",
+      category: "cms",
+      regions: ALL_REGIONS,
+      languages: ["en", "ja", "de", "fr", "ko", "zh", "pt", "es"],
+      requiresAuth: true,
+      enabled: true,
+      rateLimit: { maxPerHour: 5, cooldownMs: 15_000 },
+    },
+    {
+      type: "microcms",
+      name: "microCMS",
+      category: "cms",
+      regions: ["JP"],
+      languages: ["ja"],
+      requiresAuth: true,
+      enabled: true,
+      rateLimit: { maxPerHour: 5, cooldownMs: 15_000 },
+    },
+
     // --- Regional Platforms ---
     {
       type: "naver_blog",
@@ -310,8 +447,12 @@ export function isChannelReady(channel: ChannelConfig): boolean {
 
   // APIキーがあればOK（DEV.to, Qiita, Hashnode等）
   if (creds.apiKey) return true;
+  // アクセストークンがあればOK（OAuth系）
+  if (creds.accessToken) return true;
   // ユーザー名+パスワードがあればOK（Playwright系）
   if (creds.username && creds.password) return true;
+  // サイトURL + APIキーがあればOK（CMS系）
+  if (creds.siteUrl && creds.apiKey) return true;
 
   return false;
 }

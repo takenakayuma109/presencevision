@@ -32,7 +32,7 @@ import {
   distributeContent,
   type DistributionResult,
 } from "./tasks/presence-distributor.js";
-import { getChannelsForCountry, isChannelReady } from "./channels/channel-registry.js";
+import { getChannelsForCountry, isChannelReady, type ChannelConfig, getDefaultChannels } from "./channels/channel-registry.js";
 import {
   getActivities,
   getActivityStats,
@@ -46,6 +46,8 @@ import { saveProject, removeProject, getActiveProjectsFromDB, saveArticle } from
 // ---------------------------------------------------------------------------
 const CONTENT_GEN_MAX_FAILURES = 3;
 const OLLAMA_COOLDOWN_MS = 1000;
+const FRONTEND_URL = process.env.FRONTEND_URL ?? "http://localhost:3000";
+const ENGINE_API_KEY = process.env.ENGINE_API_KEY ?? "";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -109,6 +111,98 @@ const activeProjects = new Map<string, {
 }>();
 
 // ---------------------------------------------------------------------------
+// Fetch channel configs from dashboard API (with credentials)
+// ---------------------------------------------------------------------------
+
+/** Per-project cached channels from the dashboard DB */
+const projectChannelCache = new Map<string, { channels: ChannelConfig[]; fetchedAt: number }>();
+const CHANNEL_CACHE_TTL_MS = 10 * 60 * 1000; // 10 minutes
+
+/**
+ * Fetch channel configs (with credentials) from the Next.js dashboard API
+ * and merge them into the default channel definitions.
+ * Falls back to defaults if the API is unreachable.
+ */
+async function fetchProjectChannels(projectId: string): Promise<ChannelConfig[]> {
+  // Return cached if fresh
+  const cached = projectChannelCache.get(projectId);
+  if (cached && Date.now() - cached.fetchedAt < CHANNEL_CACHE_TTL_MS) {
+    return cached.channels;
+  }
+
+  try {
+    const url = `${FRONTEND_URL}/api/channels/for-engine?projectId=${encodeURIComponent(projectId)}`;
+    const res = await fetch(url, {
+      headers: { "x-api-key": ENGINE_API_KEY },
+      signal: AbortSignal.timeout(10_000),
+    });
+
+    if (!res.ok) {
+      console.warn(`[Engine] fetchProjectChannels: ${res.status} ${res.statusText}`);
+      return getDefaultChannels();
+    }
+
+    const data = (await res.json()) as {
+      channels: Array<{
+        type: string;
+        name: string;
+        credentials: Record<string, string>;
+        enabled: boolean;
+        config?: unknown;
+      }>;
+    };
+
+    // Start with the full default channel list
+    const defaults = getDefaultChannels();
+    const dbChannelsByType = new Map(data.channels.map((ch) => [ch.type, ch]));
+
+    // Merge DB credentials into matching default channels
+    const merged = defaults.map((def) => {
+      const dbCh = dbChannelsByType.get(def.type);
+      if (!dbCh) return def;
+
+      return {
+        ...def,
+        credentials: {
+          ...def.credentials,
+          ...dbCh.credentials,
+        },
+        enabled: dbCh.enabled,
+      } as ChannelConfig;
+    });
+
+    // Also add any DB channels that don't exist in defaults (custom channels)
+    for (const [type, dbCh] of dbChannelsByType) {
+      if (!defaults.some((d) => d.type === type)) {
+        merged.push({
+          type: type as ChannelConfig["type"],
+          name: dbCh.name,
+          category: "blog",
+          regions: [],
+          languages: [],
+          requiresAuth: true,
+          credentials: dbCh.credentials,
+          enabled: dbCh.enabled,
+          rateLimit: { maxPerHour: 2, cooldownMs: 60_000 },
+        });
+      }
+    }
+
+    projectChannelCache.set(projectId, { channels: merged, fetchedAt: Date.now() });
+    console.log(
+      `[Engine] Fetched ${data.channels.length} channel(s) from dashboard for project ${projectId}`,
+    );
+    return merged;
+  } catch (error) {
+    console.warn(
+      `[Engine] fetchProjectChannels failed, using defaults:`,
+      error instanceof Error ? error.message : error,
+    );
+    return getDefaultChannels();
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Helper: run a task with retry (for content-gen tasks that hit Ollama)
 // ---------------------------------------------------------------------------
 async function runWithRetry<T>(
@@ -154,6 +248,9 @@ async function runCycle(project: PresenceProject): Promise<CycleResult> {
   const distributionResults: DistributionResult[] = [];
 
   console.log(`[Engine] Cycle ${cycleId} starting for project "${project.name}"`);
+
+  // チャネル設定をダッシュボードDBから取得（認証情報付き）
+  const allChannels = await fetchProjectChannels(project.id);
 
   // ブラウザをリセットして新しいサイクルをクリーンな状態で開始
   try {
@@ -431,7 +528,7 @@ async function runCycle(project: PresenceProject): Promise<CycleResult> {
 
     // --- Distributed Presence: 各プラットフォームへ配信 ---
     if (contentGenerated.length > 0) {
-      const channels = getChannelsForCountry(country);
+      const channels = allChannels.filter((ch) => ch.regions.includes(country));
       const readyChannels = channels.filter((c) => isChannelReady(c));
 
       if (readyChannels.length === 0) {

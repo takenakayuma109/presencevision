@@ -1,8 +1,9 @@
 /**
- * AI Provider — Ollama (local LLM) first, Anthropic as optional fallback
+ * AI Provider — Claude Haiku (primary) with Ollama fallback
  *
- * Ollama runs locally or on a self-hosted server.
- * Zero per-request cost. Supports any GGUF model.
+ * When ANTHROPIC_API_KEY is set, Claude Haiku is used for high-quality
+ * Japanese content generation. Falls back to Ollama (local LLM) if
+ * the API key is not configured.
  */
 
 const MAX_RETRIES = 2;

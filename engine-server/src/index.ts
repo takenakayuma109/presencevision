@@ -15,6 +15,7 @@ import engineRoutes from "./routes/engine.js";
 import activitiesRoutes from "./routes/activities.js";
 import healthRoutes from "./routes/health.js";
 import articlesRoutes from "./routes/articles.js";
+import analyticsRoutes from "./routes/analytics.js";
 import { restoreProjects } from "./engine/presence-engine.js";
 
 // ---------------------------------------------------------------------------
@@ -54,7 +55,7 @@ app.use((req: Request, _res: Response, next: NextFunction) => {
 // ---------------------------------------------------------------------------
 function apiKeyAuth(req: Request, res: Response, next: NextFunction): void {
   // Skip auth for health check and public articles
-  if (req.path === "/health" || req.path.startsWith("/health") || req.path.startsWith("/articles")) {
+  if (req.path === "/health" || req.path.startsWith("/health") || req.path.startsWith("/articles") || req.path.startsWith("/analytics")) {
     next();
     return;
   }
@@ -87,6 +88,7 @@ app.use("/health", healthRoutes);
 app.use("/engine", engineRoutes);
 app.use("/activities", activitiesRoutes);
 app.use("/articles", articlesRoutes);
+app.use("/analytics", analyticsRoutes);
 
 // Root endpoint
 app.get("/", (_req: Request, res: Response) => {
@@ -101,6 +103,7 @@ app.get("/", (_req: Request, res: Response) => {
       engineStatus: "GET /engine/status",
       articles: "GET /articles?projectId=xxx&language=ja&limit=20",
       articleBySlug: "GET /articles/:slug",
+      analytics: "GET /analytics?projectId=xxx&days=30",
       activities: "GET /activities?projectId=xxx&limit=50",
       activitiesStats: "GET /activities/stats?projectId=xxx",
       activitiesStream: "GET /activities/stream?projectId=xxx (SSE)",

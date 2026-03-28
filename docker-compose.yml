@@ -14,6 +14,7 @@ services:
       - BROWSER_CONCURRENCY=${BROWSER_CONCURRENCY:-5}
       - BROWSER_HEADLESS=true
       - ENGINE_CYCLE_INTERVAL_MS=${ENGINE_CYCLE_INTERVAL_MS:-21600000}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
     depends_on:
       - ollama
       - postgres

@@ -6,7 +6,7 @@
  */
 
 const MAX_RETRIES = 2;
-const DEFAULT_TIMEOUT_MS = 300_000; // 300 seconds (CPU-only inference is slow)
+const DEFAULT_TIMEOUT_MS = 600_000; // 600 seconds (VPS CPU-only inference needs more time)
 
 export interface AIMessage {
   role: "user" | "assistant";

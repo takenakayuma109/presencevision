@@ -187,13 +187,16 @@ export async function monitorRankings(params: RankingMonitorParams): Promise<Ran
         { country: params.country, locale: item.language },
       );
 
+      // SERP取得失敗時（CAPTCHA/評価エラー等で result が undefined）でもクラッシュしないようガード
+      const safe = result ?? { position: null as number | null, featuredSnippet: false };
+
       // Calculate delta: positive = improved (moved up)
       let delta = 0;
-      if (result.position !== null && previousPosition !== null) {
-        delta = previousPosition - result.position; // e.g. was 10, now 5 → delta = +5
-      } else if (result.position !== null && previousPosition === null) {
-        delta = 100 - result.position; // entered top 100
-      } else if (result.position === null && previousPosition !== null) {
+      if (safe.position !== null && previousPosition !== null) {
+        delta = previousPosition - safe.position; // e.g. was 10, now 5 → delta = +5
+      } else if (safe.position !== null && previousPosition === null) {
+        delta = 100 - safe.position; // entered top 100
+      } else if (safe.position === null && previousPosition !== null) {
         delta = -(100 - previousPosition); // dropped out of top 100
       }
 
@@ -201,12 +204,12 @@ export async function monitorRankings(params: RankingMonitorParams): Promise<Ran
         keyword: item.keyword,
         country: params.country,
         language: item.language,
-        position: result.position,
+        position: safe.position,
         previousPosition,
         delta,
         url: item.url,
         checkedAt: new Date(),
-        featuredSnippet: result.featuredSnippet,
+        featuredSnippet: safe.featuredSnippet,
       };
 
       storeRecord(record);

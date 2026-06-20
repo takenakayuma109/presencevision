@@ -311,6 +311,8 @@ async function runWithRetry<T>(
 // 1サイクルの実行
 // ---------------------------------------------------------------------------
 async function runCycle(project: PresenceProject, cycleNumber = 0): Promise<CycleResult> {
+  // 全サイクル経路でメソッド名を正規化（/run-cycle 等 startProject を経由しない呼び出しもカバー）
+  project = { ...project, methods: normalizeMethods(project.methods as unknown as string[]) };
   const cycleId = uuidv4();
   const startedAt = new Date();
   const runSerpLlm = cycleNumber % SERP_LLM_EVERY_N_CYCLES === 0;
@@ -368,9 +370,14 @@ async function runCycle(project: PresenceProject, cycleNumber = 0): Promise<Cycl
   // --- 自律ループ: 今サイクルでコンテンツ化するキーワードを決定 ---
   // 発見キューの未処理キーワードを優先し、足りなければ静的シードで補完する。
   // （旧実装は発見結果を破棄し、常に project.keywords.slice(0,3) を使っていた）
-  const discoveredBatch = getNextKeywordBatch(project.id, 3).map((k) => k.keyword);
+  // ゴミキーワード除去（Google UIテキストの混入対策:「もっと見る」「次へ」等）
+  const JUNK_KW = /^(もっと見る|もっと表示|すべて表示|さらに表示|次へ|前へ|関連(検索|キーワード)?|more|see more|view all|show more|next|prev(ious)?|…|\.{2,})$/i;
+  const isUsableKw = (k: string) => !!k && k.trim().length >= 2 && !JUNK_KW.test(k.trim());
+  const discoveredBatch = getNextKeywordBatch(project.id, 8)
+    .map((k) => k.keyword)
+    .filter(isUsableKw);
   const cycleKeywords = Array.from(
-    new Set([...discoveredBatch, ...project.keywords.slice(0, 3)].filter(Boolean)),
+    new Set([...discoveredBatch, ...project.keywords.filter(isUsableKw)]),
   ).slice(0, 3);
   console.log(
     `[Engine] Cycle keywords (discovered=${discoveredBatch.length}, total=${cycleKeywords.length}): ${cycleKeywords.join(", ")}`,
@@ -410,8 +417,9 @@ async function runCycle(project: PresenceProject, cycleNumber = 0): Promise<Cycl
         tasksFailed++;
       }
 
-      // SERP順位チェック（キーワードごと）
-      for (const keyword of project.keywords.slice(0, 5)) {
+      // SERP順位チェック（キーワードごと）。Playwrightスクレイピングは失敗しがちで遅いため、
+      // 監視は軽量に（上位3件のみ）し、コンテンツ生成をブロックしないようにする。
+      for (const keyword of project.keywords.filter(isUsableKw).slice(0, 3)) {
         try {
           const result = await checkSerp({
             projectId: project.id,
@@ -428,8 +436,8 @@ async function runCycle(project: PresenceProject, cycleNumber = 0): Promise<Cycl
           tasksFailed++;
         }
 
-        // レート制限回避（10〜20秒のランダム間隔でCAPTCHA回避）
-        await sleep(10000 + Math.random() * 10000);
+        // レート制限回避（短め。スクレイピングは元々失敗しがちで生成を遅らせないため）
+        await sleep(2500 + Math.random() * 2000);
       }
     }
 

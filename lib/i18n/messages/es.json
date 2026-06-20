@@ -355,20 +355,21 @@
     "nav": {
       "features": "Funcionalidades",
       "howItWorks": "Cómo funciona",
-      "pricing": "Precios"
+      "pricing": "Precios",
+      "knowledgeBase": "Directorio de empresas"
     },
     "hero": {
-      "badge": "Cero costos de API — IA local a precio fijo",
-      "title": "¡Automatización completa de SEO + optimización para IA!",
-      "subtitle": "Haz que tu marca sea descubrible tanto en Google como en IA como ChatGPT y Gemini, las 24 horas del día, los 7 días de la semana.",
-      "disruption": "La era de los anuncios de búsqueda está terminando. Los anuncios desaparecen cuando dejas de pagar. La presencia construida con PV perdura para siempre.",
+      "badge": "El motor de presencia con IA, seguro y pensado para negocios locales de Japón",
+      "title": "Haz que tu empresa sea \"encontrable\" tanto en la búsqueda de Google como en la IA (ChatGPT, Gemini).",
+      "subtitle": "Automatiza el SEO y el GEO (optimización para IA generativa) con un enfoque especializado en el japonés y los negocios locales. La IA genera artículos y datos estructurados de forma continua, con aprobación humana antes de publicar, para hacer crecer tu visibilidad tanto en los buscadores como en la IA generativa.",
+      "disruption": "Los anuncios desaparecen cuando dejas de pagar. El estado de \"ser encontrable\" que construyes con PresenceVision permanece como un activo.",
       "effects": {
-        "label": "Resultados esperados",
+        "label": "Lo que puedes esperar",
         "items": [
-          "Mejor posicionamiento en búsquedas de Google",
-          "Más menciones de marca en ChatGPT, Gemini y otros",
-          "Reconocimiento de marca en más de 25 canales",
-          "95% de reducción en el esfuerzo de creación de contenido"
+          "Mayor visibilidad en la búsqueda de Google",
+          "Más oportunidades de ser citado en ChatGPT, Gemini y Perplexity",
+          "Refuerzo de la búsqueda local, como Google Business Profile",
+          "Operación segura y conforme, con aprobación humana antes de publicar"
         ]
       }
     },
@@ -377,66 +378,66 @@
       "startFree": "Comenzar gratis",
       "viewPricing": "Ver precios",
       "startTrial": "Prueba gratuita de 7 días",
-      "bottomTitle": "Tu primer paso hacia cero gasto en publicidad",
-      "bottomSubtitle": "7 días de prueba gratuita de todas las funcionalidades tras registrar el pago."
+      "bottomTitle": "El primer paso para ser una empresa \"encontrable\" en la era de la IA",
+      "bottomSubtitle": "Tras registrar tus datos de pago, prueba todas las funciones gratis durante 7 días. Puedes cancelar en cualquier momento."
     },
     "features": {
-      "sectionTitle": "6 funcionalidades que automatizan todo",
-      "sectionSubtitle": "Desde el descubrimiento de palabras clave hasta la generación de contenido, distribución y seguimiento. La IA lo gestiona todo 24/7.",
+      "sectionTitle": "6 funciones para construir una empresa que se deja encontrar",
+      "sectionSubtitle": "Desde el descubrimiento de palabras clave hasta la generación de contenido y datos estructurados, la publicación segura y el seguimiento de búsquedas y citas de IA. Una IA optimizada para el japonés lo ejecuta de forma continua.",
       "keyword": {
-        "title": "Descubrimiento auto de palabras clave long-tail",
-        "desc": "Recolección automática de 100+ palabras clave de Google. Expandido con Ollama."
+        "title": "Descubrimiento automático de palabras clave long-tail",
+        "desc": "Recopila de forma automática las palabras que tus clientes potenciales realmente usan, a partir de las sugerencias y preguntas relacionadas de la búsqueda de Google. Encuentra términos de búsqueda con demanda real, locales y específicos de tu sector, para usarlos como base de tus artículos."
       },
       "content": {
-        "title": "Generación auto de contenido",
-        "desc": "Genera artículos, FAQ, Schema.org y traducciones multilingües ilimitadas. Cero costos de API."
+        "title": "Generación automática de contenido y datos estructurados",
+        "desc": "La IA genera artículos, FAQ, descripciones de empresa y Schema.org (Organization / LocalBusiness / FAQ). Lo prepara en un formato fácil de entender y de citar tanto para los buscadores como para la IA generativa."
       },
       "distribution": {
-        "title": "Distribución distribuida de presencia",
-        "desc": "Distribución auto en 25+ canales: Twitter, Medium, Reddit y más."
+        "title": "Publicación segura (tu propio Hub y tu sitio)",
+        "desc": "Publicación oficial en tu propio Hub de conocimiento (una página pública exclusiva para ti) y en tu propio WordPress / CMS. También se preparan tu Google Business Profile y los datos estructurados. No realizamos publicaciones automáticas suplantando tu identidad en redes sociales de terceros que infrinjan sus términos de uso."
       },
       "llmMonitoring": {
-        "title": "Monitoreo de citas LLM",
-        "desc": "Seguimiento en tiempo real de citas de marca en ChatGPT, Gemini, Perplexity."
+        "title": "Monitorización de GEO (citas de IA)",
+        "desc": "Sigue cómo ChatGPT, Gemini, Perplexity y otros presentan y citan a tu empresa. Visualiza cómo te ven en la búsqueda con IA y aprovéchalo para mejorar."
       },
       "serp": {
-        "title": "Seguimiento SERP & Estrategia auto",
-        "desc": "Sigue los cambios de ranking. La IA sugiere la siguiente estrategia de contenido."
+        "title": "Seguimiento del posicionamiento y ajuste automático de estrategia",
+        "desc": "Sigue las variaciones de tu posición en la búsqueda de Google tras publicar. Identifica qué artículos crecen y cuáles no, y la IA propone el contenido que conviene crear a continuación."
       },
       "autonomous": {
-        "title": "Operación autónoma 24/7",
-        "desc": "El motor funciona continuamente en VPS. El trabajo continúa incluso con el PC apagado."
+        "title": "Operación autónoma 24 horas + aprobación humana",
+        "desc": "El motor ejecuta el ciclo de \"investigar → generar → (aprobar) → publicar\" las 24 horas. Aun siendo autónomo, es un diseño seguro que permite exigir aprobación humana para las publicaciones de riesgo."
       }
     },
     "howItWorks": {
       "title": "Comienza en 4 pasos",
-      "subtitle": "Solo ingresa una URL. La IA genera un plan y funciona 24/7."
+      "subtitle": "Solo introduce la información de tu empresa y la URL. El resto lo hace la IA: genera el plan y funciona de forma continua con una operación segura."
     },
     "steps": {
       "step1": {
-        "title": "Ingresa URL",
-        "desc": "Análisis del sitio & detección auto de palabras clave"
+        "title": "Registro de la información de la empresa",
+        "desc": "Registra los datos de tu empresa, la URL, la zona objetivo y las palabras clave. El uso comienza tras verificar su existencia real"
       },
       "step2": {
         "title": "La IA genera el plan",
-        "desc": "Personaliza objetivos, países y métodos"
+        "desc": "Crea automáticamente el plan: descubrimiento de palabras clave → generación de artículos y datos estructurados → publicación"
       },
       "step3": {
-        "title": "Inicio con un clic",
-        "desc": "Operación autónoma 24/7"
+        "title": "Publicación segura (Hub y tu propio sitio)",
+        "desc": "Se publica en tu propio Hub y en tu sitio. Cada artículo se genera con datos estructurados para que sea fácil de citar por la IA generativa"
       },
       "step4": {
-        "title": "Sigue los resultados",
-        "desc": "Rankings, citas y distribución en tiempo real"
+        "title": "Tu presencia crece",
+        "desc": "Tu posición en buscadores, las citas de IA y la visibilidad en la búsqueda local mejoran de forma continua"
       }
     },
     "channels": {
-      "title": "25+ canales de distribución",
-      "subtitle": "Redes sociales, blogs, Q&A y plataformas regionales. Distribución auto en todos."
+      "title": "Destinos de publicación seguros",
+      "subtitle": "Tu propio Hub, tu propio sitio / CMS, Google Business Profile y datos estructurados. No realizamos publicaciones automáticas en redes sociales de terceros que infrinjan sus términos de uso."
     },
     "pricing": {
       "title": "Precios simples",
-      "subtitle": "Todos los planes incluyen cero costos de API e IA local ilimitada.",
+      "subtitle": "Todos los planes incluyen optimización de GEO para japonés, datos estructurados y aprobación humana antes de publicar.",
       "recommended": "Recomendado",
       "starter": {
         "name": "Starter"
@@ -448,7 +449,7 @@
         "name": "Enterprise"
       },
       "aiBoost": "AI Boost",
-      "aiBoostDesc": "Generación de artículos de alta calidad con GPT-4o / Claude. Produce contenido profundo y original más allá de las capacidades de la IA local.",
+      "aiBoostDesc": "Generación de artículos de alta calidad con Claude Opus 4.8. Produce artículos originales y fáciles de citar, con un fuerte énfasis en el E-E-A-T.",
       "billing": {
         "monthly": "Monthly",
         "annual": "Annual",
@@ -540,9 +541,9 @@
       "contact": "Contacto"
     },
     "hubSpoke": {
-      "title": "Hub & Spoke Distribution",
-      "subtitle": "Your site is home base. Every channel is a branch office that brings people back.",
-      "explanation": "Write one article, and AI automatically transforms it into a Twitter thread, a LinkedIn business post, an Instagram card, and more. Every post links back to your site, so visitors always find their way to you. This continuously builds your Google authority (domain authority) on autopilot."
+      "title": "Modelo Hub & Spoke (concentrador y radios)",
+      "subtitle": "La información de tu empresa es la \"base central\" (el hub). Los buscadores, los mapas y la IA acuden a ella como referencia.",
+      "explanation": "Publica tus artículos e información corporativa en tu propio Hub de conocimiento y en tu sitio, con datos estructurados. Al referenciarse mutuamente tu Google Business Profile, el directorio de empresas y las FAQ, resulta más fácil que tanto los buscadores como la IA generativa te reconozcan como una \"fuente primaria fiable\". No depende de publicaciones que suplanten tu identidad en redes sociales de terceros infringiendo sus términos de uso."
     }
   },
   "billing": {

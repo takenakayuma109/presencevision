@@ -163,11 +163,20 @@ export async function publishToWordPress(
       contentBody = buildFaqContent(contentBody, params.content.schemaJsonLd);
     }
 
+    // 承認ゲート（安全設計の既定）:
+    // 顧客の公開サイトへは自動で「公開」せず、既定では「下書き(draft)」として投稿する。
+    // 顧客が WordPress 上でレビューしてから公開＝人間承認。これにより、誤情報や
+    // 規約違反コンテンツが顧客ブランド名で自動公開されるリスク（Air Canada判例的責任・
+    // Google scaled-content penalty）を回避する。
+    // 全自動公開はインフラ側で REQUIRE_APPROVAL=false を設定して明示オプトインする。
+    const requireApproval = process.env.REQUIRE_APPROVAL !== "false";
+    const wpStatus = requireApproval ? "draft" : params.cmsConfig.defaultStatus;
+
     // Build request body
     const wpBody: Record<string, unknown> = {
       title: params.content.title,
       content: contentBody,
-      status: params.cmsConfig.defaultStatus,
+      status: wpStatus,
     };
 
     // Add keyword as tag (posts only, not pages)

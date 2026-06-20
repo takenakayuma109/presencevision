@@ -18,15 +18,6 @@ import {
   Zap,
   Globe,
   ChevronRight,
-  Linkedin,
-  Facebook,
-  Instagram,
-  Youtube,
-  Music2,
-  Pin,
-  AtSign,
-  MessageCircle,
-  HelpCircle,
   BookOpen,
   ShieldCheck,
   FileCheck2,
@@ -43,12 +34,6 @@ import { LanguageSwitch } from "@/components/ui/language-switch";
 import { PaymentMethods } from "@/components/billing/payment-methods";
 import { useThemeStore } from "@/lib/store/theme";
 import { useRouter } from "next/navigation";
-
-const XIcon = ({ className }: { className?: string }) => (
-  <svg viewBox="0 0 24 24" className={className} fill="currentColor">
-    <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
-  </svg>
-);
 
 /* ------------------------------------------------------------------ */
 /*  CSS animation styles (injected via <style> tag)                    */
@@ -194,43 +179,22 @@ const steps = [
 ];
 
 const channels = {
-  SNS: [
-    { name: "X", icon: XIcon, color: "#000000", bg: "bg-black" },
-    { name: "Instagram", icon: Instagram, color: "#E4405F", bg: "bg-[#E4405F]" },
-    { name: "LinkedIn", icon: Linkedin, color: "#0A66C2", bg: "bg-[#0A66C2]" },
-    { name: "Facebook", icon: Facebook, color: "#1877F2", bg: "bg-[#1877F2]" },
-    { name: "TikTok", icon: Music2, color: "#000000", bg: "bg-black" },
-    { name: "YouTube", icon: Youtube, color: "#FF0000", bg: "bg-[#FF0000]" },
-    { name: "Pinterest", icon: Pin, color: "#BD081C", bg: "bg-[#BD081C]" },
-    { name: "Threads", icon: AtSign, color: "#000000", bg: "bg-black" },
+  "ナレッジHub（自社ドメイン）": [
+    { name: "PresenceVision Hub", icon: BookOpen, color: "#2563EB", bg: "bg-blue-600" },
+    { name: "企業ディレクトリ", icon: Globe, color: "#7C3AED", bg: "bg-violet-600" },
+    { name: "構造化データ (JSON-LD)", icon: FileCheck2, color: "#059669", bg: "bg-emerald-600" },
   ],
-  Blog: [
-    { name: "Medium", icon: BookOpen, color: "#000000", bg: "bg-black" },
-    { name: "note.com", icon: FileText, color: "#41C9B4", bg: "bg-[#41C9B4]" },
-    { name: "dev.to", icon: FileText, color: "#0A0A0A", bg: "bg-[#0A0A0A]" },
-    { name: "Qiita", icon: FileText, color: "#55C500", bg: "bg-[#55C500]" },
-    { name: "Hashnode", icon: FileText, color: "#2962FF", bg: "bg-[#2962FF]" },
-  ],
-  "Q&A": [
-    { name: "Reddit", icon: MessageCircle, color: "#FF4500", bg: "bg-[#FF4500]" },
-    { name: "Quora", icon: HelpCircle, color: "#B92B27", bg: "bg-[#B92B27]" },
-    { name: "Yahoo!知恵袋", icon: HelpCircle, color: "#FF0033", bg: "bg-[#FF0033]" },
-    { name: "知乎", icon: HelpCircle, color: "#0084FF", bg: "bg-[#0084FF]" },
-  ],
-  Regional: [
-    { name: "Naver Blog", icon: Globe, color: "#03C75A", bg: "bg-[#03C75A]" },
-    { name: "Tistory", icon: Globe, color: "#E45735", bg: "bg-[#E45735]" },
-    { name: "CSDN", icon: Globe, color: "#FC5531", bg: "bg-[#FC5531]" },
-    { name: "Xing", icon: Globe, color: "#006567", bg: "bg-[#006567]" },
-  ],
-  "CMS / Site Builder": [
+  "あなたのサイト / CMS": [
     { name: "WordPress", icon: Globe, color: "#21759B", bg: "bg-[#21759B]" },
-    { name: "Wix", icon: Globe, color: "#0C6EFC", bg: "bg-[#0C6EFC]" },
-    { name: "Shopify", icon: Globe, color: "#96BF48", bg: "bg-[#96BF48]" },
-    { name: "Squarespace", icon: Globe, color: "#000000", bg: "bg-black" },
-    { name: "Webflow", icon: Globe, color: "#4353FF", bg: "bg-[#4353FF]" },
-    { name: "Ghost", icon: Globe, color: "#15171A", bg: "bg-[#15171A]" },
     { name: "microCMS", icon: Globe, color: "#2B2D42", bg: "bg-[#2B2D42]" },
+  ],
+  "ローカル検索": [
+    { name: "Google Business Profile", icon: Globe, color: "#4285F4", bg: "bg-[#4285F4]" },
+  ],
+  "技術コミュニティ（公式API）": [
+    { name: "Qiita", icon: FileText, color: "#55C500", bg: "bg-[#55C500]" },
+    { name: "DEV.to", icon: FileText, color: "#0A0A0A", bg: "bg-[#0A0A0A]" },
+    { name: "Hashnode", icon: FileText, color: "#2962FF", bg: "bg-[#2962FF]" },
   ],
 };
 
@@ -238,71 +202,69 @@ const plans = [
   {
     nameKey: "landing.pricing.starter.name",
     slug: "starter",
-    audience: "個人・フリーランス",
+    audience: "個人・スモールビジネス",
     price: "9,800",
     annualPrice: "7,800",
     featured: false,
     features: [
-      "1プロジェクト",
-      "5キーワード",
-      "3チャネル配信",
-      "月間100記事生成",
-      "基本SERP追跡",
+      "AIサイクル: 6時間ごと（1日4回稼働）",
+      "1プロジェクト / 5キーワード",
+      "自社ナレッジHubへの記事・構造化データ公開",
+      "Google検索 + GEO（AI引用）の基本モニタリング",
+      "Schema.org（Organization / FAQ）自動付与",
+      "公開前の人間承認（安全モード）",
       "メールレポート（1日1回）",
-      "AI Boost: 月5記事まで高品質AI（GPT-4o）で生成",
+      "AI Boost: 月5記事まで Claude Opus 4.8 で高品質生成",
     ],
   },
   {
     nameKey: "landing.pricing.professional.name",
     slug: "professional",
-    audience: "中小企業",
+    audience: "中小企業・ローカルビジネス",
     price: "29,800",
     annualPrice: "24,800",
     featured: true,
     features: [
-      "5プロジェクト",
-      "50キーワード",
-      "10チャネル配信",
-      "月間500記事生成",
-      "SERP + LLM引用追跡",
-      "メールレポート（1日2回）",
-      "競合分析",
-      "CMS自動投稿（WordPress）",
-      "優先サポート",
-      "AI Boost: 月20記事まで高品質AI（GPT-4o）で生成",
+      "AIサイクル: 1時間ごと（1日24回稼働）",
+      "5プロジェクト / 50キーワード",
+      "自社Hub + あなたのWordPressへ自動公開",
+      "Googleビジネスプロフィール連携（ローカルSEO）",
+      "Google検索 + ChatGPT / Gemini / Perplexity 引用モニタリング",
+      "競合・キーワードギャップ分析",
+      "承認ワークフロー（公開前レビュー）",
+      "メールレポート（1日2回）+ 優先サポート",
+      "AI Boost: 月20記事まで Claude Opus 4.8",
     ],
   },
   {
     nameKey: "landing.pricing.enterprise.name",
     slug: "enterprise",
-    audience: "大企業・代理店",
+    audience: "代理店・複数拠点",
     price: "98,000",
     annualPrice: "78,000",
     featured: false,
     features: [
-      "プロジェクト無制限",
-      "キーワード無制限",
-      "全25+チャネル配信",
-      "記事生成無制限",
-      "全機能利用可能",
+      "AIサイクル: 1時間ごと（1日24回稼働）",
+      "プロジェクト無制限 / キーワード無制限",
+      "ホワイトラベル（代理店向け再販）",
+      "公式API連携（Qiita / DEV.to / Hashnode）",
       "専用VPSインスタンス",
-      "カスタムチャネル追加",
-      "API連携",
-      "専任サポート",
-      "SLA保証",
-      "AI Boost: 月50記事まで高品質AI（GPT-4o / Claude）で生成",
+      "API連携・カスタム統合",
+      "専任サポート / SLA保証",
+      "AI Boost: 月50記事まで Claude Opus 4.8",
     ],
   },
 ];
 
 const comparisonRows = [
   { label: "月額", pv: "¥9,800〜", semrush: "$139〜", ahrefs: "$99〜", surfer: "$89〜" },
-  { label: "AI記事生成", pv: true, semrush: "制限あり", ahrefs: false, surfer: "制限あり" },
-  { label: "LLM引用追跡", pv: true, semrush: false, ahrefs: false, surfer: false },
-  { label: "分散配信", pv: "25+チャネル", semrush: false, ahrefs: false, surfer: false },
-  { label: "API課金", pv: "ゼロ", semrush: "従量課金", ahrefs: "従量課金", surfer: "従量課金" },
+  { label: "AI記事生成 + 公開まで自動", pv: true, semrush: "制限あり", ahrefs: false, surfer: "制限あり" },
+  { label: "GEO（AIでの被引用）モニタリング", pv: true, semrush: "一部(beta)", ahrefs: "一部(beta)", surfer: false },
+  { label: "ローカルビジネス対応（GBP）", pv: true, semrush: false, ahrefs: false, surfer: false },
+  { label: "日本語・日本市場特化", pv: true, semrush: "△", ahrefs: "△", surfer: "△" },
+  { label: "公開前の人間承認（安全設計）", pv: true, semrush: "—", ahrefs: "—", surfer: "—" },
   { label: "24h自律稼働", pv: true, semrush: false, ahrefs: false, surfer: false },
-  { label: "AI Boost（高品質API記事生成）", pv: "月5〜50記事", semrush: "制限あり", ahrefs: false, surfer: "制限あり" },
+  { label: "AI Boost（Claude Opus 4.8）", pv: "月5〜50記事", semrush: false, ahrefs: false, surfer: false },
 ];
 
 /* ------------------------------------------------------------------ */
@@ -393,6 +355,9 @@ export function LandingPage() {
               <a href="#pricing" className="text-sm text-muted-foreground transition-colors hover:text-foreground">
                 {t("landing.nav.pricing")}
               </a>
+              <Link href="/companies" className="text-sm text-muted-foreground transition-colors hover:text-foreground">
+                {t("landing.nav.knowledgeBase")}
+              </Link>
               <LanguageSwitch position="bottom" />
               <button
                 onClick={toggleTheme}
@@ -507,16 +472,16 @@ export function LandingPage() {
             {/* Stats bar */}
             <div className="animate-fade-in-up-delay-3 mx-auto mt-16 grid max-w-3xl grid-cols-3 gap-8 rounded-2xl border border-border/50 bg-card/50 p-6 backdrop-blur-sm">
               <div>
-                <div className="text-2xl font-bold md:text-3xl">25+</div>
-                <div className="mt-1 text-xs text-muted-foreground md:text-sm">配信チャネル</div>
+                <div className="text-2xl font-bold md:text-3xl">SEO+GEO</div>
+                <div className="mt-1 text-xs text-muted-foreground md:text-sm">検索もAIも対応</div>
               </div>
               <div>
                 <div className="text-2xl font-bold md:text-3xl">24/7</div>
                 <div className="mt-1 text-xs text-muted-foreground md:text-sm">自律稼働</div>
               </div>
               <div>
-                <div className="text-2xl font-bold md:text-3xl">¥0</div>
-                <div className="mt-1 text-xs text-muted-foreground md:text-sm">API課金</div>
+                <div className="text-2xl font-bold md:text-3xl">承認制</div>
+                <div className="mt-1 text-xs text-muted-foreground md:text-sm">公開前に人間が確認</div>
               </div>
             </div>
           </div>
@@ -711,12 +676,12 @@ export function LandingPage() {
 
                     {/* Spoke items */}
                     {[
-                      { name: "X", angle: 0, color: "#000000" },
-                      { name: "LinkedIn", angle: 60, color: "#0A66C2" },
-                      { name: "Instagram", angle: 120, color: "#E4405F" },
-                      { name: "Medium", angle: 180, color: "#000000" },
-                      { name: "Reddit", angle: 240, color: "#FF4500" },
-                      { name: "note.com", angle: 300, color: "#41C9B4" },
+                      { name: "Google Business", angle: 0, color: "#4285F4" },
+                      { name: "あなたのサイト", angle: 60, color: "#21759B" },
+                      { name: "Qiita", angle: 120, color: "#55C500" },
+                      { name: "構造化データ", angle: 180, color: "#059669" },
+                      { name: "企業ディレクトリ", angle: 240, color: "#7C3AED" },
+                      { name: "FAQ / AEO", angle: 300, color: "#F59E0B" },
                     ].map((spoke) => {
                       const radius = 200;
                       const rad = (spoke.angle * Math.PI) / 180;
@@ -734,7 +699,7 @@ export function LandingPage() {
                           >
                             <span className="text-xs font-semibold text-foreground md:text-sm">{spoke.name}</span>
                           </div>
-                          <span className="mt-1 text-xs text-blue-500 font-medium">→ 自社サイトへ誘導</span>
+                          <span className="mt-1 text-xs text-blue-500 font-medium">↔ ハブと連携</span>
                         </div>
                       );
                     })}
@@ -787,7 +752,7 @@ export function LandingPage() {
               </p>
             </div>
 
-            <div className="mt-16 grid gap-8 md:grid-cols-2 lg:grid-cols-5">
+            <div className="mt-16 grid gap-8 md:grid-cols-2 lg:grid-cols-4">
               {Object.entries(channels).map(([category, items], ci) => (
                 <div key={category} className="scroll-animate" style={{ transitionDelay: `${ci * 0.1}s` }}>
                   <div className="rounded-2xl border border-border/50 bg-card/50 p-6 backdrop-blur-sm">
@@ -919,6 +884,153 @@ export function LandingPage() {
                   </Card>
                 </div>
               ))}
+            </div>
+          </div>
+        </section>
+
+        {/* ========== Section Divider ========== */}
+        <div className="border-t border-border/50" />
+
+        {/* ========== 24-Hour Schedule ========== */}
+        <section className="py-20 md:py-32">
+          <div className="mx-auto max-w-7xl px-6">
+            <div className="scroll-animate text-center">
+              <Badge variant="secondary" className="mb-4">Schedule</Badge>
+              <h2 className="text-3xl font-bold md:text-4xl">24時間自律スケジュール</h2>
+              <p className="mx-auto mt-4 max-w-2xl text-base text-muted-foreground md:text-lg">
+                各プランのAIエンジン稼働スケジュールを比較
+              </p>
+            </div>
+
+            <div className="scroll-animate mt-12 space-y-8">
+              {/* Legend */}
+              <div className="flex flex-wrap justify-center gap-3 text-xs">
+                {[
+                  { label: "キーワード発掘", color: "bg-blue-500" },
+                  { label: "コンテンツ生成", color: "bg-emerald-500" },
+                  { label: "SERP確認", color: "bg-orange-500" },
+                  { label: "LLM引用チェック", color: "bg-purple-500" },
+                  { label: "配信", color: "bg-pink-500" },
+                  { label: "レポート", color: "bg-yellow-500" },
+                ].map((item) => (
+                  <div key={item.label} className="flex items-center gap-1.5">
+                    <div className={`h-2.5 w-2.5 rounded-sm ${item.color}`} />
+                    <span className="text-muted-foreground">{item.label}</span>
+                  </div>
+                ))}
+              </div>
+
+              {/* Time axis header */}
+              <div className="pl-40 md:pl-48">
+                <div className="flex justify-between text-xs text-muted-foreground">
+                  {[0, 3, 6, 9, 12, 15, 18, 21].map((h) => (
+                    <span key={h}>{h}:00</span>
+                  ))}
+                  <span>24:00</span>
+                </div>
+              </div>
+
+              {/* Plan rows */}
+              {([
+                {
+                  name: "Starter",
+                  price: "¥9,800",
+                  cycles: 4,
+                  hours: [0, 6, 12, 18] as number[],
+                  featured: false,
+                },
+                {
+                  name: "Professional",
+                  price: "¥29,800",
+                  cycles: 24,
+                  hours: Array.from({ length: 24 }, (_, i) => i),
+                  featured: true,
+                },
+                {
+                  name: "Enterprise（Premium AI）",
+                  price: "¥98,000",
+                  cycles: 24,
+                  hours: Array.from({ length: 24 }, (_, i) => i),
+                  featured: false,
+                },
+              ]).map((plan) => (
+                <div
+                  key={plan.name}
+                  className={`scroll-animate rounded-xl border p-4 md:p-5 ${
+                    plan.featured
+                      ? "border-blue-500/50 bg-blue-500/5 shadow-lg shadow-blue-500/10"
+                      : "border-border/50 bg-card/30"
+                  }`}
+                >
+                  <div className="flex flex-col md:flex-row md:items-center gap-4">
+                    {/* Plan info */}
+                    <div className="flex items-center gap-3 md:w-40 md:shrink-0">
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className="font-bold text-base">{plan.name}</span>
+                          {plan.featured && (
+                            <Badge className="bg-blue-500 text-white text-[10px] px-1.5 py-0">
+                              推奨
+                            </Badge>
+                          )}
+                        </div>
+                        <span className="text-sm text-muted-foreground">{plan.price}/月</span>
+                        <div className="text-xs text-muted-foreground mt-0.5">
+                          1日{plan.cycles}サイクル
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* 24h bar */}
+                    <div className="flex-1 min-w-0">
+                      <div className="relative h-12 rounded-lg bg-muted/30 border border-border/30 overflow-hidden">
+                        {/* Hour grid lines */}
+                        {[0, 6, 12, 18].map((h) => (
+                          <div
+                            key={h}
+                            className="absolute top-0 bottom-0 border-l border-border/20"
+                            style={{ left: `${(h / 24) * 100}%` }}
+                          />
+                        ))}
+
+                        {/* Cycle blocks */}
+                        {plan.hours.map((hour, idx) => {
+                          const leftPct = ((typeof hour === "number" ? hour : 0) / 24) * 100;
+                          const widthPct = plan.cycles >= 24 ? 2.8 : 4;
+                          const taskColors = [
+                            "bg-blue-500",    // keyword
+                            "bg-emerald-500", // content
+                            "bg-orange-500",  // SERP
+                            "bg-purple-500",  // LLM
+                            "bg-pink-500",    // publish
+                            "bg-yellow-500",  // report
+                          ];
+                          return (
+                            <div
+                              key={idx}
+                              className="absolute top-1 bottom-1 flex flex-col gap-[1px] justify-center"
+                              style={{ left: `${leftPct}%`, width: `${widthPct}%` }}
+                            >
+                              {taskColors.map((color, ci) => (
+                                <div
+                                  key={ci}
+                                  className={`${color} rounded-[1px] opacity-90`}
+                                  style={{ height: `${100 / 6 - 1}%` }}
+                                />
+                              ))}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+
+              {/* Bottom message */}
+              <p className="text-center text-sm text-muted-foreground">
+                上位プランほどAIエンジンが高頻度で稼働し、より迅速にプレゼンスを構築します
+              </p>
             </div>
           </div>
         </section>

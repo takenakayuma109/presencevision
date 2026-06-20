@@ -36,10 +36,14 @@ import { getChannelsForCountry, isChannelReady, type ChannelConfig, getDefaultCh
 import {
   getActivities,
   getActivityStats,
+  startActivity,
+  completeActivity,
   type ActivityEntry,
 } from "./activity-logger.js";
+import { discoverKeywords } from "./tasks/keyword-discoverer.js";
 import { getBrowserPool } from "./browser-pool.js";
 import { saveProject, removeProject, getActiveProjectsFromDB, saveArticle } from "../db/index.js";
+import { syncCycleToFrontend } from "./frontend-sync.js";
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -49,9 +53,18 @@ const OLLAMA_COOLDOWN_MS = 1000;
 const FRONTEND_URL = process.env.FRONTEND_URL ?? "http://localhost:3000";
 const ENGINE_API_KEY = process.env.ENGINE_API_KEY ?? "";
 
+// Plan-based configuration
+const PLAN_CONFIG: Record<PlanTier, { cycleIntervalMs: number; anthropicModel: string }> = {
+  starter:      { cycleIntervalMs: 6 * 60 * 60 * 1000, anthropicModel: "claude-haiku-4-5" },
+  professional: { cycleIntervalMs: 1 * 60 * 60 * 1000, anthropicModel: "claude-haiku-4-5" },
+  enterprise:   { cycleIntervalMs: 1 * 60 * 60 * 1000,  anthropicModel: "claude-sonnet-4-6" },
+};
+
 // ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
+export type PlanTier = "starter" | "professional" | "enterprise";
+
 export interface PresenceProject {
   id: string;
   name: string;
@@ -61,6 +74,7 @@ export interface PresenceProject {
   targetCountries: string[];
   methods: PresenceMethod[];
   status: "active" | "paused" | "completed";
+  planId?: PlanTier;
   createdAt: Date;
   cmsConfig?: CmsConfig;
 }
@@ -113,7 +127,7 @@ const activeProjects = new Map<string, {
 
 // SERP/LLMチェックは重いのでN回に1回だけ実行（CAPTCHA回避）
 // 30分サイクル × 48 = 1日1回
-const SERP_LLM_EVERY_N_CYCLES = 48;
+const SERP_LLM_EVERY_N_CYCLES = 24; // 1日1回（1時間サイクル × 24 = 24時間）
 
 // ---------------------------------------------------------------------------
 // Fetch channel configs from dashboard API (with credentials)
@@ -269,11 +283,33 @@ async function runCycle(project: PresenceProject, cycleNumber = 0): Promise<Cycl
     console.error(`[Engine] Browser reset failed for cycle ${cycleId}:`, error);
   }
 
+  // --- Phase 1: キーワード自動発掘（1日1回） ---
+  if (runSerpLlm && project.keywords.length > 0) {
+    const primaryCountry = project.targetCountries[0] ?? "JP";
+    const primaryLang = COUNTRY_LANGUAGES[primaryCountry] ?? "ja";
+    try {
+      const discovered = await discoverKeywords({
+        projectId: project.id,
+        taskId: `${cycleId}-keywords`,
+        seedKeywords: project.keywords.slice(0, 5),
+        brandName: project.brandName,
+        country: primaryCountry,
+        language: primaryLang,
+        maxKeywords: 20,
+      });
+      tasksExecuted++;
+      console.log(`[Engine] Keyword discovery: found ${discovered.length} keywords`);
+    } catch (error) {
+      console.error(`[Engine] Keyword discovery failed:`, error);
+      tasksFailed++;
+    }
+  }
+
   // 各国×各メソッドで実行
   for (const country of project.targetCountries) {
     const language = COUNTRY_LANGUAGES[country] ?? "en";
 
-    // --- SEO: サイト分析 + SERP順位チェック（1日1回のみ） ---
+    // --- Phase 5: サイト分析 + SERP順位チェック（1日1回のみ） ---
     if (project.methods.includes("SEO") && runSerpLlm) {
       // サイト分析（国ごとに1回）
       try {
@@ -357,6 +393,7 @@ async function runCycle(project: PresenceProject, cycleNumber = 0): Promise<Cycl
           country,
           language,
           brandName: project.brandName,
+          planId: project.planId,
         }),
       );
       if (faq) {
@@ -403,6 +440,7 @@ async function runCycle(project: PresenceProject, cycleNumber = 0): Promise<Cycl
           country,
           language,
           brandName: project.brandName,
+          planId: project.planId,
         }),
       );
       if (schema) {
@@ -450,6 +488,7 @@ async function runCycle(project: PresenceProject, cycleNumber = 0): Promise<Cycl
             country,
             language,
             brandName: project.brandName,
+            planId: project.planId,
           }),
         );
 
@@ -519,6 +558,7 @@ async function runCycle(project: PresenceProject, cycleNumber = 0): Promise<Cycl
                     targetCountry: otherCountry,
                     contentType: "article",
                     brandName: project.brandName,
+                    planId: project.planId,
                   }),
               );
               if (translated) {
@@ -587,9 +627,63 @@ async function runCycle(project: PresenceProject, cycleNumber = 0): Promise<Cycl
   }
 
   const completedAt = new Date();
+  const durationMs = completedAt.getTime() - startedAt.getTime();
+
   console.log(
-    `[Engine] Cycle ${cycleId} completed: ${tasksExecuted} tasks, ${tasksFailed} failures, ${tasksSkipped} skipped, ${completedAt.getTime() - startedAt.getTime()}ms`,
+    `[Engine] Cycle ${cycleId} completed: ${tasksExecuted} tasks, ${tasksFailed} failures, ${tasksSkipped} skipped, ${durationMs}ms`,
   );
+
+  // --- Phase 6: レポート & 分析 ---
+  try {
+    const reportActivity = startActivity({
+      projectId: project.id,
+      taskId: `${cycleId}-report`,
+      type: "report_generation",
+      country: project.targetCountries[0] ?? "JP",
+      language: COUNTRY_LANGUAGES[project.targetCountries[0] ?? "JP"] ?? "ja",
+      method: "Report",
+      description: `サイクルレポート生成: ${tasksExecuted}タスク完了, ${tasksFailed}失敗, ${contentGenerated.length}コンテンツ生成`,
+    });
+    completeActivity(reportActivity.id, {
+      artifacts: [{
+        type: "text" as const,
+        title: "サイクルサマリー",
+        content: [
+          `サイクルID: ${cycleId}`,
+          `実行時間: ${(durationMs / 1000).toFixed(1)}秒`,
+          `タスク: ${tasksExecuted}完了 / ${tasksFailed}失敗 / ${tasksSkipped}スキップ`,
+          `SERP結果: ${serpResults.length}件`,
+          `LLM結果: ${llmResults.length}件`,
+          `コンテンツ生成: ${contentGenerated.length}件`,
+          `配信結果: ${distributionResults.length}件`,
+        ].join("\n"),
+      }],
+      metrics: {
+        tasksExecuted,
+        tasksFailed,
+        tasksSkipped,
+        contentCount: contentGenerated.length,
+        serpCount: serpResults.length,
+        llmCount: llmResults.length,
+        distributionCount: distributionResults.length,
+        durationMs,
+      },
+    });
+    console.log(`[Engine] Cycle report generated`);
+  } catch (err) {
+    console.warn(`[Engine] Report generation failed:`, err);
+  }
+
+  // フロントエンドDB（Neon）に同期
+  try {
+    await syncCycleToFrontend({
+      projectId: project.id,
+      keywords: project.keywords,
+      contentGenerated,
+    });
+  } catch (err) {
+    console.warn(`[Engine] Frontend sync failed:`, err);
+  }
 
   return {
     cycleId,
@@ -630,8 +724,11 @@ export function startProject(project: PresenceProject, skipInitialCycle = false)
     );
   }
 
-  // 定期実行（デフォルト: 6時間ごと）
-  const intervalMs = parseInt(process.env.ENGINE_CYCLE_INTERVAL_MS ?? String(6 * 60 * 60 * 1000));
+  // 定期実行（プランに応じた間隔、ENV override可能）
+  const planConfig = PLAN_CONFIG[project.planId ?? "starter"];
+  const intervalMs = process.env.ENGINE_CYCLE_INTERVAL_MS
+    ? parseInt(process.env.ENGINE_CYCLE_INTERVAL_MS)
+    : planConfig.cycleIntervalMs;
   state.intervalId = setInterval(() => {
     if (state.running) {
       runCycle(project, state.cycleCount++).catch((err) =>
@@ -674,7 +771,7 @@ export async function restoreProjects(): Promise<void> {
       project.createdAt = new Date(project.createdAt);
       project.status = "active";
       // 復帰時は初回サイクルをスキップ（次のインターバルで実行）
-      startProject(project, true);
+      startProject(project, false);
       console.log(`[Engine] Restored project "${project.name}"`);
     }
   } catch (error) {

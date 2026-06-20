@@ -8,6 +8,27 @@
 
 const MAX_RETRIES = 2;
 const DEFAULT_TIMEOUT_MS = 600_000; // 600 seconds (VPS CPU-only inference needs more time)
+const ANTHROPIC_TIMEOUT_MS = 180_000; // 180s — Opus 4.8 の高effort出力は30秒では途中切断する
+
+/**
+ * モデル階層（ハイブリッド戦略）。モデルIDは日付サフィックスを付けない。
+ * - bulk:     量産（記事/FAQ/翻訳/キーワード）= Claude Haiku 4.5
+ * - mid:      Enterprise 既定 = Claude Sonnet 4.6
+ * - flagship: pillar記事・企業概要(E-E-A-T)・戦略 = Claude Opus 4.8
+ */
+export const MODELS = {
+  bulk: process.env.ANTHROPIC_MODEL ?? "claude-haiku-4-5",
+  mid: "claude-sonnet-4-6",
+  flagship: "claude-opus-4-8",
+} as const;
+
+/**
+ * Claude Opus 4.7 / 4.8 は temperature / top_p / top_k を送ると 400 を返す。
+ * これらのモデルではサンプリングパラメータを送らない。
+ */
+function modelAcceptsTemperature(model: string): boolean {
+  return !/opus-4-[78]/.test(model);
+}
 
 export interface AIMessage {
   role: "user" | "assistant";
@@ -215,11 +236,12 @@ class AnthropicProvider implements AIProvider {
 
   constructor() {
     this.apiKey = process.env.ANTHROPIC_API_KEY ?? "";
-    this.defaultModel = process.env.ANTHROPIC_MODEL ?? "claude-haiku-4-5-20251001";
+    this.defaultModel = process.env.ANTHROPIC_MODEL ?? MODELS.bulk;
   }
 
   async complete(messages: AIMessage[], options?: AICompletionOptions): Promise<string> {
-    const timeoutMs = options?.timeoutMs ?? 30_000;
+    const timeoutMs = options?.timeoutMs ?? ANTHROPIC_TIMEOUT_MS;
+    const model = options?.model ?? this.defaultModel;
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), timeoutMs);
 
@@ -232,9 +254,12 @@ class AnthropicProvider implements AIProvider {
           "anthropic-version": "2023-06-01",
         },
         body: JSON.stringify({
-          model: options?.model ?? this.defaultModel,
+          model,
           max_tokens: options?.maxTokens ?? 4096,
-          temperature: options?.temperature ?? 0.3,
+          // Opus 4.8/4.7 はサンプリングパラメータを受け付けない(400)ため、対応モデルにのみ付与
+          ...(modelAcceptsTemperature(model)
+            ? { temperature: options?.temperature ?? 0.3 }
+            : {}),
           ...(options?.system ? { system: options.system } : {}),
           messages: messages.map((m) => ({ role: m.role, content: m.content })),
         }),
@@ -270,7 +295,7 @@ class AnthropicProvider implements AIProvider {
         const raw = await this.complete(messages, {
           ...options,
           system: systemPrompt,
-          timeoutMs: options?.timeoutMs ?? 30_000,
+          timeoutMs: options?.timeoutMs ?? ANTHROPIC_TIMEOUT_MS,
         });
 
         return extractJSON(raw) as T;
@@ -286,19 +311,70 @@ class AnthropicProvider implements AIProvider {
 }
 
 // ---------------------------------------------------------------------------
-// Singleton — Anthropic if API key is set, otherwise Ollama
+// Singleton base provider + request-scoped model selection
 // ---------------------------------------------------------------------------
-let providerInstance: AIProvider | null = null;
+let baseProvider: AIProvider | null = null;
 
-export function getAIProvider(): AIProvider {
-  if (!providerInstance) {
+function getBaseProvider(): AIProvider {
+  if (!baseProvider) {
     if (process.env.ANTHROPIC_API_KEY) {
-      providerInstance = new AnthropicProvider();
-      console.log("[AI] Using Anthropic Claude Haiku (high-quality, fast)");
+      baseProvider = new AnthropicProvider();
+      console.log(`[AI] Using Anthropic (default model: ${MODELS.bulk})`);
     } else {
-      providerInstance = new OllamaProvider();
+      baseProvider = new OllamaProvider();
       console.log("[AI] Using Ollama (local, no API cost)");
     }
   }
-  return providerInstance;
+  return baseProvider;
+}
+
+/**
+ * リクエスト単位でモデルを指定するラッパー。
+ * 旧実装は共有シングルトンの defaultModel を書き換えており、並行サイクルで
+ * 誤ったモデルを使う競合(racy)があった。ここでは共有状態を一切書き換えず、
+ * 呼び出しごとに options.model を注入する。
+ */
+class ScopedProvider implements AIProvider {
+  constructor(
+    private readonly base: AIProvider,
+    private readonly model: string,
+  ) {}
+
+  complete(messages: AIMessage[], options?: AICompletionOptions): Promise<string> {
+    return this.base.complete(messages, { ...options, model: options?.model ?? this.model });
+  }
+
+  completeJSON<T>(messages: AIMessage[], options?: AICompletionOptions): Promise<T> {
+    return this.base.completeJSON<T>(messages, { ...options, model: options?.model ?? this.model });
+  }
+}
+
+export function getAIProvider(modelOverride?: string): AIProvider {
+  const base = getBaseProvider();
+  // Ollama はモデル切替の概念が異なる（OLLAMA_MODEL固定）ため、Anthropic時のみscopeする
+  if (modelOverride && base instanceof AnthropicProvider) {
+    return new ScopedProvider(base, modelOverride);
+  }
+  return base;
+}
+
+/** プラン別の既定（量産）モデル。 */
+export function getModelForPlan(planId?: string): string | undefined {
+  if (!process.env.ANTHROPIC_API_KEY) return undefined;
+  const models: Record<string, string> = {
+    starter: MODELS.bulk,
+    professional: MODELS.bulk,
+    enterprise: MODELS.mid,
+  };
+  return models[planId ?? "starter"];
+}
+
+/**
+ * フラッグシップ（高品質）モデル = Claude Opus 4.8。
+ * pillar記事・企業概要(E-E-A-T)・戦略調整など「質が収益に直結する」用途に使う。
+ * Anthropic未設定時は undefined（呼び出し側でフォールバック）。
+ */
+export function getFlagshipModel(): string | undefined {
+  if (!process.env.ANTHROPIC_API_KEY) return undefined;
+  return MODELS.flagship;
 }

@@ -23,7 +23,7 @@ rsync -avz --progress \
   --exclude '.git' \
   --exclude '.env' \
   --exclude 'engine-server/node_modules' \
-  ./engine-server/ \
+  ./engine-server \
   ./docker-compose.prod.yml \
   ./docker-compose.yml \
   ./.env.production.example \
@@ -32,18 +32,11 @@ rsync -avz --progress \
   ./prisma/ \
   "${SSH_USER}@${VPS_HOST}:${REMOTE_DIR}/"
 
-# engine-serverをサブディレクトリに配置
-ssh "${SSH_USER}@${VPS_HOST}" "
-  mkdir -p ${REMOTE_DIR}/engine-server ${REMOTE_DIR}/nginx ${REMOTE_DIR}/prisma
-  cd ${REMOTE_DIR}
-  # engine-server関連ファイルをサブディレクトリに
-  if [ -f ${REMOTE_DIR}/package.json ]; then
-    mv ${REMOTE_DIR}/package.json ${REMOTE_DIR}/engine-server/ 2>/dev/null || true
-    mv ${REMOTE_DIR}/src ${REMOTE_DIR}/engine-server/ 2>/dev/null || true
-    mv ${REMOTE_DIR}/tsconfig.json ${REMOTE_DIR}/engine-server/ 2>/dev/null || true
-    mv ${REMOTE_DIR}/Dockerfile ${REMOTE_DIR}/engine-server/ 2>/dev/null || true
-  fi
-"
+# engine-server は rsync で ${REMOTE_DIR}/engine-server/ サブディレクトリとして転送済み。
+# （以前は './engine-server/' のトレイリングスラッシュでREMOTE_DIR直下に展開し、
+#   再デプロイ時に mv が "Directory not empty" で失敗→新コードが /opt/.../src に迷子→
+#   旧コードのままイメージがビルドされていた）
+ssh "${SSH_USER}@${VPS_HOST}" "mkdir -p ${REMOTE_DIR}/nginx ${REMOTE_DIR}/prisma"
 
 echo ""
 echo "[2/5] Running setup on VPS (Docker check)..."
@@ -52,6 +45,10 @@ ssh "${SSH_USER}@${VPS_HOST}" "chmod +x ${REMOTE_DIR}/setup-vps.sh && ${REMOTE_D
 echo ""
 echo "[3/5] Running production setup..."
 ssh "${SSH_USER}@${VPS_HOST}" "cd ${REMOTE_DIR} && chmod +x engine-server/scripts/setup.sh && bash engine-server/scripts/setup.sh"
+
+echo ""
+echo "[3.5/5] Rebuilding engine image with latest code (COPY方式のため明示再ビルド必須)..."
+ssh "${SSH_USER}@${VPS_HOST}" "cd ${REMOTE_DIR} && docker compose -f ${COMPOSE_FILE} build engine && docker compose -f ${COMPOSE_FILE} up -d --force-recreate engine"
 
 echo ""
 echo "[4/5] Verifying services..."

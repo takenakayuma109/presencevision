@@ -7,6 +7,7 @@ export interface Plan {
   name: string;
   monthlyPrice: number;  // JPY
   annualPrice: number;   // JPY per month
+  cycleIntervalMs: number; // Engine cycle interval in milliseconds
   stripePriceIds: {
     monthly: string;
     annual: string;

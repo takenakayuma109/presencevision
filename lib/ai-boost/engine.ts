@@ -9,14 +9,15 @@ import type {
 // Cost rates (JPY per 1K tokens)
 // ---------------------------------------------------------------------------
 const COST_TABLE: Record<AIBoostModel, { input: number; output: number }> = {
+  "claude-opus-4-8": { input: 4, output: 30 },
+  "claude-sonnet-4-6": { input: 3, output: 15 },
   "gpt-4o": { input: 2, output: 8 },
   "gpt-4o-mini": { input: 0.15, output: 0.6 },
-  "claude-sonnet-4-20250514": { input: 3, output: 15 },
 };
 
 const DEFAULT_MODEL: Record<AIBoostProvider, AIBoostModel> = {
   openai: "gpt-4o",
-  anthropic: "claude-sonnet-4-20250514",
+  anthropic: "claude-opus-4-8",
 };
 
 // ---------------------------------------------------------------------------
@@ -113,7 +114,10 @@ async function callAnthropic(
       model: config.model,
       max_tokens: config.maxTokens,
       messages: [{ role: "user", content: prompt }],
-      temperature: config.temperature,
+      // Opus 4.8/4.7 は temperature を受け付けない(400)ため、対応モデルにのみ付与
+      ...(/opus-4-[78]/.test(config.model)
+        ? {}
+        : { temperature: config.temperature }),
     }),
   });
 
@@ -168,7 +172,7 @@ export async function generateArticle(
   context: string | undefined,
   config: Partial<AIBoostConfig> & { provider?: AIBoostProvider }
 ): Promise<Omit<AIBoostArticle, "id" | "projectId" | "createdAt">> {
-  const provider: AIBoostProvider = config.provider ?? "openai";
+  const provider: AIBoostProvider = config.provider ?? "anthropic";
   const model: AIBoostModel = config.model ?? DEFAULT_MODEL[provider];
   const maxTokens = config.maxTokens ?? 4096;
   const temperature = config.temperature ?? 0.7;

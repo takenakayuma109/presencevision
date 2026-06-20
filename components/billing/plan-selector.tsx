@@ -18,6 +18,7 @@ interface PlanSelectorProps {
 
 const planFeatures: Record<PlanId, string[]> = {
   starter: [
+    "AI cycle: every 6 hours (4×/day)",
     "1 project",
     "5 keywords",
     "3 distribution channels",
@@ -25,6 +26,7 @@ const planFeatures: Record<PlanId, string[]> = {
     "Basic SERP tracking",
   ],
   professional: [
+    "AI cycle: every 1 hour (24×/day)",
     "5 projects",
     "50 keywords",
     "10 distribution channels",
@@ -35,6 +37,7 @@ const planFeatures: Record<PlanId, string[]> = {
     "Priority support",
   ],
   enterprise: [
+    "AI cycle: every 1 hour (24×/day) — Premium AI",
     "Unlimited projects",
     "Unlimited keywords",
     "25+ distribution channels",
@@ -50,6 +53,7 @@ const planFeatures: Record<PlanId, string[]> = {
 
 const planFeaturesJa: Record<PlanId, string[]> = {
   starter: [
+    "AIサイクル: 6時間ごと（1日4回）",
     "1プロジェクト",
     "5キーワード",
     "3チャネル配信",
@@ -57,6 +61,7 @@ const planFeaturesJa: Record<PlanId, string[]> = {
     "基本SERP追跡",
   ],
   professional: [
+    "AIサイクル: 1時間ごと（1日24回）",
     "5プロジェクト",
     "50キーワード",
     "10チャネル配信",
@@ -67,6 +72,7 @@ const planFeaturesJa: Record<PlanId, string[]> = {
     "優先サポート",
   ],
   enterprise: [
+    "AIサイクル: 1時間ごと（1日24回）— Premium AI",
     "プロジェクト無制限",
     "キーワード無制限",
     "全25+チャネル配信",

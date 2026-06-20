@@ -6,7 +6,7 @@ interface ThemeStore {
 }
 
 export const useThemeStore = create<ThemeStore>((set, get) => ({
-  dark: false,
+  dark: true,
   toggleTheme: () => {
     const next = !get().dark;
     set({ dark: next });
@@ -22,12 +22,15 @@ export const useThemeStore = create<ThemeStore>((set, get) => ({
   },
 }));
 
-// Initialize from localStorage / system preference on client
+// Initialize from localStorage on client
 if (typeof window !== 'undefined') {
   const saved = localStorage.getItem('theme');
-  const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-  if (saved === 'dark' || (!saved && prefersDark)) {
+  if (saved === 'light') {
+    document.documentElement.classList.remove('dark');
+    useThemeStore.setState({ dark: false });
+  } else {
+    // Default to dark
     document.documentElement.classList.add('dark');
-    useThemeStore.setState({ dark: true });
+    localStorage.setItem('theme', 'dark');
   }
 }

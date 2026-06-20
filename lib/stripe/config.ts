@@ -12,6 +12,7 @@ export const PLANS: Record<PlanId, Plan> = {
     name: "Starter",
     monthlyPrice: 9800,
     annualPrice: 7800,
+    cycleIntervalMs: 6 * 60 * 60 * 1000, // 6 hours
     stripePriceIds: {
       monthly: process.env.NEXT_PUBLIC_STRIPE_PRICE_STARTER_MONTHLY ?? "",
       annual: process.env.NEXT_PUBLIC_STRIPE_PRICE_STARTER_ANNUAL ?? "",
@@ -22,6 +23,7 @@ export const PLANS: Record<PlanId, Plan> = {
     name: "Professional",
     monthlyPrice: 29800,
     annualPrice: 24800,
+    cycleIntervalMs: 1 * 60 * 60 * 1000, // 1 hour
     stripePriceIds: {
       monthly: process.env.NEXT_PUBLIC_STRIPE_PRICE_PROFESSIONAL_MONTHLY ?? "",
       annual: process.env.NEXT_PUBLIC_STRIPE_PRICE_PROFESSIONAL_ANNUAL ?? "",
@@ -32,6 +34,7 @@ export const PLANS: Record<PlanId, Plan> = {
     name: "Enterprise",
     monthlyPrice: 98000,
     annualPrice: 78000,
+    cycleIntervalMs: 1 * 60 * 60 * 1000, // 1 hour (Sonnet 4 quality)
     stripePriceIds: {
       monthly: process.env.NEXT_PUBLIC_STRIPE_PRICE_ENTERPRISE_MONTHLY ?? "",
       annual: process.env.NEXT_PUBLIC_STRIPE_PRICE_ENTERPRISE_ANNUAL ?? "",

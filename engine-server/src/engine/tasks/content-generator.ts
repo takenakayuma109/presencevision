@@ -9,7 +9,7 @@
  * 全てローカルLLMで処理。API従量課金ゼロ。
  */
 
-import { getAIProvider } from "../../ai/provider.js";
+import { getAIProvider, getModelForPlan } from "../../ai/provider.js";
 import {
   startActivity,
   completeActivity,
@@ -111,6 +111,7 @@ export async function generateSeoArticle(params: {
   country: string;
   language: string;
   brandName: string;
+  planId?: string;
 }): Promise<GeneratedContent> {
   const activity = startActivity({
     projectId: params.projectId,
@@ -123,7 +124,7 @@ export async function generateSeoArticle(params: {
   });
 
   try {
-    const ai = getAIProvider();
+    const ai = getAIProvider(getModelForPlan(params.planId));
 
     const langName = getLanguageName(params.language);
 
@@ -205,6 +206,7 @@ export async function generateFaq(params: {
   country: string;
   language: string;
   brandName: string;
+  planId?: string;
 }): Promise<GeneratedContent> {
   const activity = startActivity({
     projectId: params.projectId,
@@ -217,7 +219,7 @@ export async function generateFaq(params: {
   });
 
   try {
-    const ai = getAIProvider();
+    const ai = getAIProvider(getModelForPlan(params.planId));
 
     const langName = getLanguageName(params.language);
 
@@ -297,6 +299,7 @@ export async function generateSchema(params: {
   country: string;
   language: string;
   brandName: string;
+  planId?: string;
 }): Promise<GeneratedContent> {
   const activity = startActivity({
     projectId: params.projectId,
@@ -309,7 +312,7 @@ export async function generateSchema(params: {
   });
 
   try {
-    const ai = getAIProvider();
+    const ai = getAIProvider(getModelForPlan(params.planId));
 
     const langName = getLanguageName(params.language);
 
@@ -376,6 +379,7 @@ export async function translateContent(params: {
   targetCountry: string;
   contentType: string;
   brandName: string;
+  planId?: string;
 }): Promise<GeneratedContent> {
   const activity = startActivity({
     projectId: params.projectId,
@@ -388,7 +392,7 @@ export async function translateContent(params: {
   });
 
   try {
-    const ai = getAIProvider();
+    const ai = getAIProvider(getModelForPlan(params.planId));
 
     const sourceLangName = getLanguageName(params.sourceLanguage);
     const targetLangName = getLanguageName(params.targetLanguage);

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
+import { KBHeader } from "@/components/knowledge-base/kb-header";
 
 const ENGINE_URL = process.env.NEXT_PUBLIC_ENGINE_URL ?? "http://localhost:4000";
 
@@ -47,8 +48,8 @@ export async function generateMetadata({
 
 function markdownToHtml(md: string): string {
   return md
-    .replace(/^### (.+)$/gm, '<h3 class="text-lg font-semibold mt-6 mb-2">$1</h3>')
-    .replace(/^## (.+)$/gm, '<h2 class="text-xl font-bold mt-8 mb-3">$1</h2>')
+    .replace(/^### (.+)$/gm, '<h3 class="text-lg font-semibold mt-6 mb-2 text-gray-900 dark:text-zinc-100">$1</h3>')
+    .replace(/^## (.+)$/gm, '<h2 class="text-xl font-bold mt-8 mb-3 text-gray-900 dark:text-zinc-100">$1</h2>')
     .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
     .replace(/\*(.+?)\*/g, "<em>$1</em>")
     .replace(/\n\n/g, '</p><p class="mb-4">')
@@ -66,21 +67,15 @@ export default async function ArticlePage({
   if (!article) notFound();
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white">
-      <header className="border-b border-gray-800 py-6">
-        <div className="max-w-3xl mx-auto px-4">
-          <Link href="/blog" className="text-sm text-gray-400 hover:text-white">
-            &larr; Blog
-          </Link>
-        </div>
-      </header>
+    <div className="min-h-screen bg-white dark:bg-zinc-950 text-gray-900 dark:text-zinc-100">
+      <KBHeader />
 
       <article className="max-w-3xl mx-auto px-4 py-8">
-        <h1 className="text-3xl font-bold mb-4">{article.title}</h1>
+        <h1 className="text-3xl font-bold mb-4 text-gray-900 dark:text-zinc-100">{article.title}</h1>
 
-        <div className="flex items-center gap-4 text-sm text-gray-500 mb-8 border-b border-gray-800 pb-4">
+        <div className="flex items-center gap-4 text-sm text-gray-500 dark:text-zinc-500 mb-8 border-b border-gray-200 dark:border-zinc-800 pb-4">
           {article.keyword && (
-            <span className="bg-gray-800 px-2 py-1 rounded">{article.keyword}</span>
+            <span className="bg-gray-100 dark:bg-zinc-800 text-gray-700 dark:text-zinc-300 px-2 py-1 rounded">{article.keyword}</span>
           )}
           <span>{article.language.toUpperCase()}</span>
           <span>{new Date(article.published_at).toLocaleDateString("ja-JP")}</span>
@@ -88,14 +83,14 @@ export default async function ArticlePage({
         </div>
 
         <div
-          className="prose prose-invert max-w-none leading-relaxed text-gray-300"
+          className="prose max-w-none leading-relaxed text-gray-700 dark:text-zinc-300"
           dangerouslySetInnerHTML={{ __html: markdownToHtml(article.body) }}
         />
       </article>
 
-      <footer className="border-t border-gray-800 py-8 mt-12">
-        <div className="max-w-3xl mx-auto px-4 text-center text-gray-500 text-sm">
-          Powered by <Link href="/" className="text-blue-400 hover:underline">PresenceVision</Link>
+      <footer className="border-t border-gray-200 dark:border-zinc-800 py-8 mt-12">
+        <div className="max-w-3xl mx-auto px-4 text-center text-gray-500 dark:text-zinc-500 text-sm">
+          Powered by <Link href="/" className="text-blue-600 dark:text-blue-400 hover:underline">PresenceVision</Link>
         </div>
       </footer>
     </div>

@@ -9,6 +9,13 @@ import { useTranslation } from "@/lib/hooks/use-translation";
 import { LanguageSwitch } from "@/components/ui/language-switch";
 import { useThemeStore } from "@/lib/store/theme";
 
+const subPageTitles: Record<string, string> = {
+  dashboard: "ダッシュボード",
+  reports: "レポート",
+  channels: "チャネル",
+  settings: "設定",
+};
+
 export function Header({ onMenuClick }: { onMenuClick: () => void }) {
   const pathname = usePathname();
   const { t } = useTranslation();
@@ -16,6 +23,7 @@ export function Header({ onMenuClick }: { onMenuClick: () => void }) {
   const { data: session } = useSession();
   const [showMenu, setShowMenu] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+  const [projectName, setProjectName] = useState<string | null>(null);
 
   const pageTitles: Record<string, string> = {
     "/dashboard": t("nav.projects"),
@@ -23,9 +31,31 @@ export function Header({ onMenuClick }: { onMenuClick: () => void }) {
     "/settings": t("nav.settings"),
   };
 
+  // Fetch project name when in project context
+  const projectId = pathname?.match(/^\/projects\/([^/]+)/)?.[1] ?? null;
+  const subPage = pathname?.match(/^\/projects\/[^/]+\/([^/]+)/)?.[1] ?? null;
+
+  useEffect(() => {
+    if (!projectId) {
+      setProjectName(null);
+      return;
+    }
+    let cancelled = false;
+    fetch(`/api/projects/${projectId}`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => {
+        if (!cancelled && data) setProjectName(data.name ?? data.project?.name ?? null);
+      })
+      .catch(() => {});
+    return () => { cancelled = true; };
+  }, [projectId]);
+
   let title = "PresenceVision";
-  if (pathname?.startsWith("/projects/")) {
-    title = t("header.projectDetail");
+  if (projectId) {
+    const sub = subPage ? subPageTitles[subPage] : null;
+    title = projectName
+      ? sub ? `${projectName} — ${sub}` : projectName
+      : sub ?? t("header.projectDetail");
   } else {
     title = Object.entries(pageTitles).find(([path]) => pathname?.startsWith(path))?.[1] ?? "PresenceVision";
   }

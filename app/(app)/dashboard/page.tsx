@@ -5,10 +5,11 @@ import { Button, Dialog } from "@/components/ui";
 import { ProjectWizard } from "@/components/wizard";
 import { ProjectCard, DashboardSkeleton } from "@/components/dashboard";
 import type { ProjectCardData } from "@/components/dashboard";
-import { Plus, Globe, AlertCircle } from "lucide-react";
+import { Plus, Globe, AlertCircle, Building2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useState, useEffect, useCallback } from "react";
 import { useTranslation } from "@/lib/hooks/use-translation";
+import Link from "next/link";
 
 export default function DashboardPage() {
   const { openWizard } = useStore();
@@ -18,6 +19,26 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+  const [hasCompanyProfile, setHasCompanyProfile] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    async function checkCompanyProfile() {
+      try {
+        const res = await fetch("/api/company-profile");
+        if (!res.ok) return;
+        const data = await res.json();
+        setHasCompanyProfile(!!data.companyProfile);
+      } catch {
+        setHasCompanyProfile(false);
+      }
+    }
+    checkCompanyProfile();
+  }, []);
+
+  const handleCreateProject = () => {
+    if (hasCompanyProfile === false) return;
+    openWizard();
+  };
 
   const fetchProjects = useCallback(async () => {
     try {
@@ -78,10 +99,23 @@ export default function DashboardPage() {
           <h2 className="text-2xl font-bold">{t("dashboard.title")}</h2>
           <p className="text-sm text-muted-foreground mt-1">{t("dashboard.subtitle")}</p>
         </div>
-        <Button onClick={openWizard} className="gap-2">
+        <Button onClick={handleCreateProject} className="gap-2" disabled={hasCompanyProfile === false}>
           <Plus className="h-4 w-4" /> {t("dashboard.addNew")}
         </Button>
       </div>
+
+      {hasCompanyProfile === false && (
+        <div className="flex items-center gap-3 rounded-lg border border-amber-500/50 bg-amber-500/10 p-4 text-sm">
+          <Building2 className="h-5 w-5 shrink-0 text-amber-500" />
+          <div className="flex-1">
+            <p className="font-medium">先に企業登録を完了してください</p>
+            <p className="text-muted-foreground mt-0.5">プロジェクトを作成するには、企業情報の登録が必要です。</p>
+          </div>
+          <Link href="/company-registration">
+            <Button variant="outline" size="sm">企業登録へ</Button>
+          </Link>
+        </div>
+      )}
 
       {error && (
         <div className="flex items-center gap-2 rounded-lg border border-destructive/50 bg-destructive/10 p-4 text-sm text-destructive">
@@ -100,7 +134,7 @@ export default function DashboardPage() {
           </div>
           <h3 className="text-lg font-semibold mb-2">{t("dashboard.noProjects")}</h3>
           <p className="text-sm text-muted-foreground text-center max-w-sm mb-6">{t("dashboard.noProjectsDesc")}</p>
-          <Button onClick={openWizard} className="gap-2">
+          <Button onClick={handleCreateProject} className="gap-2" disabled={hasCompanyProfile === false}>
             <Plus className="h-4 w-4" /> {t("dashboard.createFirst")}
           </Button>
         </div>
@@ -118,8 +152,9 @@ export default function DashboardPage() {
           ))}
 
           <button
-            onClick={openWizard}
-            className="flex flex-col items-center justify-center rounded-lg border border-dashed py-12 text-muted-foreground hover:border-foreground/30 hover:text-foreground transition-colors"
+            onClick={handleCreateProject}
+            disabled={hasCompanyProfile === false}
+            className="flex flex-col items-center justify-center rounded-lg border border-dashed py-12 text-muted-foreground hover:border-foreground/30 hover:text-foreground transition-colors disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:border-inherit disabled:hover:text-muted-foreground"
           >
             <Plus className="h-8 w-8 mb-2" />
             <span className="text-sm font-medium">{t("dashboard.newProject")}</span>

@@ -5,7 +5,7 @@
  */
 
 import { Router } from "express";
-import { getArticles, getArticleBySlug } from "../db/index.js";
+import { getArticles, getArticleBySlug, getCompanies } from "../db/index.js";
 
 const router = Router();
 
@@ -32,6 +32,20 @@ router.get("/", async (req, res) => {
   } catch (error) {
     console.error("[Articles] Failed to fetch articles:", error);
     res.status(500).json({ error: "Failed to fetch articles" });
+  }
+});
+
+/**
+ * GET /articles/companies
+ * 記事DBから全企業サマリーを返す
+ */
+router.get("/companies", async (_req, res) => {
+  try {
+    const { companies, total } = await getCompanies();
+    res.json({ companies, total });
+  } catch (error) {
+    console.error("[Articles] Failed to fetch companies:", error);
+    res.status(500).json({ error: "Failed to fetch companies" });
   }
 });
 

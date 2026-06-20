@@ -1,5 +1,9 @@
 export type AIBoostProvider = "openai" | "anthropic";
-export type AIBoostModel = "gpt-4o" | "gpt-4o-mini" | "claude-sonnet-4-20250514";
+export type AIBoostModel =
+  | "claude-opus-4-8"
+  | "claude-sonnet-4-6"
+  | "gpt-4o"
+  | "gpt-4o-mini";
 
 export interface AIBoostConfig {
   provider: AIBoostProvider;

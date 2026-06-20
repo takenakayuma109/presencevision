@@ -190,6 +190,43 @@ export async function getArticles(options?: {
   return { articles: result.rows, total };
 }
 
+export interface CompanySummary {
+  id: string;
+  name: string;
+  country: string;
+  language: string;
+  articleCount: number;
+  registeredAt: string;
+}
+
+export async function getCompanies(): Promise<{ companies: CompanySummary[]; total: number }> {
+  const db = getDB();
+  const result = await db.query(`
+    SELECT
+      project_id,
+      brand_name,
+      country,
+      language,
+      COUNT(*)::int as article_count,
+      MIN(published_at) as registered_at
+    FROM published_articles
+    WHERE status = 'published'
+    GROUP BY project_id, brand_name, country, language
+    ORDER BY article_count DESC
+  `);
+
+  const companies: CompanySummary[] = result.rows.map((r: Record<string, unknown>) => ({
+    id: r.project_id as string,
+    name: (r.brand_name as string) || (r.project_id as string),
+    country: r.country as string,
+    language: r.language as string,
+    articleCount: r.article_count as number,
+    registeredAt: (r.registered_at as Date).toISOString(),
+  }));
+
+  return { companies, total: companies.length };
+}
+
 export async function getArticleBySlug(slug: string): Promise<PublishedArticle | null> {
   const db = getDB();
   const result = await db.query(

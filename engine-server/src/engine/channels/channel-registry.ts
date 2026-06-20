@@ -97,8 +97,9 @@ const ENGLISH_REGIONS = ["US", "GB", "AU", "CA", "SG", "IN"];
 // Default channel definitions
 // ---------------------------------------------------------------------------
 
-export function getDefaultChannels(): ChannelConfig[] {
-  return [
+// 安全・コンプライアンス方針: 第三者プラットフォームへの認証情報ボット投稿は既定で無効。
+// 既定で有効なのは「自社Hub / 顧客自身のCMS(公式API) / 公式API系」のみ。
+const RAW_CHANNELS: ChannelConfig[] = [
     // --- Social Media ---
     {
       type: "twitter",
@@ -423,6 +424,30 @@ export function getDefaultChannels(): ChannelConfig[] {
       rateLimit: { maxPerHour: 2, cooldownMs: 60_000 },
     },
   ];
+
+/** ブラウザ自動化（資格情報ログイン）に依存する第三者ブログ系。既定で無効。 */
+const BROWSER_AUTOMATION_TYPES: Set<ChannelType> = new Set([
+  "medium",
+  "note_com",
+  "naver_blog",
+  "tistory",
+  "csdn",
+]);
+
+/**
+ * 安全・コンプライアンス方針による既定の有効/無効判定。
+ * - social / qa カテゴリ（Twitter/LinkedIn/Reddit/Quora 等）= 利用規約違反リスクのため既定で無効
+ * - 資格情報ブラウザ自動化のブログ系 = 同上で既定で無効
+ * - それ以外（公式API系ブログ・顧客CMS・ディレクトリ等）は元の enabled を尊重
+ */
+function isSafeByDefault(ch: ChannelConfig): boolean {
+  if (ch.category === "social" || ch.category === "qa") return false;
+  if (BROWSER_AUTOMATION_TYPES.has(ch.type)) return false;
+  return ch.enabled;
+}
+
+export function getDefaultChannels(): ChannelConfig[] {
+  return RAW_CHANNELS.map((ch) => ({ ...ch, enabled: isSafeByDefault(ch) }));
 }
 
 // ---------------------------------------------------------------------------

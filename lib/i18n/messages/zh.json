@@ -355,20 +355,21 @@
     "nav": {
       "features": "功能",
       "howItWorks": "使用方法",
-      "pricing": "价格"
+      "pricing": "价格",
+      "knowledgeBase": "企业目录"
     },
     "hero": {
-      "badge": "零API费用 — 本地AI完全固定价",
-      "title": "SEO + AI对策完全自动化！",
-      "subtitle": "让您的品牌在Google搜索和ChatGPT、Gemini等AI中都能被发现，全天候24/7自动运行。",
-      "disruption": "搜索广告的时代即将结束。广告一停就消失。用PV建立的存在感永远留存。",
+      "badge": "为日本本地企业打造的安全AI存在感引擎",
+      "title": "让您的企业，无论在Google搜索还是AI（ChatGPT、Gemini）中都能「被找到」。",
+      "subtitle": "将SEO与GEO（生成式AI优化）专为日语本地企业实现自动化。AI持续生成文章与结构化数据，并在公开前由人工审核的安全运营下，培育您在搜索引擎与生成式AI两方面的可见度。",
+      "disruption": "广告一停就消失。而用PresenceVision构建的「被找到的状态」，将作为资产长久留存。",
       "effects": {
-        "label": "预期效果",
+        "label": "可期待的成效",
         "items": [
-          "提升Google搜索排名",
-          "增加品牌在ChatGPT、Gemini等AI中的提及",
-          "在25+渠道扩大品牌知名度",
-          "内容创作工作量减少95%"
+          "提升在Google搜索中的可见度",
+          "扩大在ChatGPT、Gemini、Perplexity中的引用机会",
+          "强化Google Business Profile等本地搜索表现",
+          "通过公开前人工审核实现安全、合规的运营"
         ]
       }
     },
@@ -377,66 +378,66 @@
       "startFree": "免费开始",
       "viewPricing": "查看价格方案",
       "startTrial": "开始7天免费试用",
-      "bottomTitle": "迈向零广告支出的第一步",
-      "bottomSubtitle": "注册支付信息后，7天免费试用所有功能。"
+      "bottomTitle": "迈出第一步，成为AI时代「能被找到的企业」",
+      "bottomSubtitle": "注册支付信息后，可免费试用全部功能7天，随时可取消。"
     },
     "features": {
-      "sectionTitle": "自动化一切的6大功能",
-      "sectionSubtitle": "从关键词发掘到内容生成、分发和追踪。AI 24小时自主执行。",
+      "sectionTitle": "打造能被找到的企业，6大功能",
+      "sectionSubtitle": "从关键词发掘到内容与结构化数据生成、安全公开，再到搜索与AI引用的追踪。专为日语优化的AI将持续执行。",
       "keyword": {
         "title": "长尾关键词自动发掘",
-        "desc": "从Google搜索自动收集100+关键词。用Ollama扩展。"
+        "desc": "从Google搜索的联想词与相关问题中，自动收集潜在客户实际使用的措辞。发现本地、行业专属的「有真实需求的搜索词」，作为文章的基础。"
       },
       "content": {
-        "title": "自动内容生成",
-        "desc": "用本地AI无限生成文章、FAQ、Schema.org和多语言翻译。零API费用。"
+        "title": "内容与结构化数据自动生成",
+        "desc": "由AI生成文章、FAQ、企业概要以及Schema.org（Organization / LocalBusiness / FAQ）。将其整理为搜索引擎与生成式AI都易于理解、易于引用的形式。"
       },
       "distribution": {
-        "title": "分布式存在感分发",
-        "desc": "自动分发到Twitter、Medium、Reddit等25+渠道。"
+        "title": "安全公开（自有Hub & 您的网站）",
+        "desc": "正式发布到自有知识Hub（您专属的公开页面）以及您自己的WordPress / CMS。同时完善Google Business Profile与结构化数据。我们不会进行违反平台规则、冒充身份的第三方社交媒体自动发布。"
       },
       "llmMonitoring": {
-        "title": "LLM引用监控",
-        "desc": "在ChatGPT、Gemini、Perplexity等实时追踪品牌引用。"
+        "title": "GEO（AI引用）监控",
+        "desc": "追踪ChatGPT、Gemini、Perplexity等如何介绍与引用您的企业。将AI搜索中的呈现情况可视化，用于持续改进。"
       },
       "serp": {
-        "title": "SERP排名追踪与自动策略",
-        "desc": "追踪发布后的搜索排名变化。AI自动建议下一步内容策略。"
+        "title": "搜索排名追踪 & 策略自动调整",
+        "desc": "追踪公开后Google搜索排名的变化。掌握表现好与表现欠佳的文章，由AI建议下一步应创作的内容。"
       },
       "autonomous": {
-        "title": "24小时自主运行",
-        "desc": "引擎在VPS上持续运行。即使关闭PC也在全球继续工作。"
+        "title": "24小时自主运行 + 人工审核",
+        "desc": "引擎全天候运转「调研→生成→（审核）→公开」的循环。在自主运行的同时，可将有风险的公开设为必须经过人工审核的安全设计。"
       }
     },
     "howItWorks": {
       "title": "4步开始",
-      "subtitle": "只需输入URL。AI自动生成计划并24小时运行。"
+      "subtitle": "只需输入企业信息与URL。其余交给AI生成计划，并在安全运营下持续运行。"
     },
     "steps": {
       "step1": {
-        "title": "输入URL",
-        "desc": "网站分析与自动关键词检测"
+        "title": "登记企业信息",
+        "desc": "登记企业概要、URL、目标区域与关键词。经实体存在确认后开始使用"
       },
       "step2": {
         "title": "AI生成计划",
-        "desc": "自定义目标、国家和方法"
+        "desc": "自动制定关键词发掘→文章与结构化数据生成→公开的计划"
       },
       "step3": {
-        "title": "一键启动",
-        "desc": "开始24小时自主运行"
+        "title": "安全公开（Hub & 自有网站）",
+        "desc": "发布到自有Hub与您的网站。每篇文章都附带结构化数据，易于被生成式AI引用"
       },
       "step4": {
-        "title": "查看成果",
-        "desc": "实时监控排名、引用和分发"
+        "title": "存在感不断成长",
+        "desc": "搜索排名、AI引用与本地搜索中的可见度持续提升"
       }
     },
     "channels": {
-      "title": "25+分发渠道",
-      "subtitle": "社交媒体、博客、问答网站和区域平台。自动分发到所有渠道。"
+      "title": "安全的公开渠道",
+      "subtitle": "自有Hub、您自己的网站 / CMS、Google Business Profile、结构化数据。我们不会向违反平台规则的第三方社交媒体进行自动发布。"
     },
     "pricing": {
       "title": "简单价格方案",
-      "subtitle": "所有方案包含零API费用和无限本地AI。",
+      "subtitle": "所有方案均包含日语GEO优化、结构化数据，以及公开前的人工审核。",
       "recommended": "推荐",
       "starter": {
         "name": "Starter"
@@ -448,7 +449,7 @@
         "name": "Enterprise"
       },
       "aiBoost": "AI Boost",
-      "aiBoostDesc": "借助 GPT-4o / Claude 生成高质量文章。产出超越本地 AI 能力的深度原创内容。",
+      "aiBoostDesc": "借助 Claude Opus 4.8 生成高质量文章。生成注重 E-E-A-T、易于被引用且具原创性的内容。",
       "billing": {
         "monthly": "Monthly",
         "annual": "Annual",
@@ -540,9 +541,9 @@
       "contact": "联系我们"
     },
     "hubSpoke": {
-      "title": "Hub & Spoke Distribution",
-      "subtitle": "Your site is home base. Every channel is a branch office that brings people back.",
-      "explanation": "Write one article, and AI automatically transforms it into a Twitter thread, a LinkedIn business post, an Instagram card, and more. Every post links back to your site, so visitors always find their way to you. This continuously builds your Google authority (domain authority) on autopilot."
+      "title": "Hub & Spoke 模型（中心辐射式）",
+      "subtitle": "您的企业信息就是「大本营（Hub）」。搜索、地图与AI都会前来参照它。",
+      "explanation": "将文章与企业信息附带结构化数据，发布到自有知识Hub与您的网站。Google Business Profile、企业目录与FAQ相互参照，使搜索引擎与生成式AI都更容易将其识别为「可信赖的一手信息源」。我们不依赖违反平台规则、冒充身份的第三方社交媒体发布。"
     }
   },
   "billing": {

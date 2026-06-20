@@ -15,6 +15,8 @@ import {
   verifyWordPressConnection,
   type CmsConfig,
 } from "../engine/tasks/cms-publisher.js";
+import { syncCycleToFrontend } from "../engine/frontend-sync.js";
+import { getArticles } from "../db/index.js";
 
 const router = Router();
 
@@ -51,6 +53,7 @@ router.post("/start", (req: Request, res: Response) => {
       status: "active",
       createdAt: project.createdAt ? new Date(project.createdAt) : new Date(),
       cmsConfig: project.cmsConfig,
+      planId: project.planId,
     };
 
     startProject(fullProject);
@@ -144,6 +147,7 @@ router.post("/run-cycle", async (req: Request, res: Response) => {
       status: "active",
       createdAt: project.createdAt ? new Date(project.createdAt) : new Date(),
       cmsConfig: project.cmsConfig,
+      planId: project.planId,
     };
 
     // Run cycle asynchronously and return immediately
@@ -176,6 +180,53 @@ router.get("/status", (_req: Request, res: Response) => {
     });
   } catch (error) {
     console.error("[Route] /engine/status error:", error);
+    res.status(500).json({
+      error: error instanceof Error ? error.message : "Internal server error",
+    });
+  }
+});
+
+/**
+ * POST /engine/sync — 既存データをフロントエンドDBに手動同期
+ */
+router.post("/sync", async (req: Request, res: Response) => {
+  try {
+    const { projectId } = req.body as { projectId: string };
+
+    if (!projectId) {
+      res.status(400).json({ error: "Missing required field: projectId" });
+      return;
+    }
+
+    // エンジンから稼働中プロジェクトのキーワードを取得
+    const projects = getActiveProjects();
+    const project = projects.find((p) => p.id === projectId);
+
+    if (!project) {
+      res.status(404).json({ error: `Project "${projectId}" not found` });
+      return;
+    }
+
+    // DB上の生成済み記事を取得
+    const { articles } = await getArticles({ projectId, limit: 1000 });
+    const contentGenerated = articles.map((a) => ({
+      type: "article" as const,
+      title: a.title,
+      language: a.language,
+    }));
+
+    const result = await syncCycleToFrontend({
+      projectId,
+      keywords: project.keywords,
+      contentGenerated,
+    });
+
+    res.json({
+      message: "Sync completed",
+      ...result,
+    });
+  } catch (error) {
+    console.error("[Route] /engine/sync error:", error);
     res.status(500).json({
       error: error instanceof Error ? error.message : "Internal server error",
     });

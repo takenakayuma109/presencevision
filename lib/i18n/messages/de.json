@@ -355,20 +355,21 @@
     "nav": {
       "features": "Funktionen",
       "howItWorks": "So funktioniert's",
-      "pricing": "Preise"
+      "pricing": "Preise",
+      "knowledgeBase": "Unternehmensverzeichnis"
     },
     "hero": {
-      "badge": "Null API-Kosten — Lokale KI zum Festpreis",
-      "title": "SEO + KI-Optimierung vollständig automatisiert!",
-      "subtitle": "Machen Sie Ihre Marke sowohl bei Google als auch bei KI wie ChatGPT und Gemini auffindbar — rund um die Uhr, 7 Tage die Woche.",
-      "disruption": "Die Ära der Suchanzeigen endet. Anzeigen verschwinden, wenn Sie aufhören zu zahlen. Mit PV aufgebaute Präsenz bleibt für immer.",
+      "badge": "Die sichere KI-Präsenz-Engine für lokale Unternehmen in Japan",
+      "title": "Machen Sie Ihr Unternehmen auffindbar — in der Google-Suche und in KI wie ChatGPT und Gemini.",
+      "subtitle": "SEO und GEO (Optimierung für generative KI), automatisiert und speziell auf japanische, lokale Unternehmen zugeschnitten. Die KI erstellt fortlaufend Artikel und strukturierte Daten, während ein Mensch vor jeder Veröffentlichung freigibt — ein sicherer Betrieb, der Ihre Sichtbarkeit sowohl in Suchmaschinen als auch in generativer KI nachhaltig stärkt.",
+      "disruption": "Werbung verschwindet, sobald Sie sie abschalten. Die mit PresenceVision aufgebaute Auffindbarkeit bleibt als Vermögenswert dauerhaft erhalten.",
       "effects": {
-        "label": "Erwartete Ergebnisse",
+        "label": "Das können Sie erwarten",
         "items": [
-          "Bessere Platzierungen in der Google-Suche",
-          "Mehr Markenerwähnungen in ChatGPT, Gemini & Co.",
-          "Markenbekanntheit über 25+ Kanäle",
-          "95 % weniger Aufwand bei der Content-Erstellung"
+          "Höhere Sichtbarkeit in der Google-Suche",
+          "Mehr Zitiermöglichkeiten in ChatGPT, Gemini und Perplexity",
+          "Stärkere lokale Suche, z. B. über Google Business Profile",
+          "Sicherer, compliance-konformer Betrieb dank menschlicher Freigabe vor jeder Veröffentlichung"
         ]
       }
     },
@@ -377,66 +378,66 @@
       "startFree": "Kostenlos starten",
       "viewPricing": "Preise ansehen",
       "startTrial": "7-Tage-Testphase starten",
-      "bottomTitle": "Ihr erster Schritt zu null Werbeausgaben",
-      "bottomSubtitle": "7 Tage kostenlose Testversion aller Funktionen nach Zahlungsregistrierung."
+      "bottomTitle": "Ihr erster Schritt zum auffindbaren Unternehmen im KI-Zeitalter",
+      "bottomSubtitle": "Nach der Hinterlegung Ihrer Zahlungsdaten testen Sie 7 Tage lang alle Funktionen kostenlos. Jederzeit kündbar."
     },
     "features": {
-      "sectionTitle": "6 Funktionen die alles automatisieren",
-      "sectionSubtitle": "Von der Keyword-Recherche bis zur Content-Erstellung, Verteilung und Tracking. KI erledigt alles autonom, 24/7.",
+      "sectionTitle": "6 Funktionen für ein auffindbares Unternehmen",
+      "sectionSubtitle": "Von der Keyword-Recherche über die Erstellung von Inhalten und strukturierten Daten bis hin zur sicheren Veröffentlichung und zum Tracking von Suchplatzierungen und KI-Zitaten. Eine auf Japanisch optimierte KI erledigt das fortlaufend.",
       "keyword": {
-        "title": "Auto Long-Tail-Keyword-Entdeckung",
-        "desc": "Automatische Sammlung von 100+ Keywords aus der Google-Suche. Erweitert mit Ollama."
+        "title": "Automatische Entdeckung von Long-Tail-Keywords",
+        "desc": "Sammelt automatisch die Begriffe, die Ihre potenziellen Kunden tatsächlich verwenden — aus den Vorschlägen und verwandten Fragen der Google-Suche. So findet die KI lokale, branchenspezifische Suchbegriffe mit echter Nachfrage als Grundlage für Ihre Artikel."
       },
       "content": {
-        "title": "Automatische Content-Erstellung",
-        "desc": "Unbegrenzt Artikel, FAQs, Schema.org und mehrsprachige Übersetzungen mit lokaler KI. Null API-Kosten."
+        "title": "Automatische Erstellung von Inhalten und strukturierten Daten",
+        "desc": "Die KI erstellt Artikel, FAQs, Unternehmensprofile und Schema.org-Daten (Organization / LocalBusiness / FAQ). Alles wird so aufbereitet, dass es von Suchmaschinen und generativer KI leicht verstanden und gern zitiert wird."
       },
       "distribution": {
-        "title": "Verteilte Präsenz-Verbreitung",
-        "desc": "Auto-Verteilung an 25+ Kanäle: Twitter, Medium, Reddit und mehr."
+        "title": "Sichere Veröffentlichung (Ihr eigener Hub und Ihre Website)",
+        "desc": "Offizielle Veröffentlichung auf Ihrem eigenen Wissens-Hub (Ihrer persönlichen öffentlichen Seite) sowie auf Ihrer eigenen WordPress-Installation bzw. Ihrem CMS. Auch Ihr Google Business Profile und Ihre strukturierten Daten werden gepflegt. Wir nehmen keine regelwidrigen, automatisierten Identitätsfälschungen in Drittanbieter-Social-Media vor."
       },
       "llmMonitoring": {
-        "title": "LLM-Zitat-Monitoring",
-        "desc": "Echtzeit-Tracking von Markenerwähnungen in ChatGPT, Gemini, Perplexity."
+        "title": "GEO-Monitoring (KI-Zitate)",
+        "desc": "Verfolgt, wie ChatGPT, Gemini, Perplexity und andere Ihr Unternehmen vorstellen und zitieren. So wird Ihre Darstellung in der KI-Suche sichtbar und kann gezielt verbessert werden."
       },
       "serp": {
-        "title": "SERP-Tracking & Auto-Strategie",
-        "desc": "Verfolgen Sie Ranking-Änderungen. KI schlägt automatisch die nächste Content-Strategie vor."
+        "title": "Tracking der Suchplatzierungen & automatische Strategieanpassung",
+        "desc": "Verfolgt nach der Veröffentlichung die Veränderungen Ihrer Google-Rankings. Die KI erkennt, welche Artikel erfolgreich sind und welche nicht, und schlägt vor, welche Inhalte als Nächstes erstellt werden sollten."
       },
       "autonomous": {
-        "title": "24/7 Autonomer Betrieb",
-        "desc": "Engine läuft kontinuierlich auf VPS. Arbeit geht weiter auch wenn Ihr PC aus ist."
+        "title": "Autonomer 24-Stunden-Betrieb + menschliche Freigabe",
+        "desc": "Die Engine durchläuft rund um die Uhr den Kreislauf aus Recherche, Erstellung, (Freigabe) und Veröffentlichung. Trotz dieser Autonomie lässt sich für risikobehaftete Veröffentlichungen eine zwingende menschliche Freigabe vorsehen — ein sicheres Konzept."
       }
     },
     "howItWorks": {
       "title": "In 4 Schritten starten",
-      "subtitle": "Geben Sie einfach eine URL ein. KI erstellt automatisch einen Plan und läuft 24/7."
+      "subtitle": "Geben Sie einfach Ihre Unternehmensdaten und Ihre URL ein. Den Rest erledigt die KI: Sie erstellt einen Plan und läuft im sicheren Betrieb fortlaufend weiter."
     },
     "steps": {
       "step1": {
-        "title": "URL eingeben",
-        "desc": "Site-Analyse & automatische Keyword-Erkennung"
+        "title": "Unternehmensdaten registrieren",
+        "desc": "Hinterlegen Sie Unternehmensprofil, URL, Zielregion und Keywords. Die Nutzung beginnt nach der Bestätigung Ihrer Existenz als reales Unternehmen."
       },
       "step2": {
-        "title": "KI erstellt Plan",
-        "desc": "Ziele, Länder und Methoden anpassen"
+        "title": "Die KI erstellt einen Plan",
+        "desc": "Automatischer Plan: von der Keyword-Entdeckung über die Erstellung von Artikeln und strukturierten Daten bis zur Veröffentlichung."
       },
       "step3": {
-        "title": "Ein-Klick-Start",
-        "desc": "24/7 autonomen Betrieb starten"
+        "title": "Sichere Veröffentlichung (Hub & eigene Website)",
+        "desc": "Veröffentlichung auf Ihrem eigenen Hub und Ihrer Website. Jeder Artikel wird mit strukturierten Daten erstellt, damit ihn generative KI leicht zitieren kann."
       },
       "step4": {
-        "title": "Ergebnisse verfolgen",
-        "desc": "Rankings, Zitate und Verteilung in Echtzeit"
+        "title": "Ihre Präsenz wächst",
+        "desc": "Ihre Sichtbarkeit in den Suchplatzierungen, in KI-Zitaten und in der lokalen Suche verbessert sich fortlaufend."
       }
     },
     "channels": {
-      "title": "25+ Verteilungskanäle",
-      "subtitle": "Social Media, Blogs, Q&A und regionale Plattformen. Auto-Verteilung überall."
+      "title": "Sichere Veröffentlichungsziele",
+      "subtitle": "Ihr eigener Hub, Ihre eigene Website bzw. Ihr CMS, Google Business Profile und strukturierte Daten. Wir nehmen keine regelwidrigen, automatisierten Veröffentlichungen in Drittanbieter-Social-Media vor."
     },
     "pricing": {
       "title": "Einfache Preispläne",
-      "subtitle": "Alle Pläne beinhalten null API-Kosten und unbegrenzte lokale KI.",
+      "subtitle": "Alle Pläne beinhalten die japanische GEO-Optimierung, strukturierte Daten und die menschliche Freigabe vor jeder Veröffentlichung.",
       "recommended": "Empfohlen",
       "starter": {
         "name": "Starter"
@@ -448,7 +449,7 @@
         "name": "Enterprise"
       },
       "aiBoost": "AI Boost",
-      "aiBoostDesc": "Hochwertige Artikelerstellung mit GPT-4o / Claude. Erstellen Sie tiefgehende, originelle Inhalte jenseits der Möglichkeiten lokaler KI.",
+      "aiBoostDesc": "Hochwertige Artikelerstellung mit Claude Opus 4.8. Erstellt originäre, leicht zitierbare Artikel mit besonderem Fokus auf E-E-A-T.",
       "billing": {
         "monthly": "Monthly",
         "annual": "Annual",
@@ -540,9 +541,9 @@
       "contact": "Kontakt"
     },
     "hubSpoke": {
-      "title": "Hub & Spoke Distribution",
-      "subtitle": "Your site is home base. Every channel is a branch office that brings people back.",
-      "explanation": "Write one article, and AI automatically transforms it into a Twitter thread, a LinkedIn business post, an Instagram card, and more. Every post links back to your site, so visitors always find their way to you. This continuously builds your Google authority (domain authority) on autopilot."
+      "title": "Das Hub-&-Spoke-Modell",
+      "subtitle": "Ihre Unternehmensdaten sind der Stützpunkt (Hub). Suche, Karten und KI greifen darauf zu.",
+      "explanation": "Artikel und Unternehmensinformationen werden mit strukturierten Daten auf Ihrem eigenen Wissens-Hub und Ihrer Website veröffentlicht. Indem sich Ihr Google Business Profile, das Unternehmensverzeichnis und Ihre FAQs gegenseitig referenzieren, werden Sie von Suchmaschinen und generativer KI eher als vertrauenswürdige Primärquelle erkannt. Wir setzen dabei nicht auf regelwidrige Identitätsfälschungen in Drittanbieter-Social-Media."
     }
   },
   "billing": {

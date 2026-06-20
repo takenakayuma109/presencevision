@@ -198,12 +198,11 @@ export function ChannelConfigDialog({
 
   // Check if all required credentials are filled
   const hasRequiredCredentials = useMemo(() => {
-    if (channel.method === "oauth") return state.status === "connected";
-    if (!channel.fields) return true;
+    if (!channel.fields || channel.fields.length === 0) return true;
     return channel.fields
       .filter((f) => f.required !== false)
       .every((f) => credentials[f.key]?.trim());
-  }, [channel, credentials, state.status]);
+  }, [channel, credentials]);
 
   const handleSave = useCallback(() => {
     // Only mark as connected if required credentials are provided
@@ -263,40 +262,10 @@ export function ChannelConfigDialog({
             {t("channels.connectionSettings")}
           </h4>
 
-          {/* OAuth channels */}
-          {channel.method === "oauth" && (
+          {/* Credential fields — all channel types */}
+          {channel.fields && channel.fields.length > 0 ? (
             <div className="space-y-3">
-              {state.status === "disconnected" ? (
-                <Button
-                  variant="outline"
-                  className="w-full gap-2"
-                  onClick={onConnect}
-                >
-                  <ExternalLink className="h-4 w-4" />
-                  {isJa
-                    ? `${channel.name}で認証`
-                    : `Connect with ${channel.name}`}
-                </Button>
-              ) : (
-                <div className="rounded-lg border bg-muted/30 p-3 space-y-2">
-                  <div className="flex items-center gap-2 text-sm">
-                    <CheckCircle2 className="h-4 w-4 text-green-500" />
-                    <span>{t("channels.oauthConnected")}</span>
-                  </div>
-                  {state.lastSyncAt && (
-                    <p className="text-xs text-muted-foreground">
-                      {t("channels.lastSync")}: {state.lastSyncAt}
-                    </p>
-                  )}
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* API Key / URL channels */}
-          {(channel.method === "api_key" || channel.method === "url") && (
-            <div className="space-y-3">
-              {channel.fields?.map((field) => (
+              {channel.fields.map((field) => (
                 <div key={field.key} className="space-y-1.5">
                   <label className="text-sm font-medium">
                     {isJa ? field.labelJa : field.labelEn}
@@ -343,6 +312,12 @@ export function ChannelConfigDialog({
                   </>
                 )}
               </Button>
+            </div>
+          ) : (
+            <div className="rounded-lg border bg-muted/30 p-3">
+              <p className="text-sm text-muted-foreground">
+                {isJa ? "このチャネルの接続設定は準備中です" : "Connection settings for this channel are coming soon"}
+              </p>
             </div>
           )}
         </div>
@@ -406,7 +381,7 @@ export function ChannelConfigDialog({
             <Button variant="outline" onClick={onClose}>
               {t("common.cancel")}
             </Button>
-            <Button onClick={handleSave} disabled={channel.method !== "oauth" && !hasRequiredCredentials}>
+            <Button onClick={handleSave} disabled={!hasRequiredCredentials}>
               <Key className="h-3.5 w-3.5 mr-1.5" />
               {t("common.save")}
             </Button>

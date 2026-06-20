@@ -86,6 +86,7 @@ model Workspace {
   name      String
   slug      String   @unique
   plan      String   @default("free")
+  metadata  Json?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 

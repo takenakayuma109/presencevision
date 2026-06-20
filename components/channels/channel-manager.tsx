@@ -50,8 +50,14 @@ const CHANNELS: ChannelDef[] = [
     icon: Twitter,
     color: "#000000",
     bg: "bg-black dark:bg-white/10",
-    method: "oauth",
+    method: "api_key",
     category: "sns",
+    fields: [
+      { key: "apiKey", labelJa: "API Key", labelEn: "API Key", type: "password", required: true },
+      { key: "apiSecret", labelJa: "API Secret", labelEn: "API Secret", type: "password", required: true },
+      { key: "accessToken", labelJa: "アクセストークン", labelEn: "Access Token", type: "password", required: true },
+      { key: "accessSecret", labelJa: "アクセスシークレット", labelEn: "Access Secret", type: "password", required: true },
+    ],
   },
   {
     id: "instagram",
@@ -59,8 +65,12 @@ const CHANNELS: ChannelDef[] = [
     icon: Instagram,
     color: "#E4405F",
     bg: "bg-[#E4405F]",
-    method: "oauth",
+    method: "api_key",
     category: "sns",
+    fields: [
+      { key: "accessToken", labelJa: "アクセストークン（Graph API）", labelEn: "Access Token (Graph API)", type: "password", required: true },
+      { key: "pageId", labelJa: "Instagram ビジネスアカウントID", labelEn: "Instagram Business Account ID", type: "text", required: true },
+    ],
   },
   {
     id: "linkedin",
@@ -68,8 +78,12 @@ const CHANNELS: ChannelDef[] = [
     icon: Linkedin,
     color: "#0A66C2",
     bg: "bg-[#0A66C2]",
-    method: "oauth",
+    method: "api_key",
     category: "sns",
+    fields: [
+      { key: "accessToken", labelJa: "アクセストークン", labelEn: "Access Token", type: "password", required: true },
+      { key: "organizationId", labelJa: "Organization ID（任意）", labelEn: "Organization ID (optional)", type: "text", required: false },
+    ],
   },
   {
     id: "facebook",
@@ -77,8 +91,12 @@ const CHANNELS: ChannelDef[] = [
     icon: Facebook,
     color: "#1877F2",
     bg: "bg-[#1877F2]",
-    method: "oauth",
+    method: "api_key",
     category: "sns",
+    fields: [
+      { key: "accessToken", labelJa: "ページアクセストークン", labelEn: "Page Access Token", type: "password", required: true },
+      { key: "pageId", labelJa: "ページID", labelEn: "Page ID", type: "text", required: true },
+    ],
   },
   {
     id: "tiktok",
@@ -86,8 +104,12 @@ const CHANNELS: ChannelDef[] = [
     icon: Music2,
     color: "#000000",
     bg: "bg-black dark:bg-white/10",
-    method: "oauth",
+    method: "api_key",
     category: "sns",
+    fields: [
+      { key: "accessToken", labelJa: "アクセストークン", labelEn: "Access Token", type: "password", required: true },
+      { key: "openId", labelJa: "Open ID", labelEn: "Open ID", type: "text", required: true },
+    ],
   },
   {
     id: "youtube",
@@ -95,8 +117,12 @@ const CHANNELS: ChannelDef[] = [
     icon: Youtube,
     color: "#FF0000",
     bg: "bg-[#FF0000]",
-    method: "oauth",
+    method: "api_key",
     category: "sns",
+    fields: [
+      { key: "apiKey", labelJa: "YouTube Data API Key", labelEn: "YouTube Data API Key", type: "password", required: true },
+      { key: "channelId", labelJa: "チャネルID", labelEn: "Channel ID", type: "text", required: true },
+    ],
   },
   {
     id: "pinterest",
@@ -104,8 +130,12 @@ const CHANNELS: ChannelDef[] = [
     icon: Pin,
     color: "#BD081C",
     bg: "bg-[#BD081C]",
-    method: "oauth",
+    method: "api_key",
     category: "sns",
+    fields: [
+      { key: "accessToken", labelJa: "アクセストークン", labelEn: "Access Token", type: "password", required: true },
+      { key: "boardId", labelJa: "ボードID", labelEn: "Board ID", type: "text", required: true },
+    ],
   },
   {
     id: "threads",
@@ -113,8 +143,12 @@ const CHANNELS: ChannelDef[] = [
     icon: AtSign,
     color: "#000000",
     bg: "bg-black dark:bg-white/10",
-    method: "oauth",
+    method: "api_key",
     category: "sns",
+    fields: [
+      { key: "accessToken", labelJa: "アクセストークン（Instagram Graph API）", labelEn: "Access Token (Instagram Graph API)", type: "password", required: true },
+      { key: "userId", labelJa: "ユーザーID", labelEn: "User ID", type: "text", required: true },
+    ],
   },
 
   // Blog
@@ -731,12 +765,7 @@ export function ChannelManager({ projectId, workspaceId }: ChannelManagerProps =
             deleteChannelFromApi(selectedChannel.id);
           }}
           onConnect={() => {
-            // Simulate OAuth connection
-            updateState(selectedChannel.id, {
-              status: "connected",
-              enabled: true,
-              lastSyncAt: new Date().toLocaleString(),
-            });
+            // No-op: connection is handled via credential input + save
           }}
         />
       )}

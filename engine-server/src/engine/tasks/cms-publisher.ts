@@ -41,6 +41,8 @@ export interface PublishParams {
   cmsConfig: CmsConfig;
   country: string;
   language: string;
+  /** おまかせモード（承認なし自動公開）。true なら下書きでなく即「公開」。既定(false/未設定)は安全モード（承認あり=下書き）。 */
+  autoPublish?: boolean;
 }
 
 interface WpPostResponse {
@@ -168,8 +170,10 @@ export async function publishToWordPress(
     // 顧客が WordPress 上でレビューしてから公開＝人間承認。これにより、誤情報や
     // 規約違反コンテンツが顧客ブランド名で自動公開されるリスク（Air Canada判例的責任・
     // Google scaled-content penalty）を回避する。
-    // 全自動公開はインフラ側で REQUIRE_APPROVAL=false を設定して明示オプトインする。
-    const requireApproval = process.env.REQUIRE_APPROVAL !== "false";
+    // プロジェクト単位の「おまかせモード」(params.autoPublish=true)が有効なら承認をスキップして即公開。
+    // それ以外は安全モード（既定）: REQUIRE_APPROVAL!=="false" の間は下書き(draft)で人間承認を待つ。
+    const requireApproval =
+      params.autoPublish === true ? false : process.env.REQUIRE_APPROVAL !== "false";
     const wpStatus = requireApproval ? "draft" : params.cmsConfig.defaultStatus;
 
     // Build request body

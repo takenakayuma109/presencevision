@@ -95,6 +95,8 @@ export interface PresenceProject {
   cmsConfig?: CmsConfig;
   /** 会社プロフィール（E-E-A-T用に記事生成プロンプトへ供給。ダッシュボードから注入） */
   companyProfile?: Record<string, unknown>;
+  /** おまかせモード: true なら承認なしで自動公開。既定(false/未設定)は安全モード（公開前に人間承認）。 */
+  autoPublish?: boolean;
 }
 
 export type PresenceMethod =
@@ -460,6 +462,7 @@ async function runCycle(project: PresenceProject, cycleNumber = 0): Promise<Cycl
                 language,
               },
               cmsConfig: project.cmsConfig,
+              autoPublish: project.autoPublish,
               country,
               language,
             });
@@ -507,6 +510,7 @@ async function runCycle(project: PresenceProject, cycleNumber = 0): Promise<Cycl
                 schemaJsonLd: schema.body,
               },
               cmsConfig: project.cmsConfig,
+              autoPublish: project.autoPublish,
               country,
               language,
             });
@@ -582,6 +586,7 @@ async function runCycle(project: PresenceProject, cycleNumber = 0): Promise<Cycl
                   language,
                 },
                 cmsConfig: project.cmsConfig,
+              autoPublish: project.autoPublish,
                 country,
                 language,
               });

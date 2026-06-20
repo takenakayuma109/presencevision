@@ -55,6 +55,7 @@ router.post("/start", (req: Request, res: Response) => {
       cmsConfig: project.cmsConfig,
       planId: project.planId,
       companyProfile: project.companyProfile,
+      autoPublish: project.autoPublish,
     };
 
     startProject(fullProject);
@@ -150,6 +151,7 @@ router.post("/run-cycle", async (req: Request, res: Response) => {
       cmsConfig: project.cmsConfig,
       planId: project.planId,
       companyProfile: project.companyProfile,
+      autoPublish: project.autoPublish,
     };
 
     // Run cycle asynchronously and return immediately

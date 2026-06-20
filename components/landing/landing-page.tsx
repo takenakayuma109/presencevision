@@ -736,7 +736,7 @@ export function LandingPage() {
                   <span className="text-base font-bold">③院長が承認</span>
                 </div>
                 <div className="flex-1">
-                  <p className="mb-3 text-base leading-relaxed text-muted-foreground">スマホに「下書きできました」と通知。中身を読んで【承認】を押すだけ（約30秒）。気になれば修正もワンタップ。</p>
+                  <p className="mb-3 text-base leading-relaxed text-muted-foreground">スマホに「下書きできました」と通知。中身を読んで【承認】を押すだけ（約30秒）。気になれば修正もワンタップ。<span className="font-medium text-blue-400">（“おまかせモード”なら、この承認もスキップして完全自動にできます）</span></p>
                   <div className="inline-flex items-center gap-2">
                     <span className="inline-flex items-center gap-1.5 rounded-lg bg-blue-600 px-4 py-2 text-sm font-bold text-white shadow-lg"><ShieldCheck className="h-4 w-4" />承認して公開</span>
                     <span className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-card px-3 py-2 text-sm text-muted-foreground">✏️ 修正</span>
@@ -813,6 +813,42 @@ export function LandingPage() {
               <p className="mx-auto mt-3 max-w-2xl text-center text-xs leading-relaxed text-muted-foreground/80">
                 ※ 検索順位・AIでの引用・来院などの成果は、ダッシュボードで実データを確認できます（外部要因に左右されるため、特定の数値は保証しません）。
               </p>
+            </div>
+
+            {/* 2 publish modes */}
+            <div className="scroll-animate mt-14">
+              <h3 className="text-center text-xl font-bold md:text-2xl">公開のしかたは「2つ」から選べます</h3>
+              <div className="mt-6 grid gap-4 md:grid-cols-2">
+                <div className="rounded-2xl border border-emerald-500/25 bg-emerald-500/5 p-6">
+                  <div className="flex items-center gap-2">
+                    <ShieldCheck className="h-5 w-5 text-emerald-500" />
+                    <span className="text-lg font-bold">安全モード（承認あり・既定）</span>
+                  </div>
+                  <p className="mt-2 text-base leading-relaxed text-muted-foreground">公開前にあなたが30秒チェックしてから公開。誤情報リスクをゼロにする、いちばん安心な運用。まずはこちらがおすすめ。</p>
+                </div>
+                <div className="rounded-2xl border border-blue-500/25 bg-blue-500/5 p-6">
+                  <div className="flex items-center gap-2">
+                    <Zap className="h-5 w-5 text-blue-500" />
+                    <span className="text-lg font-bold">おまかせモード（承認なし）</span>
+                  </div>
+                  <p className="mt-2 text-base leading-relaxed text-muted-foreground">その承認もスキップして、AIが完全自動で公開。手間ゼロの“ほったらかし”運用。慣れてきたらいつでも切り替えOK。</p>
+                </div>
+              </div>
+            </div>
+
+            {/* who builds the site */}
+            <div className="scroll-animate mt-4 rounded-2xl border border-border/50 bg-card/50 p-6 md:p-8">
+              <h3 className="text-lg font-bold md:text-xl">「自社サイトは、誰が作るの？」</h3>
+              <ul className="mt-4 space-y-3 text-base leading-relaxed text-muted-foreground">
+                <li className="flex gap-2">
+                  <Check className="mt-1 h-4 w-4 shrink-0 text-emerald-500" />
+                  <span><span className="font-semibold text-foreground">自社ナレッジHub ＝ PVが作って公開します。</span>あなたは何もしません（サイト制作もサーバー契約も不要・PVがホスティング）。自分のサイトが無くてもOK。</span>
+                </li>
+                <li className="flex gap-2">
+                  <Check className="mt-1 h-4 w-4 shrink-0 text-emerald-500" />
+                  <span><span className="font-semibold text-foreground">あなたのサイト／WordPress ＝ あなたが“既にお持ち”のサイト。</span>PVは記事を届ける（投稿する）だけで、サイト自体は作りません。無ければHubだけで十分です。</span>
+                </li>
+              </ul>
             </div>
           </div>
         </section>

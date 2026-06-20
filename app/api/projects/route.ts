@@ -111,6 +111,7 @@ export async function POST(request: NextRequest) {
       additionalNotes,
       brandName,
       reportConfig,
+      autoPublish,
     } = body;
 
     if (!name) {
@@ -180,6 +181,7 @@ export async function POST(request: NextRequest) {
           keywords: keywords || [],
           targetCountries: presenceCountries || ["JP"],
           methods: methods || ["SEO"],
+          autoPublish: autoPublish === true, // おまかせモード（既定は安全モード=承認あり）
           planId: access.planId,
           ...(companyProfile ? { companyProfile } : {}),
           status: "active",

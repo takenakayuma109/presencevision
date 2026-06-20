@@ -361,7 +361,7 @@
     "hero": {
       "badge": "为日本本地企业打造的安全AI存在感引擎",
       "title": "让您的企业，无论在Google搜索还是AI（ChatGPT、Gemini）中都能「被找到」。",
-      "subtitle": "将SEO与GEO（生成式AI优化）专为日语本地企业实现自动化。AI持续生成文章与结构化数据，并在公开前由人工审核的安全运营下，培育您在搜索引擎与生成式AI两方面的可见度。",
+      "subtitle": "专为日语与本地企业，将SEO与GEO（生成式AI优化）自动化。AI持续生成文章与结构化数据，高风险的公开由人工审核的安全运营来把关，培育您在搜索引擎与生成式AI两方面的可见度。",
       "disruption": "广告一停就消失。而用PresenceVision构建的「被找到的状态」，将作为资产长久留存。",
       "effects": {
         "label": "可期待的成效",
@@ -394,11 +394,11 @@
       },
       "distribution": {
         "title": "安全公开（自有Hub & 您的网站）",
-        "desc": "正式发布到自有知识Hub（您专属的公开页面）以及您自己的WordPress / CMS。同时完善Google Business Profile与结构化数据。我们不会进行违反平台规则、冒充身份的第三方社交媒体自动发布。"
+        "desc": "正式发布到自有知识Hub（您专属的公开页面）以及您自己的WordPress / CMS。同时支持Google Business Profile联动（连接式）与结构化数据。我们不会进行违反平台规则、冒充身份的第三方社交媒体自动发布。"
       },
       "llmMonitoring": {
         "title": "GEO（AI引用）监控",
-        "desc": "追踪ChatGPT、Gemini、Perplexity等如何介绍与引用您的企业。将AI搜索中的呈现情况可视化，用于持续改进。"
+        "desc": "追踪Perplexity、Google AI Overview等如何介绍与引用您的企业。将生成式AI搜索中的呈现情况可视化，用于持续改进。"
       },
       "serp": {
         "title": "搜索排名追踪 & 策略自动调整",

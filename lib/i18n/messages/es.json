@@ -394,11 +394,11 @@
       },
       "distribution": {
         "title": "Publicación segura (tu propio Hub y tu sitio)",
-        "desc": "Publicación oficial en tu propio Hub de conocimiento (una página pública exclusiva para ti) y en tu propio WordPress / CMS. También se preparan tu Google Business Profile y los datos estructurados. No realizamos publicaciones automáticas suplantando tu identidad en redes sociales de terceros que infrinjan sus términos de uso."
+        "desc": "Publicación oficial en tu propio Hub de conocimiento (una página pública exclusiva para ti) y en tu propio WordPress / CMS. También admite la integración con Google Business Profile (mediante conexión) y los datos estructurados. No realizamos publicaciones automáticas suplantando tu identidad en redes sociales de terceros que infrinjan sus términos de uso."
       },
       "llmMonitoring": {
         "title": "Monitorización de GEO (citas de IA)",
-        "desc": "Sigue cómo ChatGPT, Gemini, Perplexity y otros presentan y citan a tu empresa. Visualiza cómo te ven en la búsqueda con IA y aprovéchalo para mejorar."
+        "desc": "Sigue cómo Perplexity, Google AI Overview y otros presentan y citan a tu empresa. Visualiza cómo te ven en la búsqueda con IA generativa y aprovéchalo para mejorar."
       },
       "serp": {
         "title": "Seguimiento del posicionamiento y ajuste automático de estrategia",

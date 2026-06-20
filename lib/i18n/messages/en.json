@@ -361,7 +361,7 @@
     "hero": {
       "badge": "A safe AI presence engine for Japanese local businesses",
       "title": "Make your company discoverable — on Google search and in AI (ChatGPT & Gemini) alike.",
-      "subtitle": "Automated SEO and GEO (generative AI optimization), purpose-built for Japanese local businesses. AI continuously generates articles and structured data, with human approval before anything goes live — safely growing your visibility across both search engines and generative AI.",
+      "subtitle": "Automate SEO and GEO (generative AI optimization), purpose-built for Japanese local businesses. AI continuously generates articles and structured data, while a safe operating model keeps higher-risk publishing under human approval — growing your visibility across both search engines and generative AI.",
       "disruption": "Ads vanish the moment you stop paying. The discoverability you build with PresenceVision endures as a lasting asset.",
       "effects": {
         "label": "What to expect",
@@ -394,11 +394,11 @@
       },
       "distribution": {
         "title": "Safe Publishing (Your Own Hub & Your Site)",
-        "desc": "Officially publish to your own knowledge Hub (a public page dedicated to you) and to your own WordPress / CMS. We also set up your Google Business Profile and structured data. We never run impersonating, automated posts to third-party social networks in violation of their terms."
+        "desc": "Officially publish to your own knowledge Hub (a public page dedicated to you) and to your own WordPress / CMS. We also support Google Business Profile integration (connection-based) and structured data. We do not run impersonating, automated posts to third-party social networks in violation of their terms."
       },
       "llmMonitoring": {
         "title": "GEO (AI Citation) Monitoring",
-        "desc": "Track how ChatGPT, Gemini, Perplexity, and others introduce and cite your company. Visualize how you appear in AI search and use those insights to improve."
+        "desc": "Track how Perplexity, Google AI Overview, and others introduce and cite your company. Visualize how you appear in generative AI search and use those insights to improve."
       },
       "serp": {
         "title": "Search Ranking Tracking & Automatic Strategy Adjustment",

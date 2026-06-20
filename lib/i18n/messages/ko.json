@@ -361,7 +361,7 @@
     "hero": {
       "badge": "일본 로컬 비즈니스를 위한 안전한 AI 프레즌스 엔진",
       "title": "당신의 회사를 Google 검색에서도 AI(ChatGPT·Gemini)에서도 \"발견되는\" 존재로.",
-      "subtitle": "SEO와 GEO(생성AI 최적화)를 일본어·로컬 비즈니스에 특화하여 자동화합니다. AI가 기사와 구조화 데이터를 지속적으로 생성하고, 공개 전에는 사람이 승인하는 안전한 운영으로 검색엔진과 생성AI 양쪽에서의 가시성을 키웁니다.",
+      "subtitle": "SEO와 GEO(생성AI 최적화)를 일본어·로컬 비즈니스에 특화하여 자동화합니다. AI가 기사와 구조화 데이터를 지속적으로 생성하고, 리스크가 높은 공개는 사람이 승인하는 안전한 운영으로 검색엔진과 생성AI 양쪽에서의 가시성을 키웁니다.",
       "disruption": "광고는 멈추면 사라집니다. PresenceVision으로 구축한 \"발견되는 상태\"는 자산으로 계속 남습니다.",
       "effects": {
         "label": "기대할 수 있는 것",
@@ -394,11 +394,11 @@
       },
       "distribution": {
         "title": "안전한 공개(자사 Hub & 당신의 사이트)",
-        "desc": "자사 지식 Hub(당신 전용 공개 페이지)와 당신 자신의 WordPress / CMS에 공식적으로 공개합니다. Google Business Profile과 구조화 데이터도 정비합니다. 약관에 위배되는 제3자 SNS로의 사칭 자동 게시는 하지 않습니다."
+        "desc": "자사 지식 Hub(당신 전용 공개 페이지)와 당신 자신의 WordPress / CMS에 공식적으로 공개합니다. Google Business Profile 연동(접속 방식)과 구조화 데이터에도 대응합니다. 약관에 위배되는 제3자 SNS로의 사칭 자동 게시는 하지 않습니다."
       },
       "llmMonitoring": {
         "title": "GEO(AI 인용) 모니터링",
-        "desc": "ChatGPT·Gemini·Perplexity 등이 당신의 회사를 어떻게 소개·인용하는지 추적합니다. AI 검색에서의 노출 방식을 가시화하여 개선에 활용합니다."
+        "desc": "Perplexity·Google AI Overview 등에서 당신의 회사가 어떻게 소개·인용되는지 추적합니다. 생성AI 검색에서의 노출 방식을 가시화하여 개선에 활용합니다."
       },
       "serp": {
         "title": "검색 순위 추적 & 전략 자동 조정",

@@ -361,7 +361,7 @@
     "hero": {
       "badge": "Le moteur de présence IA sécurisé pour les commerces locaux au Japon",
       "title": "Rendez votre entreprise « trouvable » aussi bien dans la recherche Google que dans les IA (ChatGPT, Gemini).",
-      "subtitle": "Automatisez le SEO et le GEO (optimisation pour l'IA générative), spécialement pensés pour le japonais et les commerces locaux. L'IA génère en continu articles et données structurées, et chaque publication est validée par un humain avant mise en ligne — un fonctionnement sûr qui développe votre visibilité à la fois sur les moteurs de recherche et les IA génératives.",
+      "subtitle": "Automatisez le SEO et le GEO (optimisation pour l'IA générative), spécialement pensés pour le japonais et les commerces locaux. L'IA génère en continu articles et données structurées, tandis que les publications à risque élevé sont validées par un humain — un fonctionnement sûr qui développe votre visibilité à la fois sur les moteurs de recherche et les IA génératives.",
       "disruption": "La publicité disparaît dès que vous l'arrêtez. Le « statut de trouvabilité » bâti avec PresenceVision, lui, demeure comme un véritable actif.",
       "effects": {
         "label": "Ce que vous pouvez attendre",
@@ -394,11 +394,11 @@
       },
       "distribution": {
         "title": "Publication sécurisée (votre Hub & votre site)",
-        "desc": "Publication officielle sur votre Hub de connaissances (votre page publique dédiée) et sur votre propre WordPress / CMS. Nous mettons aussi en place votre Google Business Profile et vos données structurées. Aucune publication automatique frauduleuse, par usurpation d'identité, sur des réseaux sociaux tiers contraires aux conditions d'utilisation."
+        "desc": "Publication officielle sur votre propre Hub de connaissances (votre page publique dédiée) et sur votre propre WordPress / CMS. Prise en charge de l'intégration au Google Business Profile (par connexion) et des données structurées. Aucune publication automatique frauduleuse, par usurpation d'identité, sur des réseaux sociaux tiers contraires aux conditions d'utilisation."
       },
       "llmMonitoring": {
         "title": "Suivi GEO (citations par l'IA)",
-        "desc": "Suit la manière dont ChatGPT, Gemini, Perplexity et d'autres présentent et citent votre entreprise. Rend visible votre image dans la recherche par IA pour vous aider à l'améliorer."
+        "desc": "Suit la manière dont Perplexity, Google AI Overview et d'autres présentent et citent votre entreprise. Rend visible votre image dans la recherche par IA générative pour vous aider à l'améliorer."
       },
       "serp": {
         "title": "Suivi des classements & ajustement auto de la stratégie",

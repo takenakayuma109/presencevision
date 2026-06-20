@@ -361,7 +361,7 @@
     "hero": {
       "badge": "O motor de presença com IA seguro para negócios locais do Japão",
       "title": "Faça sua empresa ser \"encontrada\" tanto na busca do Google quanto nas IAs (ChatGPT, Gemini).",
-      "subtitle": "Automatize SEO e GEO (otimização para IA generativa) com foco em japonês e negócios locais. A IA gera continuamente artigos e dados estruturados, e a publicação é aprovada por humanos antes de ir ao ar — uma operação segura que cultiva a visibilidade tanto nos motores de busca quanto nas IAs generativas.",
+      "subtitle": "Automatize SEO e GEO (otimização para IA generativa) com foco em japonês e em negócios locais. A IA gera continuamente artigos e dados estruturados, e as publicações de maior risco são aprovadas por humanos — uma operação segura que cultiva a visibilidade tanto nos motores de busca quanto nas IAs generativas.",
       "disruption": "Os anúncios desaparecem quando você os interrompe. O \"estado de ser encontrado\" construído com PresenceVision permanece como um ativo duradouro.",
       "effects": {
         "label": "O que esperar",
@@ -394,11 +394,11 @@
       },
       "distribution": {
         "title": "Publicação segura (Hub próprio e seu site)",
-        "desc": "Publicação oficial no seu Hub de conhecimento próprio (sua página pública exclusiva) e no seu próprio WordPress / CMS. Também preparamos o Google Business Profile e os dados estruturados. Não realizamos publicações automáticas com personificação em redes sociais de terceiros que violem seus termos de uso."
+        "desc": "Publicação oficial no seu Hub de conhecimento próprio (sua página pública exclusiva) e no seu próprio WordPress / CMS. Também há suporte à integração com o Google Business Profile (via conexão) e a dados estruturados. Não realizamos publicações automáticas com personificação em redes sociais de terceiros que violem seus termos de uso."
       },
       "llmMonitoring": {
         "title": "Monitoramento de GEO (citações por IA)",
-        "desc": "Acompanhe como o ChatGPT, o Gemini, o Perplexity e outros apresentam e citam sua empresa. Visualize como você aparece na busca por IA e use isso para melhorar."
+        "desc": "Acompanhe como o Perplexity, o Google AI Overview e outros apresentam e citam sua empresa. Visualize como você aparece na busca por IA generativa e use isso para melhorar."
       },
       "serp": {
         "title": "Acompanhamento de posições de busca e ajuste automático da estratégia",

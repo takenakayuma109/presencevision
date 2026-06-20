@@ -361,7 +361,7 @@
     "hero": {
       "badge": "Die sichere KI-Präsenz-Engine für lokale Unternehmen in Japan",
       "title": "Machen Sie Ihr Unternehmen auffindbar — in der Google-Suche und in KI wie ChatGPT und Gemini.",
-      "subtitle": "SEO und GEO (Optimierung für generative KI), automatisiert und speziell auf japanische, lokale Unternehmen zugeschnitten. Die KI erstellt fortlaufend Artikel und strukturierte Daten, während ein Mensch vor jeder Veröffentlichung freigibt — ein sicherer Betrieb, der Ihre Sichtbarkeit sowohl in Suchmaschinen als auch in generativer KI nachhaltig stärkt.",
+      "subtitle": "SEO und GEO (Optimierung für generative KI), automatisiert und speziell auf japanische, lokale Unternehmen zugeschnitten. Die KI erstellt fortlaufend Artikel und strukturierte Daten, während risikoreiche Veröffentlichungen für einen sicheren Betrieb von einem Menschen freigegeben werden. So stärken Sie Ihre Sichtbarkeit sowohl in Suchmaschinen als auch in generativer KI.",
       "disruption": "Werbung verschwindet, sobald Sie sie abschalten. Die mit PresenceVision aufgebaute Auffindbarkeit bleibt als Vermögenswert dauerhaft erhalten.",
       "effects": {
         "label": "Das können Sie erwarten",
@@ -394,11 +394,11 @@
       },
       "distribution": {
         "title": "Sichere Veröffentlichung (Ihr eigener Hub und Ihre Website)",
-        "desc": "Offizielle Veröffentlichung auf Ihrem eigenen Wissens-Hub (Ihrer persönlichen öffentlichen Seite) sowie auf Ihrer eigenen WordPress-Installation bzw. Ihrem CMS. Auch Ihr Google Business Profile und Ihre strukturierten Daten werden gepflegt. Wir nehmen keine regelwidrigen, automatisierten Identitätsfälschungen in Drittanbieter-Social-Media vor."
+        "desc": "Offizielle Veröffentlichung auf Ihrem eigenen Wissens-Hub (Ihrer persönlichen öffentlichen Seite) sowie auf Ihrer eigenen WordPress-Installation bzw. Ihrem CMS. Auch eine Anbindung an das Google Business Profile (per Verbindung) und strukturierte Daten werden unterstützt. Wir nehmen keine regelwidrigen, automatisierten Identitätsfälschungen in Drittanbieter-Social-Media vor."
       },
       "llmMonitoring": {
         "title": "GEO-Monitoring (KI-Zitate)",
-        "desc": "Verfolgt, wie ChatGPT, Gemini, Perplexity und andere Ihr Unternehmen vorstellen und zitieren. So wird Ihre Darstellung in der KI-Suche sichtbar und kann gezielt verbessert werden."
+        "desc": "Verfolgt, wie Perplexity, Google AI Overview und andere Ihr Unternehmen vorstellen und zitieren. So wird Ihre Darstellung in der generativen KI-Suche sichtbar und kann gezielt verbessert werden."
       },
       "serp": {
         "title": "Tracking der Suchplatzierungen & automatische Strategieanpassung",

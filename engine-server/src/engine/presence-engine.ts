@@ -50,6 +50,10 @@ import {
   getNextKeywordBatch,
   markKeywordProcessed,
   requeueKeyword,
+  canGenerateContent,
+  recordContentRun,
+  canGeneratePillar,
+  recordPillar,
 } from "./project-state.js";
 import { monitorRankings } from "./tasks/ranking-monitor.js";
 import { adjustStrategy } from "./tasks/strategy-adjuster.js";
@@ -63,10 +67,13 @@ const FRONTEND_URL = process.env.FRONTEND_URL ?? "http://localhost:3000";
 const ENGINE_API_KEY = process.env.ENGINE_API_KEY ?? "";
 
 // Plan-based configuration
-const PLAN_CONFIG: Record<PlanTier, { cycleIntervalMs: number; anthropicModel: string }> = {
-  starter:      { cycleIntervalMs: 6 * 60 * 60 * 1000, anthropicModel: "claude-haiku-4-5" },
-  professional: { cycleIntervalMs: 1 * 60 * 60 * 1000, anthropicModel: "claude-haiku-4-5" },
-  enterprise:   { cycleIntervalMs: 1 * 60 * 60 * 1000,  anthropicModel: "claude-sonnet-4-6" },
+// contentGensPerDay: 1日のコンテンツ生成サイクル上限。pillarsPerDay: 1日のOpus(pillar)上限。
+// モニタリング(SERP/LLM)は cycleIntervalMs ごとに実施するが、生成コストはこの日次上限で制御し
+// サイクル頻度に比例した暴走（Professionalの構造的赤字）を防ぐ。
+const PLAN_CONFIG: Record<PlanTier, { cycleIntervalMs: number; anthropicModel: string; contentGensPerDay: number; pillarsPerDay: number }> = {
+  starter:      { cycleIntervalMs: 6 * 60 * 60 * 1000, anthropicModel: "claude-haiku-4-5",  contentGensPerDay: 1, pillarsPerDay: 1 },
+  professional: { cycleIntervalMs: 1 * 60 * 60 * 1000, anthropicModel: "claude-haiku-4-5",  contentGensPerDay: 2, pillarsPerDay: 2 },
+  enterprise:   { cycleIntervalMs: 1 * 60 * 60 * 1000, anthropicModel: "claude-sonnet-4-6", contentGensPerDay: 4, pillarsPerDay: 4 },
 };
 
 // ---------------------------------------------------------------------------
@@ -331,6 +338,19 @@ async function runCycle(project: PresenceProject, cycleNumber = 0): Promise<Cycl
     `[Engine] Cycle keywords (discovered=${discoveredBatch.length}, total=${cycleKeywords.length}): ${cycleKeywords.join(", ")}`,
   );
 
+  // --- コスト制御: コンテンツ生成は1日 planConfig.contentGensPerDay 回まで ---
+  // モニタリング(SERP/LLM)はサイクル毎に行うが、生成(記事/FAQ/Schema/pillar)は日次上限でゲートし、
+  // サイクル頻度に比例したAPI原価の暴走（Professionalの構造的赤字）を防ぐ。
+  const planConfig = PLAN_CONFIG[project.planId ?? "starter"];
+  const doContentGen = canGenerateContent(project.id, planConfig.contentGensPerDay);
+  if (doContentGen) {
+    recordContentRun(project.id);
+  } else {
+    console.log(
+      `[Engine] Content generation skipped — daily limit (${planConfig.contentGensPerDay}) reached for "${project.name}"`,
+    );
+  }
+
   // 各国×各メソッドで実行
   for (const country of project.targetCountries) {
     const language = COUNTRY_LANGUAGES[country] ?? "en";
@@ -408,7 +428,7 @@ async function runCycle(project: PresenceProject, cycleNumber = 0): Promise<Cycl
     }
 
     // --- AEO: FAQ生成 ---
-    if (project.methods.includes("AEO") || project.methods.includes("FAQ")) {
+    if (doContentGen && (project.methods.includes("AEO") || project.methods.includes("FAQ"))) {
       await sleep(OLLAMA_COOLDOWN_MS);
       const { result: faq } = await runWithRetry(`FAQ generation (${country})`, () =>
         generateFaq({
@@ -454,7 +474,7 @@ async function runCycle(project: PresenceProject, cycleNumber = 0): Promise<Cycl
     }
 
     // --- Schema.org ---
-    if (project.methods.includes("Schema.org")) {
+    if (doContentGen && project.methods.includes("Schema.org")) {
       await sleep(OLLAMA_COOLDOWN_MS);
       const { result: schema } = await runWithRetry(`Schema generation (${country})`, () =>
         generateSchema({
@@ -501,11 +521,14 @@ async function runCycle(project: PresenceProject, cycleNumber = 0): Promise<Cycl
     }
 
     // --- SEOコンテンツ生成 ---
-    if (project.methods.includes("SEO") || project.methods.includes("ContentMarketing")) {
+    if (doContentGen && (project.methods.includes("SEO") || project.methods.includes("ContentMarketing"))) {
       for (const [kwIndex, keyword] of cycleKeywords.entries()) {
         await sleep(OLLAMA_COOLDOWN_MS);
-        // サイクル先頭のキーワードは pillar記事(flagship=Opus 4.8)、残りは量産(bulk=Haiku等)
-        const tier = kwIndex === 0 ? "flagship" : "bulk";
+        // サイクル先頭のキーワードは pillar記事(flagship=Opus 4.8)、残りは量産(bulk=Haiku等)。
+        // pillar(Opus)は日次上限を超えたら bulk に格下げしてコストを抑える。
+        const usePillar = kwIndex === 0 && canGeneratePillar(project.id, planConfig.pillarsPerDay);
+        if (usePillar) recordPillar(project.id);
+        const tier = usePillar ? "flagship" : "bulk";
         const { result: article, retryLog: articleRetryLog } = await runWithRetry(`SEO article "${keyword}" (${country})`, () =>
           generateSeoArticle({
             projectId: project.id,

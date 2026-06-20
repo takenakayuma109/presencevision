@@ -180,7 +180,7 @@ Example output format:
 
 Respond with ONLY valid JSON. No markdown, no explanation.`,
       },
-    ], { maxTokens: isFlagship ? 8192 : 4096 });
+    ], { maxTokens: isFlagship ? 5000 : 4096 });
 
     // LLM出力品質チェック
     const articleValidation = validateContent(article.body, params.language);

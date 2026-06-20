@@ -18,12 +18,25 @@ export interface PublishedContentRecord {
   language: string;
 }
 
+interface DailyCounter {
+  date: string; // YYYY-MM-DD
+  count: number;
+}
+
 export interface ProjectContentState {
   discoveredKeywords: DiscoveredKeyword[];
   processedKeywords: Set<string>;
   publishedContent: PublishedContentRecord[];
   lastDiscoveryAt: Date | null;
   cycleCount: number;
+  /** コンテンツ生成を1日N回に制限するための日次カウンタ（コスト制御） */
+  dailyContentRuns: DailyCounter;
+  /** Opus(pillar)生成を1日N本に制限するための日次カウンタ（コスト制御） */
+  dailyPillars: DailyCounter;
+}
+
+function todayStr(): string {
+  return new Date().toISOString().slice(0, 10);
 }
 
 // ---------------------------------------------------------------------------
@@ -48,6 +61,8 @@ export function getProjectState(projectId: string): ProjectContentState {
       publishedContent: [],
       lastDiscoveryAt: null,
       cycleCount: 0,
+      dailyContentRuns: { date: todayStr(), count: 0 },
+      dailyPillars: { date: todayStr(), count: 0 },
     };
     projectStates.set(projectId, state);
   }
@@ -166,6 +181,40 @@ export function incrementCycleCount(projectId: string): number {
   const state = getProjectState(projectId);
   state.cycleCount++;
   return state.cycleCount;
+}
+
+// ---------------------------------------------------------------------------
+// 日次の生成制限（コスト制御）
+// ---------------------------------------------------------------------------
+
+/** 今日まだコンテンツ生成サイクルを実行できるか（1日 maxPerDay 回まで） */
+export function canGenerateContent(projectId: string, maxPerDay: number): boolean {
+  const state = getProjectState(projectId);
+  if (state.dailyContentRuns.date !== todayStr()) return true;
+  return state.dailyContentRuns.count < maxPerDay;
+}
+
+/** コンテンツ生成サイクルを1回消費する */
+export function recordContentRun(projectId: string): void {
+  const state = getProjectState(projectId);
+  const d = todayStr();
+  if (state.dailyContentRuns.date !== d) state.dailyContentRuns = { date: d, count: 0 };
+  state.dailyContentRuns.count++;
+}
+
+/** 今日まだ pillar(Opus) を生成できるか（1日 maxPerDay 本まで） */
+export function canGeneratePillar(projectId: string, maxPerDay: number): boolean {
+  const state = getProjectState(projectId);
+  if (state.dailyPillars.date !== todayStr()) return true;
+  return state.dailyPillars.count < maxPerDay;
+}
+
+/** pillar(Opus) を1本消費する */
+export function recordPillar(projectId: string): void {
+  const state = getProjectState(projectId);
+  const d = todayStr();
+  if (state.dailyPillars.date !== d) state.dailyPillars = { date: d, count: 0 };
+  state.dailyPillars.count++;
 }
 
 /**

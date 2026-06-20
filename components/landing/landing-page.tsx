@@ -624,10 +624,10 @@ export function LandingPage() {
               <h3 className="text-center text-xl font-bold md:text-2xl">② どこに公開する？（公開前に必ず人間が承認）</h3>
               <div className="mt-8 grid gap-4 sm:grid-cols-2">
                 {([
-                  { icon: BookOpen, place: "自社ナレッジHub", note: "あなた専用の公開ページ", plan: "全プラン" },
-                  { icon: Globe, place: "あなたのサイト / WordPress", note: "連携で自動投稿（下書き→承認）", plan: "Pro以上" },
-                  { icon: Search, place: "Googleビジネスプロフィール", note: "ローカル投稿で地図・近隣検索を強化", plan: "Pro以上" },
-                  { icon: FileText, place: "技術コミュニティ", note: "Qiita / DEV.to / Hashnode（公式API）", plan: "Enterprise" },
+                  { icon: BookOpen, place: "自社ナレッジHub", note: "PVが用意する“あなた専用の公開ページ”。新しく作る・サーバー契約は不要（PVがホスティング）。自分のサイトが無くてもOK。", plan: "全プラン" },
+                  { icon: Globe, place: "あなたのサイト / WordPress", note: "今お使いのサイトに、AIが下書き→あなたが承認して自動投稿。", plan: "Pro以上" },
+                  { icon: Search, place: "Googleビジネスプロフィール", note: "Google検索・マップに出る“お店の情報カード”（営業時間・写真・口コミ）。最新のお知らせを自動投稿し、近所の人に見つけてもらう。", plan: "Pro以上" },
+                  { icon: FileText, place: "技術コミュニティ", note: "Qiita / DEV.to / Hashnode（専門家が集まる公開サイト）へ自動投稿。IT・技術系の事業向け。", plan: "Enterprise" },
                 ] as const).map((d) => (
                   <div key={d.place} className="flex items-center gap-4 rounded-xl border border-border/50 bg-card/50 p-5 backdrop-blur-sm">
                     <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-blue-500/10">
@@ -674,6 +674,145 @@ export function LandingPage() {
                   </div>
                 ))}
               </div>
+            </div>
+          </div>
+        </section>
+
+        {/* ========== Section Divider ========== */}
+        <div className="border-t border-border/50" />
+
+        {/* ========== Concrete worked example: a day in the life → 30 days ========== */}
+        <section className="py-16 md:py-24">
+          <div className="mx-auto max-w-5xl px-6">
+            <div className="scroll-animate text-center">
+              <Badge variant="secondary" className="mb-4">実例で見る</Badge>
+              <h2 className="text-4xl font-bold leading-snug md:text-5xl">横浜の歯医者さんの「ある1日」</h2>
+              <p className="mx-auto mt-4 max-w-2xl text-lg text-muted-foreground md:text-xl">
+                言葉だけだとピンと来ないので、横浜の小さな歯医者さん「あおば歯科」を例に、PVが“勝手に”やってくれる1日を、最初から最後まで追ってみましょう。
+              </p>
+            </div>
+
+            {/* Timeline */}
+            <div className="mt-12 space-y-4">
+              {/* Step 1 — discover */}
+              <div className="scroll-animate flex flex-col gap-4 rounded-2xl border border-border/50 bg-card/50 p-6 backdrop-blur-sm md:flex-row md:items-center">
+                <div className="flex items-center gap-3 md:w-44 md:shrink-0">
+                  <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-blue-500/15 text-xs font-bold text-blue-400">朝6:00</span>
+                  <span className="text-base font-bold">①言葉を発見</span>
+                </div>
+                <div className="flex-1">
+                  <p className="mb-3 text-base leading-relaxed text-muted-foreground">AIが「横浜の人が実際に検索しているのに、まだ誰もちゃんと答えていない言葉」を見つけます。</p>
+                  <div className="inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 text-gray-800 shadow-lg">
+                    <Search className="h-4 w-4 text-gray-500" />
+                    <span className="text-sm font-medium">横浜 親知らず 抜歯 痛くない</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Step 2 — generate */}
+              <div className="scroll-animate flex flex-col gap-4 rounded-2xl border border-border/50 bg-card/50 p-6 backdrop-blur-sm md:flex-row md:items-center">
+                <div className="flex items-center gap-3 md:w-44 md:shrink-0">
+                  <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-violet-500/15 text-xs font-bold text-violet-400">朝6:05</span>
+                  <span className="text-base font-bold">②AIが書く</span>
+                </div>
+                <div className="flex-1">
+                  <p className="mb-3 text-base leading-relaxed text-muted-foreground">記事・FAQ・構造化データをまとめて自動生成（重要テーマは高品質なOpus 4.8で執筆）。文章だけで、画像は作りません。</p>
+                  <div className="rounded-xl bg-white p-4 text-left shadow-lg">
+                    <div className="text-base font-bold text-gray-900">親知らずの抜歯は痛い？横浜の歯科医が正直に解説</div>
+                    <div className="mt-2 flex flex-wrap gap-1.5">
+                      <span className="rounded bg-blue-50 px-2 py-0.5 text-[11px] font-medium text-blue-700">記事 本文</span>
+                      <span className="rounded bg-violet-50 px-2 py-0.5 text-[11px] font-medium text-violet-700">よくある質問×3</span>
+                      <span className="rounded bg-emerald-50 px-2 py-0.5 text-[11px] font-medium text-emerald-700">構造化データ</span>
+                    </div>
+                    <div className="mt-2 text-xs text-gray-500">Q. 抜歯は痛い？／Q. 費用は？／Q. 当日の流れは？</div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Step 3 — approve */}
+              <div className="scroll-animate flex flex-col gap-4 rounded-2xl border border-border/50 bg-card/50 p-6 backdrop-blur-sm md:flex-row md:items-center">
+                <div className="flex items-center gap-3 md:w-44 md:shrink-0">
+                  <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-amber-500/15 text-xs font-bold text-amber-400">朝8:00</span>
+                  <span className="text-base font-bold">③院長が承認</span>
+                </div>
+                <div className="flex-1">
+                  <p className="mb-3 text-base leading-relaxed text-muted-foreground">スマホに「下書きできました」と通知。中身を読んで【承認】を押すだけ（約30秒）。気になれば修正もワンタップ。</p>
+                  <div className="inline-flex items-center gap-2">
+                    <span className="inline-flex items-center gap-1.5 rounded-lg bg-blue-600 px-4 py-2 text-sm font-bold text-white shadow-lg"><ShieldCheck className="h-4 w-4" />承認して公開</span>
+                    <span className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-card px-3 py-2 text-sm text-muted-foreground">✏️ 修正</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Step 4 — publish */}
+              <div className="scroll-animate flex flex-col gap-4 rounded-2xl border border-border/50 bg-card/50 p-6 backdrop-blur-sm md:flex-row md:items-center">
+                <div className="flex items-center gap-3 md:w-44 md:shrink-0">
+                  <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-emerald-500/15 text-xs font-bold text-emerald-400">朝8:01</span>
+                  <span className="text-base font-bold">④3か所に公開</span>
+                </div>
+                <div className="flex-1">
+                  <p className="mb-3 text-base leading-relaxed text-muted-foreground">承認した瞬間、AIが3か所へ同時に公開。あなたは何もしなくてOK。</p>
+                  <div className="flex flex-wrap gap-2">
+                    {["自社ナレッジHub", "あおば歯科の医院サイト", "Googleビジネスプロフィール"].map((p) => (
+                      <span key={p} className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1.5 text-sm font-medium">
+                        <Check className="h-3.5 w-3.5 text-emerald-500" />{p}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Result — now "found" everywhere */}
+            <div className="scroll-animate mt-10">
+              <h3 className="text-center text-xl font-bold md:text-2xl">夕方には、もう「見つかる」状態に</h3>
+              <p className="mx-auto mt-2 max-w-2xl text-center text-base text-muted-foreground">同じ「横浜 親知らず」で検索した人に、あおば歯科が届きはじめます。</p>
+              <div className="mt-6 grid gap-4 md:grid-cols-3">
+                {/* Google search result */}
+                <div className="rounded-xl bg-white p-4 text-left shadow-xl">
+                  <div className="mb-2 text-[11px] font-bold text-gray-400">Google 検索</div>
+                  <div className="text-[11px] text-gray-500">presencevision.com › companies › aoba-dental</div>
+                  <div className="mt-0.5 text-sm font-medium leading-snug text-[#1a0dab]">親知らずの抜歯は痛い？横浜の歯科医が正直に解説</div>
+                  <div className="mt-1 text-xs leading-relaxed text-gray-600">横浜で親知らずの抜歯をお考えの方へ。痛みの程度・費用・当日の流れを歯科医が解説します…</div>
+                </div>
+                {/* ChatGPT answer */}
+                <div className="rounded-xl border border-border/50 bg-card p-4 text-left">
+                  <div className="mb-2 flex items-center gap-1.5 text-[11px] font-bold text-muted-foreground"><Sparkles className="h-3.5 w-3.5 text-violet-400" />ChatGPT・Gemini の回答</div>
+                  <div className="text-sm leading-relaxed">「横浜で親知らずの抜歯は？」と聞くと、<span className="font-bold text-blue-400">あおば歯科</span>が“痛みに配慮した治療”として紹介されるように。</div>
+                </div>
+                {/* GBP card */}
+                <div className="rounded-xl bg-white p-4 text-left shadow-xl">
+                  <div className="mb-2 text-[11px] font-bold text-gray-400">Google マップ</div>
+                  <div className="text-sm font-bold text-gray-900">あおば歯科</div>
+                  <div className="text-xs text-gray-600">★★★★☆ 4.6・歯科・横浜市</div>
+                  <div className="mt-2 rounded-md bg-gray-100 p-2 text-[11px] text-gray-700">📢 最新の投稿：親知らずの抜歯について解説しました</div>
+                </div>
+              </div>
+            </div>
+
+            {/* Repeat → 30 days */}
+            <div className="scroll-animate mt-12 rounded-2xl border border-blue-500/20 bg-gradient-to-r from-blue-500/5 to-violet-500/5 p-6 md:p-8">
+              <h3 className="text-center text-xl font-bold md:text-2xl">これを毎日くり返すと… 30日でこうなる</h3>
+              <div className="mt-8 grid gap-6 sm:grid-cols-3">
+                <div className="text-center">
+                  <div className="text-3xl font-bold md:text-4xl">約150点</div>
+                  <div className="mt-1 text-sm leading-relaxed text-muted-foreground">記事＋FAQ＋構造化データの“資産”が積み上がる</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-3xl font-bold md:text-4xl">4つの接点</div>
+                  <div className="mt-1 text-sm leading-relaxed text-muted-foreground">Google・ChatGPT・Gemini・地図に“出てくる場所”が毎日増える</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-3xl font-bold md:text-4xl">広告費¥0</div>
+                  <div className="mt-1 text-sm leading-relaxed text-muted-foreground">広告は止めれば消える。これは“資産”として残り続ける</div>
+                </div>
+              </div>
+              <p className="mx-auto mt-8 max-w-2xl text-center text-base leading-relaxed text-muted-foreground">
+                院長がやったことは、最初に<span className="font-semibold text-foreground">URLを入れて、毎日30秒だけ“承認”を押す</span>だけ。人を雇わず、広告費をかけず、“見つかる医院”が毎日ひとりでに育ちます。
+              </p>
+              <p className="mx-auto mt-3 max-w-2xl text-center text-xs leading-relaxed text-muted-foreground/80">
+                ※ 検索順位・AIでの引用・来院などの成果は、ダッシュボードで実データを確認できます（外部要因に左右されるため、特定の数値は保証しません）。
+              </p>
             </div>
           </div>
         </section>

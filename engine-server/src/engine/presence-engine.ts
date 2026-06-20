@@ -33,6 +33,7 @@ import {
   type DistributionResult,
 } from "./tasks/presence-distributor.js";
 import { getChannelsForCountry, isChannelReady, type ChannelConfig, getDefaultChannels } from "./channels/channel-registry.js";
+import { publishToGoogleBusiness } from "./channels/gbp-publisher.js";
 import {
   getActivities,
   getActivityStats,
@@ -600,6 +601,43 @@ async function runCycle(project: PresenceProject, cycleNumber = 0): Promise<Cycl
           }
         } else {
           tasksSkipped++;
+        }
+      }
+    }
+
+    // --- Google Business Profile: ローカル投稿（接続済みの場合のみ）---
+    const gbpChannel = allChannels.find(
+      (c) =>
+        c.type === "google_business" &&
+        c.regions.includes(country) &&
+        isChannelReady(c),
+    );
+    if (gbpChannel) {
+      const latestArticle = [...contentGenerated]
+        .reverse()
+        .find((c) => c.type === "article");
+      if (latestArticle) {
+        try {
+          const gbpResult = await publishToGoogleBusiness({
+            projectId: project.id,
+            taskId: `${cycleId}-gbp-${country}`,
+            summary: `${latestArticle.title}\n\n${latestArticle.body
+              .replace(/[#*>`]/g, "")
+              .slice(0, 1200)}`,
+            actionUrl: project.targetUrl,
+            credentials: gbpChannel.credentials ?? {},
+            country,
+            language,
+          });
+          if (gbpResult.success) {
+            tasksExecuted++;
+            console.log(`[Engine] Google Business local post published (${country})`);
+          } else {
+            console.log(`[Engine] GBP skipped (${country}): ${gbpResult.error}`);
+          }
+        } catch (error) {
+          console.error(`[Engine] GBP publish failed (${country}):`, error);
+          tasksFailed++;
         }
       }
     }

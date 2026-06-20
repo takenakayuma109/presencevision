@@ -62,6 +62,9 @@ export interface ChannelConfig {
     apiKey?: string;
     accessToken?: string;
     siteUrl?: string;
+    /** Google Business Profile 連携用（OAuthトークン＋対象ロケーション） */
+    accountId?: string;
+    locationId?: string;
   };
   enabled: boolean;
   rateLimit: { maxPerHour: number; cooldownMs: number };

@@ -36,6 +36,8 @@ export interface ChannelDef {
   method: ConnectionMethod;
   category: string;
   fields?: ChannelField[];
+  /** OAuth連携チャネルの開始URL（例: /api/oauth/google-business）。設定でリダイレクト接続する */
+  oauthPath?: string;
 }
 
 export interface ChannelField {
@@ -262,8 +264,25 @@ export function ChannelConfigDialog({
             {t("channels.connectionSettings")}
           </h4>
 
-          {/* Credential fields — all channel types */}
-          {channel.fields && channel.fields.length > 0 ? (
+          {/* Connection: OAuth / credential fields / coming-soon */}
+          {channel.oauthPath ? (
+            <div className="space-y-3">
+              <p className="text-sm text-muted-foreground">
+                {isJa
+                  ? "Googleアカウントで連携します（Business Profileの管理権限が必要）。連携後、生成記事の要約がローカル投稿として自動公開されます。"
+                  : "Connect with your Google account (Business Profile manager access required). After connecting, article summaries are auto-published as local posts."}
+              </p>
+              <Button
+                onClick={() => {
+                  window.location.href = channel.oauthPath as string;
+                }}
+                className="gap-2"
+              >
+                <ExternalLink className="h-4 w-4" />
+                {isJa ? `${channel.name} と連携` : `Connect ${channel.name}`}
+              </Button>
+            </div>
+          ) : channel.fields && channel.fields.length > 0 ? (
             <div className="space-y-3">
               {channel.fields.map((field) => (
                 <div key={field.key} className="space-y-1.5">

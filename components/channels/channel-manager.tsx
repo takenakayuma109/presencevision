@@ -408,6 +408,16 @@ const CHANNELS: ChannelDef[] = [
       { key: "apiKey", labelJa: "APIキー", labelEn: "API Key", type: "password", required: true },
     ],
   },
+  {
+    id: "google_business",
+    name: "Google Business Profile",
+    icon: Globe,
+    color: "#4285F4",
+    bg: "bg-[#4285F4]",
+    method: "oauth",
+    category: "cms",
+    oauthPath: "/api/oauth/google-business",
+  },
 ];
 
 type CategoryKey = "all" | "sns" | "blog" | "qa" | "regional" | "cms";

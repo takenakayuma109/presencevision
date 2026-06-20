@@ -381,7 +381,7 @@
       "step2": { "title": "A IA trabalha sozinha", "desc": "24 horas por dia, a IA cria artigos, perguntas frequentes e informações da empresa e publica nas suas páginas e (se você conectar) no seu Google Business Profile." },
       "step3": { "title": "Sua empresa passa a ser encontrada", "desc": "Aos poucos, sua empresa começa a aparecer na busca do Google, em IAs como o ChatGPT e também nos mapas." },
       "getTitle": "O que você vai \"com certeza\" conquistar",
-      "g1": { "stat": "Todo dia", "label": "Mais artigos", "desc": "Sem precisar contratar um redator, o conteúdo cresce sozinho." },
+      "g1": { "stat": "Todo dia", "label": "Mais artigos", "desc": "Os artigos se acumulam na sua página pública exclusiva (Knowledge Hub), no seu próprio site/WordPress e, se você integrar, no Google Business Profile." },
       "g2": { "stat": "24/7", "label": "Nunca para", "desc": "A IA continua trabalhando enquanto você dorme e nos fins de semana." },
       "g3": { "stat": "11 idiomas", "label": "Vários idiomas", "desc": "Em português e também para o público de fora, tudo automático." },
       "g4": { "stat": "Aprovação", "label": "Feito com segurança", "desc": "Publicações mais arriscadas passam pela conferência de uma pessoa, evitando informações erradas." },

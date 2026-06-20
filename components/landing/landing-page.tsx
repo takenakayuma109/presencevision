@@ -426,6 +426,16 @@ export function LandingPage() {
           </div>
 
           <div className="relative z-10 mx-auto max-w-7xl px-6 text-center">
+            {/* Big logo lockup — first view */}
+            <div className="animate-fade-in-up mb-8 flex items-center justify-center gap-3 md:gap-4">
+              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-500 to-violet-600 shadow-lg shadow-blue-500/30 md:h-[4.5rem] md:w-[4.5rem]">
+                <Sparkles className="h-7 w-7 text-white md:h-9 md:w-9" />
+              </div>
+              <span className="bg-gradient-to-r from-blue-500 to-violet-500 bg-clip-text text-4xl font-extrabold tracking-tight text-transparent md:text-6xl">
+                PresenceVision
+              </span>
+            </div>
+
             <Badge variant="secondary" className="animate-fade-in-up mb-6 inline-flex items-center gap-1.5 px-4 py-1.5 text-sm">
               <Zap className="h-3.5 w-3.5 text-amber-500" />
               {t("landing.hero.badge")}
@@ -476,7 +486,7 @@ export function LandingPage() {
                 <div className="mt-1 text-xs text-muted-foreground md:text-sm">検索もAIも対応</div>
               </div>
               <div>
-                <div className="text-2xl font-bold md:text-3xl">24/7</div>
+                <div className="text-2xl font-bold md:text-3xl">24時間</div>
                 <div className="mt-1 text-xs text-muted-foreground md:text-sm">自律稼働</div>
               </div>
               <div>

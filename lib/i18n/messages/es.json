@@ -381,7 +381,7 @@
       "step2": { "title": "La IA trabaja sola", "desc": "Las 24 horas, la IA crea artículos, preguntas frecuentes e información de tu empresa, y los publica en tu página y (si lo conectas) en tu Google Business Profile." },
       "step3": { "title": "Te conviertes en una empresa que se encuentra", "desc": "Poco a poco tu empresa empieza a aparecer en la búsqueda de Google, en herramientas de IA como ChatGPT y también en los mapas." },
       "getTitle": "Lo que vas a conseguir \"con seguridad\"",
-      "g1": { "stat": "Cada día", "label": "Más artículos", "desc": "Sin contratar a nadie que escriba, el contenido se va acumulando solo." },
+      "g1": { "stat": "Cada día", "label": "Más artículos", "desc": "Los artículos se van acumulando en tu propia página pública (Knowledge Hub), en tu sitio web/WordPress y, si lo conectas, en tu perfil de Google Business Profile." },
       "g2": { "stat": "24/7", "label": "Sin parar", "desc": "Mientras duermes y también los fines de semana, la IA sigue trabajando." },
       "g3": { "stat": "11 idiomas", "label": "Varios idiomas", "desc": "En español, por supuesto, y también de forma automática para otros países." },
       "g4": { "stat": "Con aprobación", "label": "Diseño seguro", "desc": "Las publicaciones más delicadas las revisa una persona, para evitar errores e información falsa." },

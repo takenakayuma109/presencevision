@@ -381,7 +381,7 @@
       "step2": { "title": "AI works automatically", "desc": "Around the clock, AI creates articles, FAQs, and company information, then publishes them to your pages and (if you connect it) your Google Business Profile." },
       "step3": { "title": "Become a company people find", "desc": "Over time, your business starts showing up on Google search, in AI tools like ChatGPT, and on maps." },
       "getTitle": "What you can count on",
-      "g1": { "stat": "Daily", "label": "More articles", "desc": "Your content keeps building up automatically, with no need to hire a writer." },
+      "g1": { "stat": "Daily", "label": "More articles", "desc": "Articles keep building up on your own public page (Knowledge Hub), your own website / WordPress, and (once connected) your Google Business Profile." },
       "g2": { "stat": "24/7", "label": "Never stops", "desc": "AI keeps working while you sleep and on your days off." },
       "g3": { "stat": "11 languages", "label": "Multilingual", "desc": "English, Japanese, and audiences abroad, all handled automatically." },
       "g4": { "stat": "Approval", "label": "Safe by design", "desc": "A person checks anything risky before it goes live, preventing mistakes and false information." },

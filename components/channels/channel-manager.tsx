@@ -5,178 +5,64 @@ import {
   Card,
   CardContent,
   Badge,
-  Button,
   Input,
 } from "@/components/ui";
 import {
-  Twitter,
-  Linkedin,
-  Facebook,
-  Instagram,
-  Youtube,
-  Music2,
-  Pin,
-  AtSign,
-  MessageCircle,
-  HelpCircle,
-  BookOpen,
   FileText,
   Globe,
   Search,
   Filter,
   Wifi,
-  WifiOff,
   Clock,
-  type LucideIcon,
+  ShieldCheck,
 } from "lucide-react";
 import { useTranslation } from "@/lib/hooks/use-translation";
 import {
   ChannelConfigDialog,
   type ChannelDef,
   type ChannelState,
-  type ConnectionMethod,
   type ConnectionStatus,
 } from "./channel-config-dialog";
 
 /* ------------------------------------------------------------------ */
 /*  Channel Data                                                       */
+/*                                                                    */
+/*  安全設計: 実際に動作し、各社の利用規約に準拠した「公式API系」のみ。     */
+/*  自社ナレッジHubは全プランで自動有効（接続不要）のためここには出さない。   */
+/*  SNS（X/Instagram等）・Q&A（Reddit/Quora等）への自動投稿は、規約違反・    */
+/*  アカウント凍結リスクがあるため提供しない（エンジン側でも無効化済み）。     */
 /* ------------------------------------------------------------------ */
 
 const CHANNELS: ChannelDef[] = [
-  // SNS
+  // 自社サイト（あなたのCMS・公式API）
   {
-    id: "twitter",
-    name: "Twitter / X",
-    icon: Twitter,
-    color: "#000000",
-    bg: "bg-black dark:bg-white/10",
+    id: "wordpress",
+    name: "WordPress / 自社サイト",
+    icon: Globe,
+    color: "#21759B",
+    bg: "bg-[#21759B]",
     method: "api_key",
-    category: "sns",
+    category: "owned",
     fields: [
-      { key: "apiKey", labelJa: "API Key", labelEn: "API Key", type: "password", required: true },
-      { key: "apiSecret", labelJa: "API Secret", labelEn: "API Secret", type: "password", required: true },
-      { key: "accessToken", labelJa: "アクセストークン", labelEn: "Access Token", type: "password", required: true },
-      { key: "accessSecret", labelJa: "アクセスシークレット", labelEn: "Access Secret", type: "password", required: true },
-    ],
-  },
-  {
-    id: "instagram",
-    name: "Instagram",
-    icon: Instagram,
-    color: "#E4405F",
-    bg: "bg-[#E4405F]",
-    method: "api_key",
-    category: "sns",
-    fields: [
-      { key: "accessToken", labelJa: "アクセストークン（Graph API）", labelEn: "Access Token (Graph API)", type: "password", required: true },
-      { key: "pageId", labelJa: "Instagram ビジネスアカウントID", labelEn: "Instagram Business Account ID", type: "text", required: true },
-    ],
-  },
-  {
-    id: "linkedin",
-    name: "LinkedIn",
-    icon: Linkedin,
-    color: "#0A66C2",
-    bg: "bg-[#0A66C2]",
-    method: "api_key",
-    category: "sns",
-    fields: [
-      { key: "accessToken", labelJa: "アクセストークン", labelEn: "Access Token", type: "password", required: true },
-      { key: "organizationId", labelJa: "Organization ID（任意）", labelEn: "Organization ID (optional)", type: "text", required: false },
-    ],
-  },
-  {
-    id: "facebook",
-    name: "Facebook",
-    icon: Facebook,
-    color: "#1877F2",
-    bg: "bg-[#1877F2]",
-    method: "api_key",
-    category: "sns",
-    fields: [
-      { key: "accessToken", labelJa: "ページアクセストークン", labelEn: "Page Access Token", type: "password", required: true },
-      { key: "pageId", labelJa: "ページID", labelEn: "Page ID", type: "text", required: true },
-    ],
-  },
-  {
-    id: "tiktok",
-    name: "TikTok",
-    icon: Music2,
-    color: "#000000",
-    bg: "bg-black dark:bg-white/10",
-    method: "api_key",
-    category: "sns",
-    fields: [
-      { key: "accessToken", labelJa: "アクセストークン", labelEn: "Access Token", type: "password", required: true },
-      { key: "openId", labelJa: "Open ID", labelEn: "Open ID", type: "text", required: true },
-    ],
-  },
-  {
-    id: "youtube",
-    name: "YouTube",
-    icon: Youtube,
-    color: "#FF0000",
-    bg: "bg-[#FF0000]",
-    method: "api_key",
-    category: "sns",
-    fields: [
-      { key: "apiKey", labelJa: "YouTube Data API Key", labelEn: "YouTube Data API Key", type: "password", required: true },
-      { key: "channelId", labelJa: "チャネルID", labelEn: "Channel ID", type: "text", required: true },
-    ],
-  },
-  {
-    id: "pinterest",
-    name: "Pinterest",
-    icon: Pin,
-    color: "#BD081C",
-    bg: "bg-[#BD081C]",
-    method: "api_key",
-    category: "sns",
-    fields: [
-      { key: "accessToken", labelJa: "アクセストークン", labelEn: "Access Token", type: "password", required: true },
-      { key: "boardId", labelJa: "ボードID", labelEn: "Board ID", type: "text", required: true },
-    ],
-  },
-  {
-    id: "threads",
-    name: "Threads",
-    icon: AtSign,
-    color: "#000000",
-    bg: "bg-black dark:bg-white/10",
-    method: "api_key",
-    category: "sns",
-    fields: [
-      { key: "accessToken", labelJa: "アクセストークン（Instagram Graph API）", labelEn: "Access Token (Instagram Graph API)", type: "password", required: true },
-      { key: "userId", labelJa: "ユーザーID", labelEn: "User ID", type: "text", required: true },
+      { key: "siteUrl", labelJa: "サイトURL", labelEn: "Site URL", type: "url", placeholder: "https://example.com", required: true },
+      { key: "username", labelJa: "ユーザー名", labelEn: "Username", type: "text", required: true },
+      { key: "appPassword", labelJa: "アプリケーションパスワード", labelEn: "Application Password", type: "password", required: true },
     ],
   },
 
-  // Blog
+  // ローカル検索（Googleビジネスプロフィール・公式API）
   {
-    id: "medium",
-    name: "Medium",
-    icon: BookOpen,
-    color: "#000000",
-    bg: "bg-black dark:bg-white/10",
-    method: "api_key",
-    category: "blog",
-    fields: [
-      { key: "apiKey", labelJa: "インテグレーショントークン", labelEn: "Integration Token", type: "password", required: true },
-    ],
+    id: "google_business",
+    name: "Google Business Profile",
+    icon: Globe,
+    color: "#4285F4",
+    bg: "bg-[#4285F4]",
+    method: "oauth",
+    category: "local",
+    oauthPath: "/api/oauth/google-business",
   },
-  {
-    id: "note",
-    name: "note.com",
-    icon: FileText,
-    color: "#41C9B4",
-    bg: "bg-[#41C9B4]",
-    method: "api_key",
-    category: "blog",
-    fields: [
-      { key: "apiKey", labelJa: "APIキー", labelEn: "API Key", type: "password", required: true },
-      { key: "username", labelJa: "ユーザー名", labelEn: "Username", type: "text", required: true },
-    ],
-  },
+
+  // 技術コミュニティ（公式API）
   {
     id: "devto",
     name: "dev.to",
@@ -184,7 +70,7 @@ const CHANNELS: ChannelDef[] = [
     color: "#0A0A0A",
     bg: "bg-[#0A0A0A]",
     method: "api_key",
-    category: "blog",
+    category: "community",
     fields: [
       { key: "apiKey", labelJa: "APIキー", labelEn: "API Key", type: "password", required: true },
     ],
@@ -196,7 +82,7 @@ const CHANNELS: ChannelDef[] = [
     color: "#55C500",
     bg: "bg-[#55C500]",
     method: "api_key",
-    category: "blog",
+    category: "community",
     fields: [
       { key: "apiKey", labelJa: "アクセストークン", labelEn: "Access Token", type: "password", required: true },
     ],
@@ -208,219 +94,15 @@ const CHANNELS: ChannelDef[] = [
     color: "#2962FF",
     bg: "bg-[#2962FF]",
     method: "api_key",
-    category: "blog",
+    category: "community",
     fields: [
       { key: "apiKey", labelJa: "パーソナルアクセストークン", labelEn: "Personal Access Token", type: "password", required: true },
       { key: "publicationId", labelJa: "パブリケーションID", labelEn: "Publication ID", type: "text", required: true },
     ],
   },
-
-  // Q&A
-  {
-    id: "reddit",
-    name: "Reddit",
-    icon: MessageCircle,
-    color: "#FF4500",
-    bg: "bg-[#FF4500]",
-    method: "oauth",
-    category: "qa",
-  },
-  {
-    id: "quora",
-    name: "Quora",
-    icon: HelpCircle,
-    color: "#B92B27",
-    bg: "bg-[#B92B27]",
-    method: "oauth",
-    category: "qa",
-  },
-  {
-    id: "yahoo_chiebukuro",
-    name: "Yahoo!\u77E5\u6075\u888B",
-    icon: HelpCircle,
-    color: "#FF0033",
-    bg: "bg-[#FF0033]",
-    method: "api_key",
-    category: "qa",
-    fields: [
-      { key: "apiKey", labelJa: "APIキー", labelEn: "API Key", type: "password", required: true },
-      { key: "username", labelJa: "ユーザー名", labelEn: "Username", type: "text", required: true },
-    ],
-  },
-  {
-    id: "zhihu",
-    name: "\u77E5\u4E4E",
-    icon: HelpCircle,
-    color: "#0084FF",
-    bg: "bg-[#0084FF]",
-    method: "api_key",
-    category: "qa",
-    fields: [
-      { key: "apiKey", labelJa: "APIキー", labelEn: "API Key", type: "password", required: true },
-      { key: "username", labelJa: "ユーザー名", labelEn: "Username", type: "text", required: true },
-    ],
-  },
-
-  // Regional
-  {
-    id: "naver_blog",
-    name: "Naver Blog",
-    icon: Globe,
-    color: "#03C75A",
-    bg: "bg-[#03C75A]",
-    method: "api_key",
-    category: "regional",
-    fields: [
-      { key: "clientId", labelJa: "クライアントID", labelEn: "Client ID", type: "text", required: true },
-      { key: "clientSecret", labelJa: "クライアントシークレット", labelEn: "Client Secret", type: "password", required: true },
-    ],
-  },
-  {
-    id: "tistory",
-    name: "Tistory",
-    icon: Globe,
-    color: "#E45735",
-    bg: "bg-[#E45735]",
-    method: "url",
-    category: "regional",
-    fields: [
-      { key: "blogUrl", labelJa: "ブログURL", labelEn: "Blog URL", type: "url", required: true },
-      { key: "apiKey", labelJa: "APIキー", labelEn: "API Key", type: "password", required: true },
-    ],
-  },
-  {
-    id: "csdn",
-    name: "CSDN",
-    icon: Globe,
-    color: "#FC5531",
-    bg: "bg-[#FC5531]",
-    method: "api_key",
-    category: "regional",
-    fields: [
-      { key: "apiKey", labelJa: "APIキー", labelEn: "API Key", type: "password", required: true },
-      { key: "username", labelJa: "ユーザー名", labelEn: "Username", type: "text", required: true },
-    ],
-  },
-  {
-    id: "xing",
-    name: "Xing",
-    icon: Globe,
-    color: "#006567",
-    bg: "bg-[#006567]",
-    method: "url",
-    category: "regional",
-    fields: [
-      { key: "profileUrl", labelJa: "プロフィールURL", labelEn: "Profile URL", type: "url", required: true },
-    ],
-  },
-
-  // CMS
-  {
-    id: "wordpress",
-    name: "WordPress",
-    icon: Globe,
-    color: "#21759B",
-    bg: "bg-[#21759B]",
-    method: "api_key",
-    category: "cms",
-    fields: [
-      { key: "siteUrl", labelJa: "サイトURL", labelEn: "Site URL", type: "url", placeholder: "https://example.com", required: true },
-      { key: "username", labelJa: "ユーザー名", labelEn: "Username", type: "text", required: true },
-      { key: "appPassword", labelJa: "アプリケーションパスワード", labelEn: "Application Password", type: "password", required: true },
-    ],
-  },
-  {
-    id: "wix",
-    name: "Wix",
-    icon: Globe,
-    color: "#0C6EFC",
-    bg: "bg-[#0C6EFC]",
-    method: "api_key",
-    category: "cms",
-    fields: [
-      { key: "apiKey", labelJa: "APIキー", labelEn: "API Key", type: "password", required: true },
-      { key: "siteId", labelJa: "サイトID", labelEn: "Site ID", type: "text", required: true },
-    ],
-  },
-  {
-    id: "shopify",
-    name: "Shopify",
-    icon: Globe,
-    color: "#96BF48",
-    bg: "bg-[#96BF48]",
-    method: "api_key",
-    category: "cms",
-    fields: [
-      { key: "storeDomain", labelJa: "ストアドメイン", labelEn: "Store Domain", type: "text", placeholder: "store.myshopify.com", required: true },
-      { key: "accessToken", labelJa: "アクセストークン", labelEn: "Access Token", type: "password", required: true },
-    ],
-  },
-  {
-    id: "squarespace",
-    name: "Squarespace",
-    icon: Globe,
-    color: "#000000",
-    bg: "bg-black dark:bg-white/10",
-    method: "api_key",
-    category: "cms",
-    fields: [
-      { key: "apiKey", labelJa: "APIキー", labelEn: "API Key", type: "password", required: true },
-      { key: "siteId", labelJa: "サイトID", labelEn: "Site ID", type: "text", required: true },
-    ],
-  },
-  {
-    id: "webflow",
-    name: "Webflow",
-    icon: Globe,
-    color: "#4353FF",
-    bg: "bg-[#4353FF]",
-    method: "api_key",
-    category: "cms",
-    fields: [
-      { key: "apiToken", labelJa: "APIトークン", labelEn: "API Token", type: "password", required: true },
-      { key: "siteId", labelJa: "サイトID", labelEn: "Site ID", type: "text", required: true },
-      { key: "collectionId", labelJa: "コレクションID", labelEn: "Collection ID", type: "text", required: false },
-    ],
-  },
-  {
-    id: "ghost",
-    name: "Ghost",
-    icon: Globe,
-    color: "#15171A",
-    bg: "bg-[#15171A]",
-    method: "api_key",
-    category: "cms",
-    fields: [
-      { key: "siteUrl", labelJa: "サイトURL", labelEn: "Site URL", type: "url", placeholder: "https://example.ghost.io", required: true },
-      { key: "adminApiKey", labelJa: "Admin APIキー", labelEn: "Admin API Key", type: "password", required: true },
-    ],
-  },
-  {
-    id: "microcms",
-    name: "microCMS",
-    icon: Globe,
-    color: "#2B2B2B",
-    bg: "bg-[#2B2B2B]",
-    method: "api_key",
-    category: "cms",
-    fields: [
-      { key: "serviceDomain", labelJa: "サービスドメイン", labelEn: "Service Domain", type: "text", placeholder: "your-service", required: true },
-      { key: "apiKey", labelJa: "APIキー", labelEn: "API Key", type: "password", required: true },
-    ],
-  },
-  {
-    id: "google_business",
-    name: "Google Business Profile",
-    icon: Globe,
-    color: "#4285F4",
-    bg: "bg-[#4285F4]",
-    method: "oauth",
-    category: "cms",
-    oauthPath: "/api/oauth/google-business",
-  },
 ];
 
-type CategoryKey = "all" | "sns" | "blog" | "qa" | "regional" | "cms";
+type CategoryKey = "all" | "owned" | "local" | "community";
 
 /* ------------------------------------------------------------------ */
 /*  Status Dot                                                         */
@@ -619,19 +301,15 @@ export function ChannelManager({ projectId, workspaceId }: ChannelManagerProps =
 
   const categories: { key: CategoryKey; labelJa: string; labelEn: string }[] = [
     { key: "all", labelJa: "すべて", labelEn: "All" },
-    { key: "sns", labelJa: "SNS", labelEn: "SNS" },
-    { key: "blog", labelJa: "ブログ", labelEn: "Blog" },
-    { key: "qa", labelJa: "Q&A", labelEn: "Q&A" },
-    { key: "regional", labelJa: "地域", labelEn: "Regional" },
-    { key: "cms", labelJa: "CMS", labelEn: "CMS" },
+    { key: "owned", labelJa: "自社サイト", labelEn: "Your Site" },
+    { key: "local", labelJa: "ローカル", labelEn: "Local" },
+    { key: "community", labelJa: "技術コミュニティ", labelEn: "Community" },
   ];
 
   const categoryLabels: Record<string, { ja: string; en: string }> = {
-    sns: { ja: "SNS", en: "Social Media" },
-    blog: { ja: "ブログプラットフォーム", en: "Blog Platforms" },
-    qa: { ja: "Q&A・フォーラム", en: "Q&A / Forums" },
-    regional: { ja: "地域プラットフォーム", en: "Regional Platforms" },
-    cms: { ja: "CMS / サイトビルダー", en: "CMS / Site Builder" },
+    owned: { ja: "自社サイト / CMS（公式API）", en: "Your Site / CMS" },
+    local: { ja: "ローカル検索（Googleビジネスプロフィール）", en: "Local Search" },
+    community: { ja: "技術コミュニティ（公式API）", en: "Tech Communities" },
   };
 
   const filteredChannels = useMemo(() => {
@@ -663,6 +341,15 @@ export function ChannelManager({ projectId, workspaceId }: ChannelManagerProps =
         <p className="text-sm text-muted-foreground mt-1">
           {t("channels.subtitle")}
         </p>
+      </div>
+
+      {/* Hub always-on + safety note (why no SNS) */}
+      <div className="flex items-start gap-3 rounded-lg border border-blue-500/20 bg-blue-500/5 p-4">
+        <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-blue-500" />
+        <div className="text-sm text-muted-foreground">
+          <span className="font-semibold text-foreground">自社ナレッジHubは全プランで自動的に有効です（接続は不要）。</span>
+          下記は「追加の公開先」です。SNS（X・Instagram等）やQ&Aサイトへの自動投稿は、各社の利用規約違反・アカウント凍結のリスクがあるため、安全設計の方針として提供していません。
+        </div>
       </div>
 
       {/* Stats Bar */}

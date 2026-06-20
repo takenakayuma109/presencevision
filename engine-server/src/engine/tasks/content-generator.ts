@@ -9,7 +9,7 @@
  * 全てローカルLLMで処理。API従量課金ゼロ。
  */
 
-import { getAIProvider, getModelForPlan } from "../../ai/provider.js";
+import { getAIProvider, getModelForPlan, getFlagshipModel } from "../../ai/provider.js";
 import {
   startActivity,
   completeActivity,
@@ -35,16 +35,31 @@ function getLanguageName(code: string): string {
   return languageNames[code] ?? code;
 }
 
+/** 会社プロフィールから記事プロンプト用の「検証済み事実」サマリーを作る（E-E-A-T・捏造防止） */
+function summarizeCompanyProfile(p?: Record<string, unknown>): string {
+  if (!p) return "";
+  const f = (k: string): string =>
+    typeof p[k] === "string" && p[k] ? String(p[k]) : "";
+  const lines = [
+    f("representative") && `代表者: ${f("representative")}`,
+    f("foundedDate") && `設立: ${f("foundedDate")}`,
+    f("industry") && `業種: ${f("industry")}`,
+    f("headquarters") && `所在地: ${f("headquarters")}`,
+    f("employeeCount") && `従業員数: ${f("employeeCount")}`,
+    f("capital") && `資本金: ${f("capital")}`,
+    f("description") && `事業内容: ${f("description")}`,
+  ].filter(Boolean);
+  return lines.join("\n");
+}
+
 // ---------------------------------------------------------------------------
 // LLM出力品質バリデーション（日本語ガベージ検出）
 // ---------------------------------------------------------------------------
-function validateJapaneseContent(
+function validateContent(
   text: string,
   language: string,
 ): { valid: boolean; reason?: string } {
-  if (!language.startsWith("ja")) return { valid: true };
-
-  // Too short for meaningful content
+  // Too short for meaningful content（全言語）
   if (text.length < 100) {
     return { valid: false, reason: "生成されたテキストが短すぎます" };
   }
@@ -55,9 +70,8 @@ function validateJapaneseContent(
   const kanjiCount = (text.match(/[\u4E00-\u9FFF]/g) || []).length;
   const totalKana = hiraganaCount + katakanaCount;
 
-  // Japanese text always contains hiragana/katakana particles and okurigana.
-  // If there are many kanji but very little kana, it's likely Chinese or gibberish.
-  if (kanjiCount > 10 && totalKana < kanjiCount * 0.3) {
+  // Japanese-only: 多くの漢字に対しかなが極端に少ない＝中国語/ゴミの可能性
+  if (language.startsWith("ja") && kanjiCount > 10 && totalKana < kanjiCount * 0.3) {
     return {
       valid: false,
       reason: "日本語として不正なテキスト（ひらがな/カタカナが不足）",
@@ -112,6 +126,10 @@ export async function generateSeoArticle(params: {
   language: string;
   brandName: string;
   planId?: string;
+  /** "flagship" は pillar記事として Opus 4.8 で高品質生成（量産は "bulk" = Haiku等） */
+  tier?: "bulk" | "flagship";
+  /** 会社プロフィール（検証済み事実をプロンプトに供給し、E-E-A-T向上＆捏造防止） */
+  companyProfile?: Record<string, unknown>;
 }): Promise<GeneratedContent> {
   const activity = startActivity({
     projectId: params.projectId,
@@ -124,7 +142,17 @@ export async function generateSeoArticle(params: {
   });
 
   try {
-    const ai = getAIProvider(getModelForPlan(params.planId));
+    // pillar(flagship)は Opus 4.8、量産(bulk)はプラン既定モデル。
+    // ANTHROPIC_API_KEY未設定時は getFlagshipModel()=undefined → 既定(Ollama)へフォールバック。
+    const isFlagship = params.tier === "flagship";
+    const model = isFlagship
+      ? getFlagshipModel() ?? getModelForPlan(params.planId)
+      : getModelForPlan(params.planId);
+    const ai = getAIProvider(model);
+    const wordTarget = isFlagship
+      ? "1000-1500 words of comprehensive, original pillar content with concrete examples, data, and clear expertise (E-E-A-T)"
+      : "300-500 words";
+    const profileSummary = summarizeCompanyProfile(params.companyProfile);
 
     const langName = getLanguageName(params.language);
 
@@ -144,18 +172,18 @@ Topic: ${params.topic}
 Keywords: ${params.keywords.join(", ")}
 Brand: ${params.brandName}
 Country: ${params.country}
-
-Write 300-500 words. Include keywords naturally. Use H2/H3 headings in the body.
+${profileSummary ? `\nCompany profile (use ONLY these verified facts; do NOT invent any other facts about the company):\n${profileSummary}\n` : ""}
+Write ${wordTarget}. Include keywords naturally. Use H2/H3 headings in the body.
 
 Example output format:
 {"title": "Your Title Here", "body": "## Heading\\n\\nArticle text...", "metaTitle": "Short Meta Title", "metaDescription": "A 150-char description."}
 
 Respond with ONLY valid JSON. No markdown, no explanation.`,
       },
-    ], { maxTokens: 4096 });
+    ], { maxTokens: isFlagship ? 8192 : 4096 });
 
     // LLM出力品質チェック
-    const articleValidation = validateJapaneseContent(article.body, params.language);
+    const articleValidation = validateContent(article.body, params.language);
     if (!articleValidation.valid) {
       throw new Error(`LLMの出力品質が低い: ${articleValidation.reason}`);
     }
@@ -244,7 +272,7 @@ Respond with ONLY valid JSON. No markdown, no explanation.`,
 
     // LLM出力品質チェック（最初の回答で判定）
     if (faq.questions.length > 0) {
-      const faqValidation = validateJapaneseContent(
+      const faqValidation = validateContent(
         faq.questions[0].answer,
         params.language,
       );
@@ -419,7 +447,7 @@ Respond with ONLY valid JSON. No markdown, no explanation.`,
     ], { maxTokens: 4096 });
 
     // LLM出力品質チェック
-    const transValidation = validateJapaneseContent(translated.body, params.targetLanguage);
+    const transValidation = validateContent(translated.body, params.targetLanguage);
     if (!transValidation.valid) {
       throw new Error(`LLMの出力品質が低い: ${transValidation.reason}`);
     }

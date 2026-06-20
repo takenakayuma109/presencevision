@@ -17,6 +17,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { checkAccess } from "@/lib/stripe/subscription";
+import { prisma } from "@/lib/db";
 
 const ENGINE_URL = process.env.NEXT_PUBLIC_ENGINE_URL ?? "http://localhost:4000";
 const ENGINE_API_KEY = process.env.NEXT_PUBLIC_ENGINE_API_KEY ?? "";
@@ -74,11 +75,33 @@ async function proxyRequest(
       );
     }
 
-    // クライアント送信値を信頼せず、契約から確定した planId を注入する
+    // クライアント送信値を信頼せず、契約から確定した planId を注入する。
+    // /engine/start では会社プロフィール（E-E-A-T用の検証済み事実）もサーバー側で注入する。
     const raw = await request.text();
     try {
       const parsed = raw ? JSON.parse(raw) : {};
       parsed.planId = access.planId;
+
+      if (joinedPath === "engine/start") {
+        try {
+          const membership = await prisma.membership.findFirst({
+            where: { userId },
+            orderBy: { createdAt: "asc" },
+          });
+          if (membership) {
+            const ws = await prisma.workspace.findUnique({
+              where: { id: membership.workspaceId },
+              select: { metadata: true },
+            });
+            const profile = (ws?.metadata as Record<string, unknown> | null)
+              ?.companyProfile;
+            if (profile) parsed.companyProfile = profile;
+          }
+        } catch (e) {
+          console.warn("[EngineProxy] companyProfile lookup failed:", e);
+        }
+      }
+
       preparedBody = JSON.stringify(parsed);
     } catch {
       preparedBody = raw;

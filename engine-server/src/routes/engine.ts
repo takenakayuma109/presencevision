@@ -54,6 +54,7 @@ router.post("/start", (req: Request, res: Response) => {
       createdAt: project.createdAt ? new Date(project.createdAt) : new Date(),
       cmsConfig: project.cmsConfig,
       planId: project.planId,
+      companyProfile: project.companyProfile,
     };
 
     startProject(fullProject);
@@ -148,6 +149,7 @@ router.post("/run-cycle", async (req: Request, res: Response) => {
       createdAt: project.createdAt ? new Date(project.createdAt) : new Date(),
       cmsConfig: project.cmsConfig,
       planId: project.planId,
+      companyProfile: project.companyProfile,
     };
 
     // Run cycle asynchronously and return immediately

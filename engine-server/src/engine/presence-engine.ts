@@ -48,7 +48,10 @@ import {
   addDiscoveredKeywords,
   getNextKeywordBatch,
   markKeywordProcessed,
+  requeueKeyword,
 } from "./project-state.js";
+import { monitorRankings } from "./tasks/ranking-monitor.js";
+import { adjustStrategy } from "./tasks/strategy-adjuster.js";
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -82,6 +85,8 @@ export interface PresenceProject {
   planId?: PlanTier;
   createdAt: Date;
   cmsConfig?: CmsConfig;
+  /** 会社プロフィール（E-E-A-T用に記事生成プロンプトへ供給。ダッシュボードから注入） */
+  companyProfile?: Record<string, unknown>;
 }
 
 export type PresenceMethod =
@@ -496,8 +501,10 @@ async function runCycle(project: PresenceProject, cycleNumber = 0): Promise<Cycl
 
     // --- SEOコンテンツ生成 ---
     if (project.methods.includes("SEO") || project.methods.includes("ContentMarketing")) {
-      for (const keyword of cycleKeywords) {
+      for (const [kwIndex, keyword] of cycleKeywords.entries()) {
         await sleep(OLLAMA_COOLDOWN_MS);
+        // サイクル先頭のキーワードは pillar記事(flagship=Opus 4.8)、残りは量産(bulk=Haiku等)
+        const tier = kwIndex === 0 ? "flagship" : "bulk";
         const { result: article, retryLog: articleRetryLog } = await runWithRetry(`SEO article "${keyword}" (${country})`, () =>
           generateSeoArticle({
             projectId: project.id,
@@ -509,6 +516,8 @@ async function runCycle(project: PresenceProject, cycleNumber = 0): Promise<Cycl
             language,
             brandName: project.brandName,
             planId: project.planId,
+            tier,
+            companyProfile: project.companyProfile,
           }),
         );
 
@@ -649,6 +658,64 @@ async function runCycle(project: PresenceProject, cycleNumber = 0): Promise<Cycl
   // 自律ループ: 今サイクルで使った発見キーワードを処理済みにする（次サイクルは別KWを拾う）
   for (const kw of discoveredBatch) {
     markKeywordProcessed(project.id, kw);
+  }
+
+  // --- Phase 7: 自己調整ループ（順位監視 → 戦略調整 → キュー再投入）---
+  // 1日1回（runSerpLlm）のみ、主要国で実行。惜しい/落ちたキーワードを次サイクルへ再投入し、
+  // 「監視して戦略を自己調整する」という製品の旗印を実際に機能させる。
+  if (runSerpLlm && cycleKeywords.length > 0) {
+    const adjustCountry = project.targetCountries[0] ?? "JP";
+    const adjustLang = COUNTRY_LANGUAGES[adjustCountry] ?? "ja";
+    try {
+      const rankingRecords = await monitorRankings({
+        projectId: project.id,
+        taskId: `${cycleId}-ranking`,
+        publishedContent: cycleKeywords.map((kw) => ({
+          keyword: kw,
+          url: project.targetUrl,
+          language: adjustLang,
+        })),
+        targetUrl: project.targetUrl,
+        country: adjustCountry,
+        language: adjustLang,
+      });
+      tasksExecuted++;
+
+      if (rankingRecords.length > 0) {
+        const adjustments = await adjustStrategy({
+          projectId: project.id,
+          taskId: `${cycleId}-strategy`,
+          rankingHistory: rankingRecords,
+          processedKeywords: cycleKeywords,
+          brandName: project.brandName,
+          country: adjustCountry,
+          language: adjustLang,
+        });
+        tasksExecuted++;
+
+        // フィードバック: 優先/再最適化/拡張のキーワードを次サイクルで再生成
+        let requeued = 0;
+        for (const adj of adjustments) {
+          if (
+            adj.action === "prioritize" ||
+            adj.action === "re-optimize" ||
+            adj.action === "expand"
+          ) {
+            requeueKeyword(project.id, adj.keyword, {
+              language: adjustLang,
+              country: adjustCountry,
+            });
+            requeued++;
+          }
+        }
+        console.log(
+          `[Engine] Self-adjust: ${adjustments.length} adjustment(s), ${requeued} keyword(s) requeued`,
+        );
+      }
+    } catch (error) {
+      console.error(`[Engine] Self-adjustment phase failed:`, error);
+      tasksFailed++;
+    }
   }
 
   const completedAt = new Date();

@@ -80,6 +80,32 @@ export function markKeywordProcessed(
 }
 
 /**
+ * 戦略調整による再投入: 処理済みフラグを外し、キューに無ければ追加する。
+ * 順位が落ちた/あと一歩のキーワードを次サイクルで再生成（re-optimize/prioritize/expand）するため。
+ */
+export function requeueKeyword(
+  projectId: string,
+  keyword: string,
+  meta?: { language?: string; country?: string },
+): void {
+  const state = getProjectState(projectId);
+  state.processedKeywords.delete(keyword.toLowerCase());
+  const exists = state.discoveredKeywords.some(
+    (k) => k.keyword.toLowerCase() === keyword.toLowerCase(),
+  );
+  if (!exists) {
+    state.discoveredKeywords.push({
+      keyword,
+      source: "llm_expansion",
+      intent: "informational",
+      language: meta?.language ?? "ja",
+      country: meta?.country ?? "JP",
+      parentKeyword: keyword,
+    });
+  }
+}
+
+/**
  * Add discovered keywords to the project queue (deduplicates).
  */
 export function addDiscoveredKeywords(

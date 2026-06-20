@@ -271,7 +271,7 @@ const comparisonRows = [
 /*  Component                                                          */
 /* ------------------------------------------------------------------ */
 export function LandingPage() {
-  const { t, messages } = useTranslation();
+  const { t } = useTranslation();
   const { dark, toggleTheme } = useThemeStore();
   const [isAnnual, setIsAnnual] = useState(false);
   const [checkoutLoading, setCheckoutLoading] = useState<string | null>(null);
@@ -416,7 +416,7 @@ export function LandingPage() {
         </nav>
 
         {/* ========== Hero ========== */}
-        <section className="relative overflow-hidden pt-32 pb-20 md:pt-44 md:pb-32">
+        <section className="relative overflow-hidden pt-28 pb-20 md:pt-36 md:pb-28">
           {/* Animated particle background */}
           <div className="absolute inset-0">
             <div className="absolute inset-0 bg-gradient-to-br from-blue-600/10 via-violet-600/10 to-cyan-600/10" />
@@ -425,59 +425,41 @@ export function LandingPage() {
             <HeroParticles />
           </div>
 
-          <div className="relative z-10 mx-auto max-w-7xl px-6 text-center">
-            {/* Big logo lockup — first view */}
-            <div className="animate-fade-in-up mb-8 flex items-center justify-center gap-3 md:gap-4">
-              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-500 to-violet-600 shadow-lg shadow-blue-500/30 md:h-[4.5rem] md:w-[4.5rem]">
-                <Sparkles className="h-7 w-7 text-white md:h-9 md:w-9" />
-              </div>
-              <span className="bg-gradient-to-r from-blue-500 to-violet-500 bg-clip-text text-4xl font-extrabold tracking-tight text-transparent md:text-6xl">
-                PresenceVision
-              </span>
-            </div>
+          <div className="relative z-10 mx-auto max-w-5xl px-6 text-center">
+            {/* Eyebrow — category kicker (muted; gradient is reserved for the h1 accent) */}
+            <p className="animate-fade-in-up mx-auto mb-5 max-w-xl text-xs font-semibold tracking-wide text-muted-foreground md:text-sm">
+              {t("landing.hero.powerword2")}
+            </p>
 
-            {/* Power word — GEO is the new SEO (2026 global trend) */}
-            <div className="animate-fade-in-up mb-6">
-              <p className="text-2xl font-extrabold leading-tight tracking-tight md:text-4xl">
-                <span className="bg-gradient-to-r from-blue-500 via-violet-500 to-cyan-500 bg-clip-text text-transparent">
-                  {t("landing.hero.powerword1")}
-                </span>
-              </p>
-              <p className="mx-auto mt-2 max-w-2xl text-sm font-semibold text-muted-foreground md:text-base">
-                {t("landing.hero.powerword2")}
-              </p>
-            </div>
-
-            <Badge variant="secondary" className="animate-fade-in-up mb-6 inline-flex items-center gap-1.5 px-4 py-1.5 text-sm">
+            <Badge variant="secondary" className="animate-fade-in-up mb-7 inline-flex items-center gap-1.5 rounded-full px-4 py-1.5 text-xs md:text-sm">
               <Zap className="h-3.5 w-3.5 text-amber-500" />
               {t("landing.hero.badge")}
             </Badge>
 
-            <h1 className="animate-fade-in-up-delay-1 mx-auto max-w-4xl whitespace-pre-line text-4xl font-bold leading-tight tracking-tight md:text-6xl md:leading-tight">
-              {t("landing.hero.title")}
+            {/* h1 — the single hero focus; final line accented with the gradient */}
+            <h1 className="animate-fade-in-up-delay-1 mx-auto max-w-3xl whitespace-pre-line text-[2rem] font-bold leading-[1.3] tracking-tight text-foreground md:text-[3.5rem] md:leading-[1.25]">
+              {t("landing.hero.title")
+                .split("\n")
+                .map((line, i, arr) => (
+                  <span
+                    key={i}
+                    className={
+                      arr.length > 1 && i === arr.length - 1
+                        ? "block bg-gradient-to-r from-blue-500 via-violet-500 to-cyan-500 bg-clip-text text-transparent"
+                        : "block"
+                    }
+                  >
+                    {line}
+                  </span>
+                ))}
             </h1>
 
-            <p className="animate-fade-in-up-delay-2 mx-auto mt-6 max-w-3xl whitespace-pre-line text-xl text-muted-foreground md:text-2xl">
+            {/* subtitle — single paragraph, natural wrapping (no forced breaks) */}
+            <p className="animate-fade-in-up-delay-2 mx-auto mt-7 max-w-2xl text-base leading-[1.9] text-muted-foreground md:text-lg">
               {t("landing.hero.subtitle")}
             </p>
 
-            {/* Effects */}
-            <div className="animate-fade-in-up-delay-2 mx-auto mt-8 flex flex-wrap items-center justify-center gap-3">
-              <span className="text-sm font-semibold text-foreground">{t("landing.hero.effects.label")}:</span>
-              {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-              {((messages as any)?.landing?.hero?.effects?.items as string[] | undefined)?.map((item, i) => (
-                <Badge key={i} variant="secondary" className="gap-1.5 px-3 py-1.5 text-sm">
-                  <Check className="h-3.5 w-3.5 text-green-500" />
-                  {item}
-                </Badge>
-              ))}
-            </div>
-
-            <p className="animate-fade-in-up-delay-2 mx-auto mt-6 max-w-2xl text-sm italic text-muted-foreground/80">
-              {t("landing.hero.disruption")}
-            </p>
-
-            <div className="animate-fade-in-up-delay-3 mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
+            <div className="animate-fade-in-up-delay-3 mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row">
               <Link href={session?.user ? "/dashboard" : "/sign-in"}>
                 <Button size="lg" className="h-12 gap-2 px-8 text-base">
                   {session?.user ? "ダッシュボード" : t("landing.cta.startFree")}
@@ -492,17 +474,17 @@ export function LandingPage() {
             </div>
 
             {/* Stats bar */}
-            <div className="animate-fade-in-up-delay-3 mx-auto mt-16 grid max-w-3xl grid-cols-3 gap-8 rounded-2xl border border-border/50 bg-card/50 p-6 backdrop-blur-sm">
+            <div className="animate-fade-in-up-delay-3 mx-auto mt-12 grid max-w-2xl grid-cols-3 gap-6 rounded-2xl border border-border/50 bg-card/50 p-6 backdrop-blur-sm">
               <div>
-                <div className="text-2xl font-bold md:text-3xl">SEO+GEO</div>
+                <div className="text-xl font-bold md:text-2xl">SEO+GEO</div>
                 <div className="mt-1 text-xs text-muted-foreground md:text-sm">検索もAIも対応</div>
               </div>
               <div>
-                <div className="text-2xl font-bold md:text-3xl">24時間</div>
+                <div className="text-xl font-bold md:text-2xl">24時間</div>
                 <div className="mt-1 text-xs text-muted-foreground md:text-sm">自律稼働</div>
               </div>
               <div>
-                <div className="text-2xl font-bold md:text-3xl">承認制</div>
+                <div className="text-xl font-bold md:text-2xl">承認制</div>
                 <div className="mt-1 text-xs text-muted-foreground md:text-sm">公開前に人間が確認</div>
               </div>
             </div>

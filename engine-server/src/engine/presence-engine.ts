@@ -44,6 +44,11 @@ import { discoverKeywords } from "./tasks/keyword-discoverer.js";
 import { getBrowserPool } from "./browser-pool.js";
 import { saveProject, removeProject, getActiveProjectsFromDB, saveArticle } from "../db/index.js";
 import { syncCycleToFrontend } from "./frontend-sync.js";
+import {
+  addDiscoveredKeywords,
+  getNextKeywordBatch,
+  markKeywordProcessed,
+} from "./project-state.js";
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -298,12 +303,27 @@ async function runCycle(project: PresenceProject, cycleNumber = 0): Promise<Cycl
         maxKeywords: 20,
       });
       tasksExecuted++;
-      console.log(`[Engine] Keyword discovery: found ${discovered.length} keywords`);
+      // 自律ループ: 発見キーワードをキューに投入（旧実装は console.log のみで破棄していた）
+      const queued = addDiscoveredKeywords(project.id, discovered);
+      console.log(
+        `[Engine] Keyword discovery: found ${discovered.length}, queued ${queued} new keyword(s)`,
+      );
     } catch (error) {
       console.error(`[Engine] Keyword discovery failed:`, error);
       tasksFailed++;
     }
   }
+
+  // --- 自律ループ: 今サイクルでコンテンツ化するキーワードを決定 ---
+  // 発見キューの未処理キーワードを優先し、足りなければ静的シードで補完する。
+  // （旧実装は発見結果を破棄し、常に project.keywords.slice(0,3) を使っていた）
+  const discoveredBatch = getNextKeywordBatch(project.id, 3).map((k) => k.keyword);
+  const cycleKeywords = Array.from(
+    new Set([...discoveredBatch, ...project.keywords.slice(0, 3)].filter(Boolean)),
+  ).slice(0, 3);
+  console.log(
+    `[Engine] Cycle keywords (discovered=${discoveredBatch.length}, total=${cycleKeywords.length}): ${cycleKeywords.join(", ")}`,
+  );
 
   // 各国×各メソッドで実行
   for (const country of project.targetCountries) {
@@ -476,7 +496,7 @@ async function runCycle(project: PresenceProject, cycleNumber = 0): Promise<Cycl
 
     // --- SEOコンテンツ生成 ---
     if (project.methods.includes("SEO") || project.methods.includes("ContentMarketing")) {
-      for (const keyword of project.keywords.slice(0, 3)) {
+      for (const keyword of cycleKeywords) {
         await sleep(OLLAMA_COOLDOWN_MS);
         const { result: article, retryLog: articleRetryLog } = await runWithRetry(`SEO article "${keyword}" (${country})`, () =>
           generateSeoArticle({
@@ -624,6 +644,11 @@ async function runCycle(project: PresenceProject, cycleNumber = 0): Promise<Cycl
         }
       }
     }
+  }
+
+  // 自律ループ: 今サイクルで使った発見キーワードを処理済みにする（次サイクルは別KWを拾う）
+  for (const kw of discoveredBatch) {
+    markKeywordProcessed(project.id, kw);
   }
 
   const completedAt = new Date();

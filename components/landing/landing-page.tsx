@@ -445,7 +445,7 @@ export function LandingPage() {
               {t("landing.hero.title")}
             </h1>
 
-            <p className="animate-fade-in-up-delay-2 mx-auto mt-6 max-w-3xl text-lg text-muted-foreground md:text-xl">
+            <p className="animate-fade-in-up-delay-2 mx-auto mt-6 max-w-3xl text-xl text-muted-foreground md:text-2xl">
               {t("landing.hero.subtitle")}
             </p>
 
@@ -506,7 +506,7 @@ export function LandingPage() {
             <div className="scroll-animate text-center">
               <Badge variant="secondary" className="mb-4">{t("landing.simple.badge")}</Badge>
               <h2 className="text-3xl font-bold leading-snug md:text-4xl">{t("landing.simple.title")}</h2>
-              <p className="mx-auto mt-4 max-w-2xl text-base text-muted-foreground md:text-lg">
+              <p className="mx-auto mt-4 max-w-2xl text-lg text-muted-foreground md:text-xl">
                 {t("landing.simple.subtitle")}
               </p>
             </div>
@@ -524,8 +524,8 @@ export function LandingPage() {
                     <div className={`mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br ${s.color} shadow-lg`}>
                       <s.icon className="h-8 w-8 text-white" />
                     </div>
-                    <h3 className="text-lg font-bold">{t(`landing.simple.${s.key}.title`)}</h3>
-                    <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{t(`landing.simple.${s.key}.desc`)}</p>
+                    <h3 className="text-xl font-bold">{t(`landing.simple.${s.key}.title`)}</h3>
+                    <p className="mt-2 text-base leading-relaxed text-muted-foreground">{t(`landing.simple.${s.key}.desc`)}</p>
                   </div>
                   {i < 2 && (
                     <div className="absolute top-1/2 -right-4 z-10 hidden -translate-y-1/2 md:flex">
@@ -552,7 +552,7 @@ export function LandingPage() {
                     </div>
                     <div className="text-2xl font-bold">{t(`landing.simple.${g.key}.stat`)}</div>
                     <div className="mt-1 text-sm font-semibold">{t(`landing.simple.${g.key}.label`)}</div>
-                    <p className="mt-1 text-xs leading-relaxed text-muted-foreground">{t(`landing.simple.${g.key}.desc`)}</p>
+                    <p className="mt-1 text-sm leading-relaxed text-muted-foreground">{t(`landing.simple.${g.key}.desc`)}</p>
                   </div>
                 ))}
               </div>
@@ -566,7 +566,7 @@ export function LandingPage() {
                 </div>
                 <div>
                   <h4 className="text-base font-bold md:text-lg">{t("landing.simple.resultsTitle")}</h4>
-                  <p className="mt-1 text-sm leading-relaxed text-muted-foreground md:text-base">{t("landing.simple.resultsDesc")}</p>
+                  <p className="mt-1 text-base leading-relaxed text-muted-foreground md:text-base">{t("landing.simple.resultsDesc")}</p>
                 </div>
               </div>
             </div>
@@ -581,8 +581,8 @@ export function LandingPage() {
           <div className="mx-auto max-w-7xl px-6">
             <div className="scroll-animate text-center">
               <Badge variant="secondary" className="mb-4">Features</Badge>
-              <h2 className="text-3xl font-bold md:text-4xl">{t("landing.features.sectionTitle")}</h2>
-              <p className="mx-auto mt-4 max-w-2xl text-base text-muted-foreground md:text-lg">
+              <h2 className="text-4xl font-bold md:text-5xl">{t("landing.features.sectionTitle")}</h2>
+              <p className="mx-auto mt-4 max-w-2xl text-lg text-muted-foreground md:text-xl">
                 {t("landing.features.sectionSubtitle")}
               </p>
             </div>
@@ -595,10 +595,10 @@ export function LandingPage() {
                       <div className={`mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br ${f.gradient} shadow-lg`}>
                         <f.icon className="h-6 w-6 text-white" />
                       </div>
-                      <CardTitle className="text-lg">{t(f.titleKey)}</CardTitle>
+                      <CardTitle className="text-xl">{t(f.titleKey)}</CardTitle>
                     </CardHeader>
                     <CardContent>
-                      <p className="text-base text-muted-foreground leading-relaxed">{t(f.descKey)}</p>
+                      <p className="text-lg text-muted-foreground leading-relaxed">{t(f.descKey)}</p>
                     </CardContent>
                     {/* Hover gradient line */}
                     <div className={`absolute bottom-0 left-0 h-0.5 w-0 bg-gradient-to-r ${f.gradient} transition-all duration-500 group-hover:w-full`} />
@@ -614,8 +614,8 @@ export function LandingPage() {
           <div className="mx-auto max-w-7xl px-6">
             <div className="scroll-animate text-center">
               <Badge variant="secondary" className="mb-4">Trust &amp; Ethics</Badge>
-              <h2 className="text-3xl font-bold md:text-4xl">{t("landing.trust.title")}</h2>
-              <p className="mx-auto mt-4 max-w-2xl text-base text-muted-foreground md:text-lg">
+              <h2 className="text-4xl font-bold md:text-5xl">{t("landing.trust.title")}</h2>
+              <p className="mx-auto mt-4 max-w-2xl text-lg text-muted-foreground md:text-xl">
                 {t("landing.trust.subtitle")}
               </p>
             </div>
@@ -630,12 +630,12 @@ export function LandingPage() {
                       <ShieldCheck className="h-6 w-6 text-white" />
                     </div>
                     <div className="flex items-center gap-2">
-                      <CardTitle className="text-lg">{t("landing.trust.verified.title")}</CardTitle>
+                      <CardTitle className="text-xl">{t("landing.trust.verified.title")}</CardTitle>
                       <Badge variant="outline" className="text-xs">{t("landing.trust.verified.badge")}</Badge>
                     </div>
                   </CardHeader>
                   <CardContent>
-                    <p className="text-base text-muted-foreground leading-relaxed">{t("landing.trust.verified.desc")}</p>
+                    <p className="text-lg text-muted-foreground leading-relaxed">{t("landing.trust.verified.desc")}</p>
                   </CardContent>
                   <div className="absolute bottom-0 left-0 h-0.5 w-0 bg-gradient-to-r from-emerald-500 to-teal-500 transition-all duration-500 group-hover:w-full" />
                 </Card>
@@ -649,12 +649,12 @@ export function LandingPage() {
                       <FileCheck2 className="h-6 w-6 text-white" />
                     </div>
                     <div className="flex items-center gap-2">
-                      <CardTitle className="text-lg">{t("landing.trust.evidence.title")}</CardTitle>
+                      <CardTitle className="text-xl">{t("landing.trust.evidence.title")}</CardTitle>
                       <Badge variant="outline" className="text-xs">{t("landing.trust.evidence.badge")}</Badge>
                     </div>
                   </CardHeader>
                   <CardContent>
-                    <p className="text-base text-muted-foreground leading-relaxed">{t("landing.trust.evidence.desc")}</p>
+                    <p className="text-lg text-muted-foreground leading-relaxed">{t("landing.trust.evidence.desc")}</p>
                   </CardContent>
                   <div className="absolute bottom-0 left-0 h-0.5 w-0 bg-gradient-to-r from-blue-500 to-indigo-500 transition-all duration-500 group-hover:w-full" />
                 </Card>
@@ -668,12 +668,12 @@ export function LandingPage() {
                       <TrendingUp className="h-6 w-6 text-white" />
                     </div>
                     <div className="flex items-center gap-2">
-                      <CardTitle className="text-lg">{t("landing.trust.score.title")}</CardTitle>
+                      <CardTitle className="text-xl">{t("landing.trust.score.title")}</CardTitle>
                       <Badge variant="outline" className="text-xs">{t("landing.trust.score.badge")}</Badge>
                     </div>
                   </CardHeader>
                   <CardContent>
-                    <p className="text-base text-muted-foreground leading-relaxed">{t("landing.trust.score.desc")}</p>
+                    <p className="text-lg text-muted-foreground leading-relaxed">{t("landing.trust.score.desc")}</p>
                   </CardContent>
                   <div className="absolute bottom-0 left-0 h-0.5 w-0 bg-gradient-to-r from-violet-500 to-purple-500 transition-all duration-500 group-hover:w-full" />
                 </Card>
@@ -692,19 +692,19 @@ export function LandingPage() {
                 <div className="grid gap-4 md:grid-cols-2">
                   <div className="rounded-xl border border-border/30 bg-background/50 p-4">
                     <div className="mb-1 text-base font-semibold">{t("landing.trust.legal.stealth.title")}</div>
-                    <p className="text-sm text-muted-foreground leading-relaxed">{t("landing.trust.legal.stealth.desc")}</p>
+                    <p className="text-base text-muted-foreground leading-relaxed">{t("landing.trust.legal.stealth.desc")}</p>
                   </div>
                   <div className="rounded-xl border border-border/30 bg-background/50 p-4">
                     <div className="mb-1 text-base font-semibold">{t("landing.trust.legal.ftc.title")}</div>
-                    <p className="text-sm text-muted-foreground leading-relaxed">{t("landing.trust.legal.ftc.desc")}</p>
+                    <p className="text-base text-muted-foreground leading-relaxed">{t("landing.trust.legal.ftc.desc")}</p>
                   </div>
                   <div className="rounded-xl border border-border/30 bg-background/50 p-4">
                     <div className="mb-1 text-base font-semibold">{t("landing.trust.legal.dsa.title")}</div>
-                    <p className="text-sm text-muted-foreground leading-relaxed">{t("landing.trust.legal.dsa.desc")}</p>
+                    <p className="text-base text-muted-foreground leading-relaxed">{t("landing.trust.legal.dsa.desc")}</p>
                   </div>
                   <div className="rounded-xl border border-border/30 bg-background/50 p-4">
                     <div className="mb-1 text-base font-semibold">{t("landing.trust.legal.google.title")}</div>
-                    <p className="text-sm text-muted-foreground leading-relaxed">{t("landing.trust.legal.google.desc")}</p>
+                    <p className="text-base text-muted-foreground leading-relaxed">{t("landing.trust.legal.google.desc")}</p>
                   </div>
                 </div>
               </div>
@@ -720,8 +720,8 @@ export function LandingPage() {
           <div className="mx-auto max-w-7xl px-6">
             <div className="scroll-animate text-center">
               <Badge variant="secondary" className="mb-4">How It Works</Badge>
-              <h2 className="text-3xl font-bold md:text-4xl">{t("landing.howItWorks.title")}</h2>
-              <p className="mx-auto mt-4 max-w-2xl text-base text-muted-foreground md:text-lg">
+              <h2 className="text-4xl font-bold md:text-5xl">{t("landing.howItWorks.title")}</h2>
+              <p className="mx-auto mt-4 max-w-2xl text-lg text-muted-foreground md:text-xl">
                 {t("landing.howItWorks.subtitle")}
               </p>
             </div>
@@ -732,7 +732,7 @@ export function LandingPage() {
                   <div className="relative flex h-full min-h-[200px] flex-col rounded-2xl border border-border/50 bg-card/50 p-6 backdrop-blur-sm">
                     <div className="mb-4 text-4xl font-bold text-blue-500/20">{step.num}</div>
                     <h3 className="mb-2 text-lg font-semibold">{t(step.titleKey)}</h3>
-                    <p className="text-base text-muted-foreground leading-relaxed">{t(step.descKey)}</p>
+                    <p className="text-lg text-muted-foreground leading-relaxed">{t(step.descKey)}</p>
                   </div>
                   {i < steps.length - 1 && (
                     <div className="absolute top-1/2 -right-4 hidden -translate-y-1/2 text-muted-foreground/30 lg:block">
@@ -747,7 +747,7 @@ export function LandingPage() {
             <div className="scroll-animate mt-20">
               <div className="rounded-3xl border border-border/50 bg-gradient-to-br from-blue-500/5 via-violet-500/5 to-cyan-500/5 p-8 md:p-12">
                 <h3 className="mb-2 text-center text-xl font-bold md:text-2xl">{t("landing.hubSpoke.title")}</h3>
-                <p className="mx-auto mb-10 max-w-xl text-center text-base text-muted-foreground md:text-lg">
+                <p className="mx-auto mb-10 max-w-xl text-center text-lg text-muted-foreground md:text-xl">
                   {t("landing.hubSpoke.subtitle")}
                 </p>
 
@@ -816,7 +816,7 @@ export function LandingPage() {
                 </div>
 
                 {/* Explanation paragraph */}
-                <p className="mx-auto mt-10 max-w-2xl text-center text-base text-muted-foreground leading-relaxed md:text-lg">
+                <p className="mx-auto mt-10 max-w-2xl text-center text-lg text-muted-foreground leading-relaxed md:text-xl">
                   {t("landing.hubSpoke.explanation")}
                 </p>
               </div>
@@ -832,8 +832,8 @@ export function LandingPage() {
           <div className="mx-auto max-w-7xl px-6">
             <div className="scroll-animate text-center">
               <Badge variant="secondary" className="mb-4">Channels</Badge>
-              <h2 className="text-3xl font-bold md:text-4xl">{t("landing.channels.title")}</h2>
-              <p className="mx-auto mt-4 max-w-2xl text-base text-muted-foreground md:text-lg">
+              <h2 className="text-4xl font-bold md:text-5xl">{t("landing.channels.title")}</h2>
+              <p className="mx-auto mt-4 max-w-2xl text-lg text-muted-foreground md:text-xl">
                 {t("landing.channels.subtitle")}
               </p>
             </div>
@@ -870,8 +870,8 @@ export function LandingPage() {
           <div className="mx-auto max-w-7xl px-6">
             <div className="scroll-animate text-center">
               <Badge variant="secondary" className="mb-4">Pricing</Badge>
-              <h2 className="text-3xl font-bold md:text-4xl">{t("landing.pricing.title")}</h2>
-              <p className="mx-auto mt-4 max-w-2xl text-base text-muted-foreground md:text-lg">
+              <h2 className="text-4xl font-bold md:text-5xl">{t("landing.pricing.title")}</h2>
+              <p className="mx-auto mt-4 max-w-2xl text-lg text-muted-foreground md:text-xl">
                 {t("landing.pricing.subtitle")}
               </p>
             </div>
@@ -947,7 +947,7 @@ export function LandingPage() {
                     <CardContent className="flex flex-1 flex-col">
                       <ul className="flex-1 space-y-3">
                         {plan.features.map((feat, fi) => (
-                          <li key={fi} className="flex items-start gap-3 text-sm">
+                          <li key={fi} className="flex items-start gap-3 text-base">
                             <Check className="mt-0.5 h-4 w-4 shrink-0 text-blue-500" />
                             <span>{feat}</span>
                           </li>
@@ -982,8 +982,8 @@ export function LandingPage() {
           <div className="mx-auto max-w-7xl px-6">
             <div className="scroll-animate text-center">
               <Badge variant="secondary" className="mb-4">Schedule</Badge>
-              <h2 className="text-3xl font-bold md:text-4xl">24時間自律スケジュール</h2>
-              <p className="mx-auto mt-4 max-w-2xl text-base text-muted-foreground md:text-lg">
+              <h2 className="text-4xl font-bold md:text-5xl">24時間自律スケジュール</h2>
+              <p className="mx-auto mt-4 max-w-2xl text-lg text-muted-foreground md:text-xl">
                 各プランのAIエンジン稼働スケジュールを比較
               </p>
             </div>
@@ -1129,7 +1129,7 @@ export function LandingPage() {
           <div className="mx-auto max-w-5xl px-6">
             <div className="scroll-animate text-center">
               <Badge variant="secondary" className="mb-4">Comparison</Badge>
-              <h2 className="text-3xl font-bold md:text-4xl">{t("landing.comparison.title")}</h2>
+              <h2 className="text-4xl font-bold md:text-5xl">{t("landing.comparison.title")}</h2>
             </div>
 
             <div className="scroll-animate mt-12 overflow-x-auto">
@@ -1179,8 +1179,8 @@ export function LandingPage() {
           <div className="mx-auto max-w-5xl px-6">
             <div className="scroll-animate text-center">
               <Badge variant="secondary" className="mb-4">vs Ad Tools</Badge>
-              <h2 className="text-3xl font-bold md:text-4xl">{t("landing.adDiff.title")}</h2>
-              <p className="mx-auto mt-4 max-w-3xl text-base text-muted-foreground md:text-lg">
+              <h2 className="text-4xl font-bold md:text-5xl">{t("landing.adDiff.title")}</h2>
+              <p className="mx-auto mt-4 max-w-3xl text-lg text-muted-foreground md:text-xl">
                 {t("landing.adDiff.subtitle")}
               </p>
             </div>
@@ -1228,7 +1228,7 @@ export function LandingPage() {
             <div className="scroll-animate mt-10">
               <div className="relative rounded-2xl border border-blue-500/20 bg-gradient-to-r from-blue-500/5 to-violet-500/5 p-6 md:p-8">
                 <div className="absolute top-0 left-6 h-full w-1 rounded-full bg-gradient-to-b from-blue-500 to-violet-500" />
-                <p className="pl-6 text-base text-muted-foreground leading-relaxed md:text-lg">
+                <p className="pl-6 text-lg text-muted-foreground leading-relaxed md:text-xl">
                   {t("landing.adDiff.complementNote")}
                 </p>
               </div>
@@ -1247,7 +1247,7 @@ export function LandingPage() {
               <div className="animate-pulse-glow absolute right-1/4 bottom-0 h-64 w-64 rounded-full bg-violet-500/10 blur-3xl" style={{ animationDelay: "2s" }} />
 
               <div className="relative">
-                <h2 className="text-3xl font-bold md:text-4xl">
+                <h2 className="text-4xl font-bold md:text-5xl">
                   {t("landing.cta.bottomTitle")}
                 </h2>
                 <p className="mx-auto mt-4 max-w-xl text-muted-foreground">

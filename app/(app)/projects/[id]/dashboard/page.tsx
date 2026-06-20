@@ -1076,6 +1076,15 @@ export default function ProjectDashboardPage({
               最終更新: {lastRefresh.toLocaleTimeString("ja-JP", { hour: "2-digit", minute: "2-digit", second: "2-digit" })}
             </span>
           )}
+          <a
+            href={`/companies/${projectId}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-md bg-gradient-to-r from-blue-600 to-violet-600 text-white hover:opacity-90 transition-opacity"
+          >
+            <Globe className="h-3 w-3" />
+            公開Hubを見る
+          </a>
           <button
             onClick={handleRefresh}
             className="flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-md bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 transition-colors"
@@ -1085,6 +1094,27 @@ export default function ProjectDashboardPage({
           </button>
         </div>
       </div>
+
+      {/* Public Hub banner — generated articles are published here */}
+      <a
+        href={`/companies/${projectId}`}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="flex items-center justify-between rounded-xl border border-blue-500/30 bg-gradient-to-r from-blue-500/10 to-violet-500/10 p-4 transition-colors hover:border-blue-500/60"
+      >
+        <div className="flex items-center gap-3">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-blue-500 to-violet-600">
+            <Globe className="h-5 w-5 text-white" />
+          </div>
+          <div>
+            <div className="text-sm font-semibold">あなたの公開サイト（自社ナレッジHub）</div>
+            <div className="text-xs text-muted-foreground">
+              AIが生成した記事はここに公開されています。クリックで開く（新しいタブ）
+            </div>
+          </div>
+        </div>
+        <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" />
+      </a>
 
       {/* Error alerts */}
       {analyticsError && (

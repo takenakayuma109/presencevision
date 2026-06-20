@@ -576,6 +576,111 @@ export function LandingPage() {
         {/* ========== Section Divider ========== */}
         <div className="border-t border-border/50" />
 
+        {/* ========== What/Where/How in detail (beginner) ========== */}
+        <section className="py-16 md:py-24">
+          <div className="mx-auto max-w-6xl px-6">
+            <div className="scroll-animate text-center">
+              <Badge variant="secondary" className="mb-4">仕組み</Badge>
+              <h2 className="text-4xl font-bold leading-snug md:text-5xl">毎月、何を・どこに・どう作るの？</h2>
+              <p className="mx-auto mt-4 max-w-2xl text-lg text-muted-foreground md:text-xl">
+                リテラシー0でも大丈夫。AIが作るもの・公開する場所・作り方を、ぜんぶ見える化しました。
+              </p>
+            </div>
+
+            {/* ① WHAT — 3 content types + images */}
+            <div className="scroll-animate mt-14">
+              <h3 className="text-center text-xl font-bold md:text-2xl">① AIが作る「3種類」のコンテンツ</h3>
+              <div className="mt-8 grid gap-6 md:grid-cols-3">
+                {([
+                  { icon: FileText, color: "from-blue-500 to-cyan-500", title: "SEO記事（読み物）", desc: "あなたの専門知識やサービスを伝える記事。重要テーマはプレミアム（Opus 4.8）で深く、数はHaikuで幅広く自動生成します。" },
+                  { icon: BookOpen, color: "from-violet-500 to-purple-500", title: "FAQ（よくある質問）", desc: "「〇〇とは？」にAIが答えやすいQ&A形式。ChatGPTやGeminiなどのAIに引用されやすくなります。" },
+                  { icon: FileCheck2, color: "from-emerald-500 to-green-500", title: "構造化データ", desc: "Google・AIが“理解”するための裏側のタグ（会社情報・FAQ・地域情報）。Schema.org準拠で機械可読に。" },
+                ] as const).map((c) => (
+                  <div key={c.title} className="rounded-2xl border border-border/50 bg-card/50 p-6 backdrop-blur-sm">
+                    <div className={`mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br ${c.color} shadow-lg`}>
+                      <c.icon className="h-7 w-7 text-white" />
+                    </div>
+                    <h4 className="text-lg font-bold">{c.title}</h4>
+                    <p className="mt-2 text-base leading-relaxed text-muted-foreground">{c.desc}</p>
+                  </div>
+                ))}
+              </div>
+              {/* Image note (honest) */}
+              <div className="mt-6 flex items-start gap-4 rounded-2xl border border-amber-500/20 bg-amber-500/5 p-6">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-amber-500/15">
+                  <Eye className="h-5 w-5 text-amber-500" />
+                </div>
+                <div>
+                  <h4 className="text-base font-bold md:text-lg">画像は「生成しません」</h4>
+                  <p className="mt-1 text-base leading-relaxed text-muted-foreground">
+                    PresenceVisionは“テキスト＋構造化データ”に特化します（検索エンジンや生成AIが“読む”のは文章と構造であり、ここが成果に直結するため）。記事に写真を入れたい場合は、お客様サイトの既存画像をそのままご利用いただけます。
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* ② WHERE — destinations + volume */}
+            <div className="scroll-animate mt-16">
+              <h3 className="text-center text-xl font-bold md:text-2xl">② どこに公開する？（公開前に必ず人間が承認）</h3>
+              <div className="mt-8 grid gap-4 sm:grid-cols-2">
+                {([
+                  { icon: BookOpen, place: "自社ナレッジHub", note: "あなた専用の公開ページ", plan: "全プラン" },
+                  { icon: Globe, place: "あなたのサイト / WordPress", note: "連携で自動投稿（下書き→承認）", plan: "Pro以上" },
+                  { icon: Search, place: "Googleビジネスプロフィール", note: "ローカル投稿で地図・近隣検索を強化", plan: "Pro以上" },
+                  { icon: FileText, place: "技術コミュニティ", note: "Qiita / DEV.to / Hashnode（公式API）", plan: "Enterprise" },
+                ] as const).map((d) => (
+                  <div key={d.place} className="flex items-center gap-4 rounded-xl border border-border/50 bg-card/50 p-5 backdrop-blur-sm">
+                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-blue-500/10">
+                      <d.icon className="h-5 w-5 text-blue-500" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className="font-semibold">{d.place}</span>
+                        <Badge variant="secondary" className="text-xs">{d.plan}</Badge>
+                      </div>
+                      <p className="mt-0.5 text-sm text-muted-foreground">{d.note}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <div className="mt-6 rounded-2xl border border-blue-500/20 bg-gradient-to-r from-blue-500/5 to-violet-500/5 p-6 text-center">
+                <p className="text-base font-semibold md:text-lg">どれくらいの量？</p>
+                <p className="mx-auto mt-2 max-w-3xl text-base leading-relaxed text-muted-foreground md:text-lg">
+                  Starter <span className="font-bold text-foreground">月約150点</span> ／ Professional <span className="font-bold text-foreground">月約1,500点</span>（5サイト）／ Enterprise <span className="font-bold text-foreground">サイト数に応じ拡張</span>
+                </p>
+                <p className="mx-auto mt-2 max-w-3xl text-sm text-muted-foreground">
+                  ※「点」＝ 記事＋FAQ＋構造化データの合計。Googleの大量生成ポリシー準拠の安全なペース（1日最大6記事/サイト）で運用します。
+                </p>
+              </div>
+            </div>
+
+            {/* ③ HOW — 4 steps */}
+            <div className="scroll-animate mt-16">
+              <h3 className="text-center text-xl font-bold md:text-2xl">③ どうやって作る？（4ステップ・全自動）</h3>
+              <div className="mt-8 grid gap-6 md:grid-cols-4">
+                {([
+                  { icon: Search, color: "from-blue-500 to-cyan-500", title: "キーワードを発見", desc: "あなたの業種・地域から「検索される言葉」をAIが自動で収集します。" },
+                  { icon: Sparkles, color: "from-violet-500 to-purple-500", title: "AIが生成", desc: "記事・FAQ・構造化データを生成。重要テーマはOpus 4.8、量はHaiku。" },
+                  { icon: ShieldCheck, color: "from-amber-500 to-orange-500", title: "人間が承認", desc: "公開前に誤情報・リスクを人がチェック（安全運用）。" },
+                  { icon: TrendingUp, color: "from-emerald-500 to-green-500", title: "監視して自動調整", desc: "公開後、検索順位とAI引用を監視し、結果を見て戦略を自動で見直します。" },
+                ] as const).map((s, i) => (
+                  <div key={s.title} className="rounded-2xl border border-border/50 bg-card/50 p-6 text-center backdrop-blur-sm">
+                    <div className="mb-1 text-sm font-bold text-muted-foreground">STEP {i + 1}</div>
+                    <div className={`mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br ${s.color} shadow-lg`}>
+                      <s.icon className="h-7 w-7 text-white" />
+                    </div>
+                    <h4 className="text-base font-bold">{s.title}</h4>
+                    <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{s.desc}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* ========== Section Divider ========== */}
+        <div className="border-t border-border/50" />
+
         {/* ========== Features Grid ========== */}
         <section id="features" className="scroll-smooth py-20 md:py-32">
           <div className="mx-auto max-w-7xl px-6">

@@ -373,6 +373,21 @@
         ]
       }
     },
+    "simple": {
+      "badge": "Para quem está começando",
+      "title": "Deixe tudo o que é difícil por conta da IA.",
+      "subtitle": "Você só precisa \"colocar o endereço do site da sua empresa\". O resto é com a IA: todos os dias ela escreve artigos e informações sobre a sua empresa na internet e mantém você como uma \"empresa que é encontrada\" no Google, no ChatGPT e nos mapas.",
+      "step1": { "title": "Coloque o endereço do site", "desc": "Basta digitar o endereço do site da sua empresa. Não precisa de nenhum conhecimento técnico." },
+      "step2": { "title": "A IA trabalha sozinha", "desc": "24 horas por dia, a IA cria artigos, perguntas frequentes e informações da empresa e publica nas suas páginas e (se você conectar) no seu Google Business Profile." },
+      "step3": { "title": "Sua empresa passa a ser encontrada", "desc": "Aos poucos, sua empresa começa a aparecer na busca do Google, em IAs como o ChatGPT e também nos mapas." },
+      "getTitle": "O que você vai \"com certeza\" conquistar",
+      "g1": { "stat": "Todo dia", "label": "Mais artigos", "desc": "Sem precisar contratar um redator, o conteúdo cresce sozinho." },
+      "g2": { "stat": "24/7", "label": "Nunca para", "desc": "A IA continua trabalhando enquanto você dorme e nos fins de semana." },
+      "g3": { "stat": "11 idiomas", "label": "Vários idiomas", "desc": "Em português e também para o público de fora, tudo automático." },
+      "g4": { "stat": "Aprovação", "label": "Feito com segurança", "desc": "Publicações mais arriscadas passam pela conferência de uma pessoa, evitando informações erradas." },
+      "resultsTitle": "Os resultados aparecem em \"números reais\"",
+      "resultsDesc": "Posição na busca, citações em IAs, número de artigos publicados e as reações aparecem todos os dias no painel como dados reais. Você acompanha o progresso por fatos, e não \"por intuição\". * Como a posição na busca e as citações em IAs dependem de fatores externos, não garantimos números específicos, mas mostramos as ações e os resultados de forma transparente."
+    },
     "cta": {
       "start": "Começar grátis",
       "startFree": "Começar grátis",

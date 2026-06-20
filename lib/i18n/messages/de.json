@@ -373,6 +373,21 @@
         ]
       }
     },
+    "simple": {
+      "badge": "Für Einsteiger",
+      "title": "Das Komplizierte überlassen Sie einfach der KI.",
+      "subtitle": "Sie müssen nur die Internetadresse Ihrer Firma eingeben. Den Rest erledigt die KI: Sie schreibt jeden Tag Beiträge und Informationen über Ihr Unternehmen ins Internet, damit Sie bei Google, ChatGPT und in Karten dauerhaft gefunden werden.",
+      "step1": { "title": "Adresse eingeben", "desc": "Geben Sie einfach die Adresse Ihrer Firmen-Webseite ein. Fachwissen ist nicht nötig." },
+      "step2": { "title": "Die KI arbeitet von allein", "desc": "Rund um die Uhr erstellt die KI Beiträge, Fragen und Antworten sowie Firmeninformationen und veröffentlicht sie auf Ihren Seiten und (falls verbunden) in Ihrem Google Business Profile." },
+      "step3": { "title": "Ein Unternehmen, das gefunden wird", "desc": "Nach und nach erscheint Ihr Unternehmen überall: in der Google-Suche, bei KI wie ChatGPT und in Karten." },
+      "getTitle": "Das bekommen Sie ganz sicher",
+      "g1": { "stat": "Täglich", "label": "Mehr Beiträge", "desc": "Ohne eigene Texter wachsen Ihre Inhalte ganz von selbst." },
+      "g2": { "stat": "24/7", "label": "Hört nie auf", "desc": "Auch nachts und an Feiertagen arbeitet die KI weiter." },
+      "g3": { "stat": "11 Sprachen", "label": "Mehrsprachig", "desc": "Auf Deutsch und natürlich auch für internationale Kunden, ganz automatisch." },
+      "g4": { "stat": "Mit Freigabe", "label": "Sicher gestaltet", "desc": "Heikle Veröffentlichungen prüft ein Mensch, um Falschinformationen zu vermeiden." },
+      "resultsTitle": "Erfolge sehen Sie in echten Zahlen",
+      "resultsDesc": "Suchplatzierungen, Erwähnungen in KI, Anzahl veröffentlichter Beiträge und Reaktionen werden täglich als echte Daten in Ihrem Dashboard angezeigt. So sehen Sie Ihren Fortschritt anhand von Fakten und nicht nur nach Gefühl. Hinweis: Da Suchplatzierungen und KI-Erwähnungen von äußeren Einflüssen abhängen, garantieren wir keine bestimmten Zahlen. Maßnahmen und Ergebnisse machen wir jedoch transparent sichtbar."
+    },
     "cta": {
       "start": "Kostenlos starten",
       "startFree": "Kostenlos starten",

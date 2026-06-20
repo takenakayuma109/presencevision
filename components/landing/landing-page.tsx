@@ -490,6 +490,82 @@ export function LandingPage() {
         {/* ========== Section Divider ========== */}
         <div className="border-t border-border/50" />
 
+        {/* ========== Simple Intro (beginner-friendly) ========== */}
+        <section className="py-16 md:py-24">
+          <div className="mx-auto max-w-6xl px-6">
+            <div className="scroll-animate text-center">
+              <Badge variant="secondary" className="mb-4">{t("landing.simple.badge")}</Badge>
+              <h2 className="text-3xl font-bold leading-snug md:text-4xl">{t("landing.simple.title")}</h2>
+              <p className="mx-auto mt-4 max-w-2xl text-base text-muted-foreground md:text-lg">
+                {t("landing.simple.subtitle")}
+              </p>
+            </div>
+
+            {/* 3-step flow */}
+            <div className="scroll-animate relative mt-14 grid gap-6 md:grid-cols-3">
+              {([
+                { icon: Search, key: "step1", color: "from-blue-500 to-cyan-500" },
+                { icon: Sparkles, key: "step2", color: "from-violet-500 to-purple-500" },
+                { icon: TrendingUp, key: "step3", color: "from-emerald-500 to-green-500" },
+              ] as const).map((s, i) => (
+                <div key={s.key} className="relative">
+                  <div className="flex h-full flex-col rounded-2xl border border-border/50 bg-card/50 p-6 text-center backdrop-blur-sm">
+                    <div className="mb-1 text-sm font-bold text-muted-foreground">STEP {i + 1}</div>
+                    <div className={`mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br ${s.color} shadow-lg`}>
+                      <s.icon className="h-8 w-8 text-white" />
+                    </div>
+                    <h3 className="text-lg font-bold">{t(`landing.simple.${s.key}.title`)}</h3>
+                    <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{t(`landing.simple.${s.key}.desc`)}</p>
+                  </div>
+                  {i < 2 && (
+                    <div className="absolute top-1/2 -right-4 z-10 hidden -translate-y-1/2 md:flex">
+                      <ArrowRight className="h-6 w-6 text-muted-foreground/40" />
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+
+            {/* What you reliably get */}
+            <div className="scroll-animate mt-16">
+              <h3 className="text-center text-xl font-bold md:text-2xl">{t("landing.simple.getTitle")}</h3>
+              <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                {([
+                  { icon: FileText, key: "g1" },
+                  { icon: Clock, key: "g2" },
+                  { icon: Globe, key: "g3" },
+                  { icon: ShieldCheck, key: "g4" },
+                ] as const).map((g) => (
+                  <div key={g.key} className="rounded-xl border border-border/50 bg-card/50 p-5 text-center backdrop-blur-sm">
+                    <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-blue-500/10">
+                      <g.icon className="h-6 w-6 text-blue-500" />
+                    </div>
+                    <div className="text-2xl font-bold">{t(`landing.simple.${g.key}.stat`)}</div>
+                    <div className="mt-1 text-sm font-semibold">{t(`landing.simple.${g.key}.label`)}</div>
+                    <p className="mt-1 text-xs leading-relaxed text-muted-foreground">{t(`landing.simple.${g.key}.desc`)}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Results are shown as real numbers (honest) */}
+            <div className="scroll-animate mt-10">
+              <div className="flex items-start gap-4 rounded-2xl border border-blue-500/20 bg-gradient-to-r from-blue-500/5 to-violet-500/5 p-6 md:p-8">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-violet-500 shadow-lg">
+                  <BarChart3 className="h-5 w-5 text-white" />
+                </div>
+                <div>
+                  <h4 className="text-base font-bold md:text-lg">{t("landing.simple.resultsTitle")}</h4>
+                  <p className="mt-1 text-sm leading-relaxed text-muted-foreground md:text-base">{t("landing.simple.resultsDesc")}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* ========== Section Divider ========== */}
+        <div className="border-t border-border/50" />
+
         {/* ========== Features Grid ========== */}
         <section id="features" className="scroll-smooth py-20 md:py-32">
           <div className="mx-auto max-w-7xl px-6">

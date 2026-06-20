@@ -373,6 +373,46 @@
         ]
       }
     },
+    "simple": {
+      "badge": "Vous débutez ?",
+      "title": "Le compliqué, laissez l'IA s'en occuper entièrement.",
+      "subtitle": "Tout ce que vous avez à faire, c'est « indiquer l'adresse de votre site ». Ensuite, chaque jour, l'IA rédige des articles et publie les informations de votre entreprise sur Internet, pour que vous restiez une entreprise « facile à trouver » dans Google, ChatGPT et sur les cartes.",
+      "step1": {
+        "title": "Indiquez votre adresse de site",
+        "desc": "Il suffit de saisir l'adresse du site web de votre entreprise. Aucune connaissance technique n'est nécessaire."
+      },
+      "step2": {
+        "title": "L'IA travaille automatiquement",
+        "desc": "24 h/24, l'IA crée des articles, des questions-réponses et des informations sur votre entreprise, puis les publie sur vos pages et (si vous le connectez) sur votre Google Business Profile."
+      },
+      "step3": {
+        "title": "Vous devenez une entreprise facile à trouver",
+        "desc": "Dans la recherche Google, dans les IA comme ChatGPT et sur les cartes, votre entreprise apparaît de mieux en mieux, jour après jour."
+      },
+      "getTitle": "Ce que vous obtenez « à coup sûr »",
+      "g1": {
+        "stat": "Chaque jour",
+        "label": "De nouveaux articles",
+        "desc": "Sans embaucher de rédacteur, votre contenu s'accumule automatiquement."
+      },
+      "g2": {
+        "stat": "24/7",
+        "label": "Jamais à l'arrêt",
+        "desc": "Pendant votre sommeil comme les jours de repos, l'IA continue de travailler."
+      },
+      "g3": {
+        "stat": "11 langues",
+        "label": "Multilingue",
+        "desc": "En japonais bien sûr, mais aussi automatiquement pour l'international."
+      },
+      "g4": {
+        "stat": "Validation",
+        "label": "Conçu pour la sécurité",
+        "desc": "Les publications à risque élevé sont vérifiées par un humain, ce qui évite les informations erronées."
+      },
+      "resultsTitle": "Vos résultats sont visibles en « chiffres réels »",
+      "resultsDesc": "Position dans les recherches, citations par les IA, nombre d'articles publiés et réactions : tout s'affiche chaque jour dans votre tableau de bord sous forme de données réelles. Vous suivez vos progrès sur des faits, et non « au feeling ». Remarque : la position dans les recherches et les citations par les IA dépendant de facteurs externes, nous ne garantissons pas de chiffres précis, mais nous rendons vos actions et leurs résultats parfaitement transparents."
+    },
     "cta": {
       "start": "Commencer gratuitement",
       "startFree": "Commencer gratuitement",

@@ -11,6 +11,7 @@
     "db:seed": "npx tsx prisma/seed.ts",
     "db:studio": "npx prisma studio",
     "worker": "npx tsx workers/index.ts",
+    "deploy:web": "bash scripts/deploy-web.sh",
     "postinstall": "npx prisma generate"
   },
   "prisma": {

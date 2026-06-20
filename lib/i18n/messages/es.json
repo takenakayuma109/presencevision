@@ -373,6 +373,21 @@
         ]
       }
     },
+    "simple": {
+      "badge": "Si es tu primera vez",
+      "title": "Lo difícil, déjaselo todo a la IA.",
+      "subtitle": "Lo único que tienes que hacer es \"poner la dirección web de tu empresa\". A partir de ahí, la IA escribe cada día artículos e información sobre tu empresa en internet, para que siga siendo una empresa que la gente \"encuentra\" en Google, ChatGPT y los mapas.",
+      "step1": { "title": "Pon tu dirección web", "desc": "Solo tienes que escribir la dirección de la página web de tu empresa. No hace falta ningún conocimiento técnico." },
+      "step2": { "title": "La IA trabaja sola", "desc": "Las 24 horas, la IA crea artículos, preguntas frecuentes e información de tu empresa, y los publica en tu página y (si lo conectas) en tu Google Business Profile." },
+      "step3": { "title": "Te conviertes en una empresa que se encuentra", "desc": "Poco a poco tu empresa empieza a aparecer en la búsqueda de Google, en herramientas de IA como ChatGPT y también en los mapas." },
+      "getTitle": "Lo que vas a conseguir \"con seguridad\"",
+      "g1": { "stat": "Cada día", "label": "Más artículos", "desc": "Sin contratar a nadie que escriba, el contenido se va acumulando solo." },
+      "g2": { "stat": "24/7", "label": "Sin parar", "desc": "Mientras duermes y también los fines de semana, la IA sigue trabajando." },
+      "g3": { "stat": "11 idiomas", "label": "Varios idiomas", "desc": "En español, por supuesto, y también de forma automática para otros países." },
+      "g4": { "stat": "Con aprobación", "label": "Diseño seguro", "desc": "Las publicaciones más delicadas las revisa una persona, para evitar errores e información falsa." },
+      "resultsTitle": "Los resultados se ven con \"números reales\"",
+      "resultsDesc": "La posición en las búsquedas, las menciones en la IA, el número de artículos publicados y las reacciones aparecen cada día en tu panel como datos reales. Así compruebas el avance con hechos, no con suposiciones. * La posición en las búsquedas y las menciones en la IA dependen de factores externos, por lo que no garantizamos cifras concretas, pero sí mostramos de forma transparente las acciones y sus resultados."
+    },
     "cta": {
       "start": "Comenzar gratis",
       "startFree": "Comenzar gratis",

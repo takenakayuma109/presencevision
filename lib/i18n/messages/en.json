@@ -373,6 +373,21 @@
         ]
       }
     },
+    "simple": {
+      "badge": "New here? Start here",
+      "title": "Leave the hard stuff to AI.",
+      "subtitle": "All you do is enter your company's website address. After that, AI writes articles and information about your business online every day, so people keep finding you on Google, ChatGPT, and maps.",
+      "step1": { "title": "Enter your URL", "desc": "Just type in your company's website address. No technical know-how needed." },
+      "step2": { "title": "AI works automatically", "desc": "Around the clock, AI creates articles, FAQs, and company information, then publishes them to your pages and (if you connect it) your Google Business Profile." },
+      "step3": { "title": "Become a company people find", "desc": "Over time, your business starts showing up on Google search, in AI tools like ChatGPT, and on maps." },
+      "getTitle": "What you can count on",
+      "g1": { "stat": "Daily", "label": "More articles", "desc": "Your content keeps building up automatically, with no need to hire a writer." },
+      "g2": { "stat": "24/7", "label": "Never stops", "desc": "AI keeps working while you sleep and on your days off." },
+      "g3": { "stat": "11 languages", "label": "Multilingual", "desc": "English, Japanese, and audiences abroad, all handled automatically." },
+      "g4": { "stat": "Approval", "label": "Safe by design", "desc": "A person checks anything risky before it goes live, preventing mistakes and false information." },
+      "resultsTitle": "See your results in real numbers",
+      "resultsDesc": "Search rankings, mentions in AI, the number of published articles, and engagement all appear in your dashboard every day as real data. You can track your progress with facts, not just a vague feeling. Note: because search rankings and AI mentions depend on outside factors, we don't guarantee specific numbers, but we show your actions and results transparently."
+    },
     "cta": {
       "start": "Get Started Free",
       "startFree": "Get Started Free",

@@ -109,6 +109,42 @@ export type PresenceMethod =
   | "FAQ"
   | "Multilingual";
 
+// ウィザード/フロントは methods を小文字・スネーク（seo, schema_markup 等）で保存する一方、
+// エンジンは PascalCase（SEO, Schema.org 等）で判定する。両者の不一致で生成が一切走らない
+// 不具合を防ぐため、ここで正規名へ正規化する。
+const METHOD_ALIASES: Record<string, PresenceMethod> = {
+  seo: "SEO",
+  aeo: "AEO",
+  geo: "GEO",
+  schema_markup: "Schema.org",
+  "schema.org": "Schema.org",
+  schema: "Schema.org",
+  schemaorg: "Schema.org",
+  knowledge_graph: "KnowledgeGraph",
+  knowledgegraph: "KnowledgeGraph",
+  content_marketing: "ContentMarketing",
+  contentmarketing: "ContentMarketing",
+  faq_optimization: "FAQ",
+  faq: "FAQ",
+  multilingual: "Multilingual",
+};
+
+const CANONICAL_METHODS: ReadonlySet<string> = new Set([
+  "SEO", "AEO", "GEO", "Schema.org", "ContentMarketing", "KnowledgeGraph", "FAQ", "Multilingual",
+]);
+
+export function normalizeMethods(methods?: string[]): PresenceMethod[] {
+  if (!methods || methods.length === 0) return ["SEO"];
+  const out = new Set<PresenceMethod>();
+  for (const m of methods) {
+    const mapped = METHOD_ALIASES[String(m).toLowerCase().trim()];
+    if (mapped) out.add(mapped);
+    else if (CANONICAL_METHODS.has(m)) out.add(m as PresenceMethod);
+  }
+  if (out.size === 0) out.add("SEO");
+  return Array.from(out);
+}
+
 interface CycleResult {
   cycleId: string;
   projectId: string;
@@ -862,6 +898,8 @@ async function runCycle(project: PresenceProject, cycleNumber = 0): Promise<Cycl
 
 /** プロジェクトを開始（24/7ループ） */
 export function startProject(project: PresenceProject, skipInitialCycle = false): void {
+  // methods を正規名へ正規化（seo→SEO, schema_markup→Schema.org 等）。不一致による生成スキップを防ぐ。
+  project = { ...project, methods: normalizeMethods(project.methods as unknown as string[]) };
   if (activeProjects.has(project.id)) {
     console.log(`[Engine] Project "${project.name}" is already running`);
     return;

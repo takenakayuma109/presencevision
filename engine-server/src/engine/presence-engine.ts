@@ -73,7 +73,7 @@ const ENGINE_API_KEY = process.env.ENGINE_API_KEY ?? "";
 const PLAN_CONFIG: Record<PlanTier, { cycleIntervalMs: number; anthropicModel: string; contentGensPerDay: number; pillarsPerDay: number }> = {
   starter:      { cycleIntervalMs: 6 * 60 * 60 * 1000, anthropicModel: "claude-haiku-4-5",  contentGensPerDay: 1, pillarsPerDay: 1 },
   professional: { cycleIntervalMs: 1 * 60 * 60 * 1000, anthropicModel: "claude-haiku-4-5",  contentGensPerDay: 2, pillarsPerDay: 2 },
-  enterprise:   { cycleIntervalMs: 1 * 60 * 60 * 1000, anthropicModel: "claude-sonnet-4-6", contentGensPerDay: 4, pillarsPerDay: 4 },
+  enterprise:   { cycleIntervalMs: 1 * 60 * 60 * 1000, anthropicModel: "claude-sonnet-4-6", contentGensPerDay: 2, pillarsPerDay: 2 },
 };
 
 // ---------------------------------------------------------------------------

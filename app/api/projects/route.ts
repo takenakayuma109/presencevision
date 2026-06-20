@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { projectRepository } from "@/server/repositories";
 import { getSession } from "@/lib/stripe/get-session";
 import { prisma } from "@/lib/db";
+import { checkAccess } from "@/lib/stripe/subscription";
 
 const ENGINE_URL =
   process.env.NEXT_PUBLIC_ENGINE_URL ?? "http://localhost:4000";
@@ -148,8 +149,23 @@ export async function POST(request: NextRequest) {
       competitors: competitors || undefined,
     });
 
-    // Register with the engine in the background (non-blocking)
-    if (ENGINE_URL && ENGINE_URL !== "http://localhost:4000") {
+    // Register with the engine in the background (non-blocking).
+    // 有効なサブスク（無料トライアル/有料）保有者のみ自動起動し、契約から確定した planId を渡す。
+    // （従来は planId 未送信で全プロジェクトが starter 上限・無契約者でもエンジン稼働、という不具合があった）
+    const access = await checkAccess(session.user.id);
+    if (ENGINE_URL && ENGINE_URL !== "http://localhost:4000" && access.hasAccess) {
+      // 会社プロフィール（E-E-A-T用の検証済み事実）をベストエフォートで同梱
+      let companyProfile: unknown;
+      try {
+        const ws = await prisma.workspace.findUnique({
+          where: { id: workspaceId },
+          select: { metadata: true },
+        });
+        companyProfile = (ws?.metadata as Record<string, unknown> | null)?.companyProfile;
+      } catch {
+        /* profile is optional — ignore lookup failures */
+      }
+
       fetch(`${ENGINE_URL}/engine/start`, {
         method: "POST",
         headers: {
@@ -164,6 +180,8 @@ export async function POST(request: NextRequest) {
           keywords: keywords || [],
           targetCountries: presenceCountries || ["JP"],
           methods: methods || ["SEO"],
+          planId: access.planId,
+          ...(companyProfile ? { companyProfile } : {}),
           status: "active",
           createdAt: project.createdAt,
         }),

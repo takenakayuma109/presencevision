@@ -436,16 +436,28 @@ export function LandingPage() {
               </span>
             </div>
 
+            {/* Power word — GEO is the new SEO (2026 global trend) */}
+            <div className="animate-fade-in-up mb-6">
+              <p className="text-2xl font-extrabold leading-tight tracking-tight md:text-4xl">
+                <span className="bg-gradient-to-r from-blue-500 via-violet-500 to-cyan-500 bg-clip-text text-transparent">
+                  {t("landing.hero.powerword1")}
+                </span>
+              </p>
+              <p className="mx-auto mt-2 max-w-2xl text-sm font-semibold text-muted-foreground md:text-base">
+                {t("landing.hero.powerword2")}
+              </p>
+            </div>
+
             <Badge variant="secondary" className="animate-fade-in-up mb-6 inline-flex items-center gap-1.5 px-4 py-1.5 text-sm">
               <Zap className="h-3.5 w-3.5 text-amber-500" />
               {t("landing.hero.badge")}
             </Badge>
 
-            <h1 className="animate-fade-in-up-delay-1 mx-auto max-w-4xl text-4xl font-bold leading-tight tracking-tight md:text-6xl md:leading-tight">
+            <h1 className="animate-fade-in-up-delay-1 mx-auto max-w-4xl whitespace-pre-line text-4xl font-bold leading-tight tracking-tight md:text-6xl md:leading-tight">
               {t("landing.hero.title")}
             </h1>
 
-            <p className="animate-fade-in-up-delay-2 mx-auto mt-6 max-w-3xl text-xl text-muted-foreground md:text-2xl">
+            <p className="animate-fade-in-up-delay-2 mx-auto mt-6 max-w-3xl whitespace-pre-line text-xl text-muted-foreground md:text-2xl">
               {t("landing.hero.subtitle")}
             </p>
 

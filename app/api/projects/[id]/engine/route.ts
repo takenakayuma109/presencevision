@@ -9,6 +9,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { projectRepository } from "@/server/repositories";
 import { getSession } from "@/lib/stripe/get-session";
 import { prisma } from "@/lib/db";
+import { checkAccess } from "@/lib/stripe/subscription";
 
 const ENGINE_URL =
   process.env.NEXT_PUBLIC_ENGINE_URL ?? "http://localhost:4000";
@@ -41,23 +42,56 @@ export async function POST(
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
-    // Read optional overrides from request body
-    const body = await request.json().catch(() => ({}));
-    const {
-      brandName = project.name,
-      url = "",
-      keywords = [],
-      targetCountries = ["JP"],
-      methods = ["SEO"],
-    } = body as {
-      brandName?: string;
-      url?: string;
-      keywords?: string[];
-      targetCountries?: string[];
-      methods?: string[];
-    };
+    // 有効なアクセス（無料トライアル/有料/管理者）が無ければ起動しない（コスト制御）
+    const access = await checkAccess(session.user.id);
+    if (!access.hasAccess) {
+      return NextResponse.json(
+        {
+          error:
+            "エンジンの起動には有効なサブスクリプション（無料トライアルまたは有料プラン）が必要です。",
+          code: "subscription_required",
+        },
+        { status: 403 },
+      );
+    }
 
-    // Register with the engine
+    // プロジェクトのメタデータを設定の真実源にする（body は任意の上書き）
+    const meta = (project.metadata as Record<string, unknown> | null) ?? {};
+    const body = (await request.json().catch(() => ({}))) as Record<string, unknown>;
+    const asArr = (v: unknown): string[] =>
+      Array.isArray(v) ? (v.filter((x) => typeof x === "string") as string[]) : [];
+
+    const keywords = asArr(body.keywords).length ? asArr(body.keywords) : asArr(meta.keywords);
+    const methods = asArr(body.methods).length
+      ? asArr(body.methods)
+      : asArr(meta.methods).length
+        ? asArr(meta.methods)
+        : ["SEO"];
+    const targetCountries = asArr(body.targetCountries).length
+      ? asArr(body.targetCountries)
+      : asArr(meta.presenceCountries).length
+        ? asArr(meta.presenceCountries)
+        : ["JP"];
+    const brandName =
+      (typeof body.brandName === "string" && body.brandName) ||
+      (typeof meta.brandName === "string" && meta.brandName) ||
+      project.name;
+    const url =
+      (typeof body.url === "string" && body.url) || project.url || "";
+
+    // 会社プロフィール（E-E-A-T用）をワークスペースから注入
+    let companyProfile: unknown;
+    try {
+      const ws = await prisma.workspace.findUnique({
+        where: { id: project.workspaceId },
+        select: { metadata: true },
+      });
+      companyProfile = (ws?.metadata as Record<string, unknown> | null)?.companyProfile;
+    } catch {
+      /* optional */
+    }
+
+    // Register with the engine（契約から確定した planId と会社プロフィールを注入）
     const engineRes = await fetch(`${ENGINE_URL}/engine/start`, {
       method: "POST",
       headers: {
@@ -72,6 +106,8 @@ export async function POST(
         keywords,
         targetCountries,
         methods,
+        planId: access.planId,
+        ...(companyProfile ? { companyProfile } : {}),
         status: "active",
         createdAt: project.createdAt,
       }),

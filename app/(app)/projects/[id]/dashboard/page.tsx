@@ -1038,6 +1038,16 @@ export default function ProjectDashboardPage({
     setLastRefresh(new Date());
   }, [fetchAnalytics, fetchActivities]);
 
+  // プロジェクトをエンジンに自動登録（未起動なら起動＝即サイクル実行・冪等）。
+  // ダッシュボードを開いた瞬間にエンジンが動き出すようにする。
+  useEffect(() => {
+    fetch(`/api/projects/${projectId}/engine`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: "{}",
+    }).catch(() => {});
+  }, [projectId]);
+
   const handleRefresh = () => {
     fetchAnalytics();
     fetchActivities();

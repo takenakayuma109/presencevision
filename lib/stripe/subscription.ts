@@ -291,7 +291,34 @@ export async function updateSubscriptionStatus(
 // checkAccess
 // ---------------------------------------------------------------------------
 
+// オーナー/管理者の無課金フルアクセス用 allowlist（カンマ区切り）。Vercel env: ADMIN_EMAILS
+const ADMIN_EMAILS = (process.env.ADMIN_EMAILS ?? "")
+  .split(",")
+  .map((e) => e.trim().toLowerCase())
+  .filter(Boolean);
+
+async function isAdminUserId(userId: string): Promise<boolean> {
+  if (ADMIN_EMAILS.length === 0) return false;
+  try {
+    const prisma = await getPrisma();
+    if (!prisma) return false;
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { email: true },
+    });
+    const email = user?.email?.toLowerCase();
+    return !!email && ADMIN_EMAILS.includes(email);
+  } catch {
+    return false;
+  }
+}
+
 export async function checkAccess(userId: string): Promise<AccessCheck> {
+  // オーナー/管理者バイパス: ADMIN_EMAILS のユーザーは契約なしでフルアクセス（Enterprise相当）。
+  if (await isAdminUserId(userId)) {
+    return { hasAccess: true, planId: "enterprise", isTrialing: false };
+  }
+
   const sub = await getSubscription(userId);
 
   if (!sub) {

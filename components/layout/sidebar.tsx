@@ -15,6 +15,7 @@ import {
   ChevronRight,
   FolderOpen,
   Building2,
+  FileText,
 } from "lucide-react";
 import { useTranslation } from "@/lib/hooks/use-translation";
 import { useState, useEffect, useCallback } from "react";
@@ -27,6 +28,7 @@ interface SidebarProject {
 
 const projectSubNav = [
   { key: "dashboard", label: "ダッシュボード", icon: LayoutDashboard },
+  { key: "content", label: "コンテンツ", icon: FileText },
   { key: "reports", label: "レポート", icon: BarChart3 },
   { key: "channels", label: "チャネル", icon: Share2 },
   { key: "settings", label: "設定", icon: Settings },

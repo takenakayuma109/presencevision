@@ -443,7 +443,7 @@ export function LandingPage() {
             </Badge>
 
             {/* h1 — the single hero focus; final line accented with the gradient */}
-            <h1 className="animate-fade-in-up-delay-1 mx-auto max-w-3xl whitespace-pre-line text-[2rem] font-bold leading-[1.3] tracking-tight text-foreground md:text-[3.5rem] md:leading-[1.25]">
+            <h1 className="animate-fade-in-up-delay-1 mx-auto max-w-5xl whitespace-pre-line text-2xl font-bold leading-[1.35] tracking-tight text-foreground sm:text-4xl md:text-5xl md:leading-[1.3]">
               {t("landing.hero.title")
                 .split("\n")
                 .map((line, i, arr) => (
@@ -461,7 +461,7 @@ export function LandingPage() {
             </h1>
 
             {/* subtitle — single paragraph, natural wrapping (no forced breaks) */}
-            <p className="animate-fade-in-up-delay-2 mx-auto mt-7 max-w-2xl text-base leading-[1.9] text-muted-foreground md:text-lg">
+            <p className="animate-fade-in-up-delay-2 mx-auto mt-7 max-w-4xl whitespace-pre-line text-sm leading-[1.9] text-muted-foreground sm:text-base md:text-lg">
               {t("landing.hero.subtitle")}
             </p>
 

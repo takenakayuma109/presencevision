@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Button, Input, Select, Textarea } from "@/components/ui";
-import { Building2, CheckCircle, ArrowRight, Loader2 } from "lucide-react";
+import { Building2, CheckCircle, ArrowRight, Loader2, Upload } from "lucide-react";
 import Link from "next/link";
 
 const INDUSTRY_OPTIONS = [
@@ -123,6 +123,51 @@ export default function CompanyRegistrationPage() {
   ) => {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
+  };
+
+  // ロゴ添付: ブラウザ側で最大256pxに縮小しWebP圧縮 → 小さなdataURL(約10〜20KB)にして保存。
+  // 生画像を保存しないのでDB・エンジンへの転送が重くならない。
+  const handleLogoFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith("image/")) {
+      setError("画像ファイルを選択してください");
+      return;
+    }
+    if (file.size > 10 * 1024 * 1024) {
+      setError("画像は10MB以下を選択してください");
+      return;
+    }
+    setError(null);
+    const reader = new FileReader();
+    reader.onload = () => {
+      const img = new window.Image();
+      img.onload = () => {
+        const MAX = 256;
+        let { width, height } = img;
+        if (width >= height && width > MAX) {
+          height = Math.round((height * MAX) / width);
+          width = MAX;
+        } else if (height > MAX) {
+          width = Math.round((width * MAX) / height);
+          height = MAX;
+        }
+        const canvas = document.createElement("canvas");
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext("2d");
+        if (!ctx) {
+          setForm((prev) => ({ ...prev, logoUrl: reader.result as string }));
+          return;
+        }
+        ctx.drawImage(img, 0, 0, width, height);
+        const dataUrl = canvas.toDataURL("image/webp", 0.85);
+        setForm((prev) => ({ ...prev, logoUrl: dataUrl }));
+      };
+      img.onerror = () => setError("画像を読み込めませんでした");
+      img.src = reader.result as string;
+    };
+    reader.readAsDataURL(file);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -398,14 +443,54 @@ export default function CompanyRegistrationPage() {
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium">ロゴURL</label>
-              <Input
-                name="logoUrl"
-                type="url"
-                value={form.logoUrl}
-                onChange={handleChange}
-                placeholder="https://example.com/logo.png"
-              />
+              <label className="text-sm font-medium">ロゴ（画像を添付）</label>
+              {form.logoUrl ? (
+                <div className="flex items-center gap-3">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={form.logoUrl}
+                    alt="ロゴ"
+                    className="h-16 w-16 rounded-lg border border-border bg-white object-contain p-1"
+                  />
+                  <div className="flex flex-col gap-1">
+                    <label className="cursor-pointer text-sm text-blue-500 hover:underline">
+                      画像を変更
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleLogoFile}
+                        className="hidden"
+                      />
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() => setForm((p) => ({ ...p, logoUrl: "" }))}
+                      className="text-left text-sm text-muted-foreground hover:text-destructive"
+                    >
+                      削除
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <label className="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border border-dashed border-border bg-card/50 p-6 text-center transition-colors hover:border-blue-500/50">
+                  <Upload className="h-6 w-6 text-muted-foreground" />
+                  <span className="text-sm text-muted-foreground">
+                    クリックして画像を添付
+                  </span>
+                  <span className="text-xs text-muted-foreground/70">
+                    PNG・JPG等／自動で軽量化して保存（約10〜20KB）
+                  </span>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleLogoFile}
+                    className="hidden"
+                  />
+                </label>
+              )}
+              <p className="text-xs text-muted-foreground">
+                アップロード時にブラウザ側で縮小・圧縮するため重くなりません。任意項目です。
+              </p>
             </div>
           </div>
         </div>

@@ -132,7 +132,7 @@ export function ExposureSummary({ projectId }: { projectId: string }) {
     types.some((t) => channels.some((c) => c.type === t && c.connected));
 
   // 露出先ごとの 累計 / 今月 / 今日 と、その合計を算出
-  const { statsByKey, grand } = useMemo(() => {
+  const { statsByKey } = useMemo(() => {
     const todayKey = new Date().toLocaleDateString("en-CA", {
       timeZone: "Asia/Tokyo",
     });
@@ -173,18 +173,12 @@ export function ExposureSummary({ projectId }: { projectId: string }) {
       }
     }
 
-    // 合計 = 全露出先の単純合算（露出回数の合計）
-    const grand = Object.values(statsByKey).reduce<Counts>(
-      (acc, s) => ({
-        total: acc.total + s.total,
-        month: acc.month + s.month,
-        today: acc.today + s.today,
-      }),
-      { ...EMPTY },
-    );
-
-    return { statsByKey, grand };
+    return { statsByKey };
   }, [articles, articlesTotal, distributions]);
+
+  // 分母 Y = 総コンテンツ数（Hub は全記事を受け取る）。
+  // 各ブロックは「X件/Y件」＝全公開のうち何件がその露出先に届いたかを表す。
+  const hub = statsByKey.hub ?? EMPTY;
 
   return (
     <div className="rounded-xl border border-border/50 bg-card/50 p-5">
@@ -195,13 +189,13 @@ export function ExposureSummary({ projectId }: { projectId: string }) {
         <div className="flex items-center gap-3 text-xs sm:gap-4">
           <span className="text-muted-foreground">合計</span>
           <span>
-            累計 <span className="text-lg font-bold text-foreground">{grand.total}</span> 件
+            累計 <span className="text-lg font-bold text-foreground">{hub.total}</span> 件
           </span>
           <span>
-            今月 <span className="text-lg font-bold text-foreground">{grand.month}</span> 件
+            今月 <span className="text-lg font-bold text-foreground">{hub.month}</span> 件
           </span>
           <span>
-            今日 <span className="text-lg font-bold text-blue-400">{grand.today}</span> 件
+            今日 <span className="text-lg font-bold text-blue-400">{hub.today}</span> 件
           </span>
         </div>
       </div>
@@ -243,24 +237,24 @@ export function ExposureSummary({ projectId }: { projectId: string }) {
                   )}
                 </div>
                 <div className="truncate text-xs text-muted-foreground">{d.desc}</div>
-                <div className="mt-1.5 flex items-center gap-2 text-[11px] text-muted-foreground">
+                <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-muted-foreground">
                   <span>
                     累計{" "}
-                    <span className="font-semibold text-foreground">{s.total}</span>
+                    <span className="font-semibold text-foreground">{s.total}</span>件/
+                    {hub.total}件
                   </span>
-                  <span className="text-border">/</span>
                   <span>
                     今月{" "}
-                    <span className="font-semibold text-foreground">{s.month}</span>
+                    <span className="font-semibold text-foreground">{s.month}</span>件/
+                    {hub.month}件
                   </span>
-                  <span className="text-border">/</span>
                   <span>
                     今日{" "}
                     <span
                       className={`font-semibold ${s.today > 0 ? "text-blue-400" : "text-foreground"}`}
                     >
                       {s.today}
-                    </span>
+                    </span>件/{hub.today}件
                   </span>
                 </div>
               </div>
@@ -301,7 +295,8 @@ export function ExposureSummary({ projectId }: { projectId: string }) {
       </div>
 
       <p className="mt-3 text-xs text-muted-foreground">
-        ※ 自社Hub以外（WordPress・GBP・技術コミュニティ）の記事は、連携先のプラットフォーム上で公開・閲覧されます。連携はチャネル画面から。
+        ※ 各ブロックの件数は「その露出先に届いた件数／公開した全件数」です（例: 本日 0件/15件 ＝ 本日公開した15件のうち0件がその露出先に届いた）。
+        自社Hub以外（WordPress・GBP・技術コミュニティ）の記事は、連携先のプラットフォーム上で公開・閲覧されます。連携はチャネル画面から。
       </p>
     </div>
   );

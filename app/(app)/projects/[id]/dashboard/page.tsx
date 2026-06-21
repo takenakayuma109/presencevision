@@ -7,7 +7,7 @@ import {
   Activity, AlertTriangle, CheckCircle2, Clock, FileText, Globe,
   MessageSquare, PenTool, Search, TrendingDown, TrendingUp,
   ChevronDown, ChevronRight, RefreshCw, Shield, Zap, Rss, XCircle,
-  Loader2,
+  Loader2, ExternalLink,
 } from "lucide-react";
 import { ExposureSummary } from "@/components/dashboard/exposure-summary";
 import { PresenceTrends } from "@/components/dashboard/presence-trends";
@@ -1084,7 +1084,27 @@ export default function ProjectDashboardPage({
                 {hasCreditError && (
                   <div className="rounded-md border border-amber-500/30 bg-amber-500/10 p-2.5 text-xs leading-relaxed text-amber-300">
                     <span className="font-semibold">AI（Anthropic）のクレジット残高が不足しています。</span>
-                    AnthropicのコンソールでPro/従量課金のクレジットを補充すると、記事生成や分析タスクが再開します（補充後は自動で再試行されます）。
+                    クレジットを補充すると、記事生成や分析タスクが再開します（補充後は自動で再試行されます）。
+                    <div className="mt-2 flex flex-wrap items-center gap-2">
+                      <a
+                        href="https://console.anthropic.com/settings/billing"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1 rounded-md bg-amber-500 px-2.5 py-1 text-[11px] font-semibold text-black transition-opacity hover:opacity-90"
+                      >
+                        クレジットを補充する
+                        <ExternalLink className="h-3 w-3" />
+                      </a>
+                      <a
+                        href="https://console.anthropic.com/usage"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1 rounded-md border border-amber-500/40 px-2.5 py-1 text-[11px] font-medium text-amber-200 transition-colors hover:bg-amber-500/15"
+                      >
+                        使用状況を見る
+                        <ExternalLink className="h-3 w-3" />
+                      </a>
+                    </div>
                   </div>
                 )}
                 {failedActivities.slice(0, 3).map((a) => (

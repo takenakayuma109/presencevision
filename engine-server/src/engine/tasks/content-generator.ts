@@ -156,6 +156,12 @@ export async function generateSeoArticle(params: {
 
     const langName = getLanguageName(params.language);
 
+    // 検証済みの正式社名（会社プロフィール優先）。キーワードの綴りより常に優先する。
+    const verifiedName =
+      (typeof params.companyProfile?.companyName === "string" &&
+        params.companyProfile.companyName.trim()) ||
+      params.brandName;
+
     const article = await ai.completeJSON<{
       title: string;
       body: string;
@@ -164,16 +170,20 @@ export async function generateSeoArticle(params: {
     }>([
       {
         role: "user",
-        content: `Write an SEO-optimized article entirely in ${langName}.
+        content: `Write an SEO-optimized article entirely in ${langName} about the company described below.
 
-IMPORTANT: The entire article (title, body, metaTitle, metaDescription) MUST be written in ${langName}. Do NOT write in English unless the target language is English.
+CRITICAL ACCURACY RULES — these OVERRIDE every other instruction:
+1. The company's official name is exactly "${verifiedName}". Always write it with this EXACT spelling. NEVER change the spelling, even if a keyword is misspelled.
+2. Write ONLY about "${verifiedName}"'s real business and the verified facts below. Invent nothing — no fake people, partnerships, history, quotes, or numbers.
+3. Keywords may contain typos or unrelated terms (people, places, other brands). NEVER fabricate any relationship between "${verifiedName}" and an unrelated person, company, event, or place. If a keyword is NOT genuinely about this company's business, IGNORE that keyword entirely and write about the company's genuinely relevant topics instead.
+4. The entire output (title, body, metaTitle, metaDescription) MUST be written in ${langName}.
 
-Topic: ${params.topic}
-Keywords: ${params.keywords.join(", ")}
-Brand: ${params.brandName}
+Company (use this exact name): ${verifiedName}
 Country: ${params.country}
-${profileSummary ? `\nCompany profile (use ONLY these verified facts; do NOT invent any other facts about the company):\n${profileSummary}\n` : ""}
-Write ${wordTarget}. Include keywords naturally. Use H2/H3 headings in the body.
+Suggested topic (use ONLY if genuinely relevant to this company; otherwise ignore it): ${params.topic}
+Candidate keywords (use only the genuinely relevant ones; ignore typos/unrelated noise): ${params.keywords.join(", ")}
+${profileSummary ? `\nVerified company facts (use ONLY these; invent nothing else):\n${profileSummary}\n` : ""}
+Write ${wordTarget}. Use H2/H3 headings. Prioritize factual accuracy over keyword inclusion.
 
 Example output format:
 {"title": "Your Title Here", "body": "## Heading\\n\\nArticle text...", "metaTitle": "Short Meta Title", "metaDescription": "A 150-char description."}

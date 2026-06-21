@@ -9,8 +9,64 @@ import {
   onActivity,
   type ActivityEntry,
 } from "../engine/activity-logger.js";
+import { getDB } from "../db/index.js";
 
 const router = Router();
+
+/**
+ * GET /activities/hourly?projectId=xxx&date=YYYY-MM-DD
+ *
+ * 「本日のスケジュール」用に、指定日(JST)の各時間(0-23)のタスク実行数を type 別に返す。
+ * in-memory ログの上限に依存せず DB から集計するため、1日分すべての時間帯を正確に取得できる。
+ */
+router.get("/hourly", async (req: Request, res: Response) => {
+  try {
+    const projectId = req.query.projectId as string | undefined;
+    if (!projectId) {
+      res.status(400).json({ error: "Missing required query parameter: projectId" });
+      return;
+    }
+
+    // date は JST 暦の YYYY-MM-DD。未指定なら本日(JST)。
+    const jstNow = new Date(Date.now() + 9 * 3_600_000);
+    const pad = (n: number) => String(n).padStart(2, "0");
+    let date = req.query.date as string | undefined;
+    if (!date || !/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+      date = `${jstNow.getUTCFullYear()}-${pad(jstNow.getUTCMonth() + 1)}-${pad(jstNow.getUTCDate())}`;
+    }
+
+    const db = getDB();
+    const result = await db.query(
+      `SELECT EXTRACT(HOUR FROM (started_at AT TIME ZONE 'Asia/Tokyo'))::int AS hour,
+              type, COUNT(*)::int AS n
+       FROM activities
+       WHERE project_id = $1
+         AND (started_at AT TIME ZONE 'Asia/Tokyo')::date = $2::date
+       GROUP BY 1, 2`,
+      [projectId, date],
+    );
+
+    // 0-23 をゼロ埋めして type 別内訳と合計を構築
+    const hours = Array.from({ length: 24 }, (_, hour) => ({
+      hour,
+      total: 0,
+      byType: {} as Record<string, number>,
+    }));
+    for (const row of result.rows) {
+      const h = row.hour as number;
+      if (h < 0 || h > 23) continue;
+      hours[h].byType[row.type as string] = row.n as number;
+      hours[h].total += row.n as number;
+    }
+
+    res.json({ projectId, date, hours });
+  } catch (error) {
+    console.error("[Route] /activities/hourly error:", error);
+    res.status(500).json({
+      error: error instanceof Error ? error.message : "Internal server error",
+    });
+  }
+});
 
 /**
  * GET /activities?projectId=xxx&limit=50 — アクティビティ一覧

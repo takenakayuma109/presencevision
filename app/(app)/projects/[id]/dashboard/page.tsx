@@ -185,126 +185,191 @@ function HeroMetrics({ data, loading }: { data: AnalyticsData | null; loading: b
 // 24-Hour Schedule Timeline (Interactive)
 // ---------------------------------------------------------------------------
 
+interface HourBucket {
+  hour: number;
+  total: number;
+  byType: Record<string, number>;
+}
+
+const CONTENT_TYPES = ["content_generation", "schema_generation", "multilingual_expansion", "faq_generation"];
+const CHECK_TYPES = ["serp_check", "llm_check", "ranking_monitor", "keyword_research", "site_analysis", "strategy_adjustment"];
+
+function sumTypes(byType: Record<string, number>, types: string[]): number {
+  return types.reduce((n, t) => n + (byType[t] ?? 0), 0);
+}
+
+type HourKind = "content" | "check" | "report" | "idle";
+
+function hourKind(b: HourBucket): HourKind {
+  if (sumTypes(b.byType, CONTENT_TYPES) > 0) return "content";
+  if (sumTypes(b.byType, CHECK_TYPES) > 0) return "check";
+  if (b.total > 0) return "report";
+  return "idle";
+}
+
+function hourSummary(b: HourBucket): string {
+  const parts: string[] = [];
+  const c = sumTypes(b.byType, CONTENT_TYPES);
+  const ch = sumTypes(b.byType, CHECK_TYPES);
+  const dist = b.byType["content_distribution"] ?? 0;
+  const r = b.byType["report_generation"] ?? 0;
+  if (c) parts.push(`記事生成 ${c}`);
+  if (ch) parts.push(`順位・AI引用チェック ${ch}`);
+  if (dist) parts.push(`配信 ${dist}`);
+  if (r) parts.push(`巡回・レポート ${r}`);
+  return parts.join("・") || "タスクなし";
+}
+
+const KIND_STYLE: Record<HourKind, { bar: string; h: string }> = {
+  content: { bar: "bg-emerald-500/70", h: "h-[85%]" },
+  check: { bar: "bg-violet-500/60", h: "h-[58%]" },
+  report: { bar: "bg-cyan-500/40", h: "h-[30%]" },
+  idle: { bar: "bg-transparent", h: "h-0" },
+};
+
+/** 現在のJST時刻 {hour, minute} を返す（ブラウザのTZに依存しない） */
+function jstNowHM(): { hour: number; minute: number } {
+  const s = new Intl.DateTimeFormat("en-GB", {
+    timeZone: "Asia/Tokyo",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  }).format(new Date());
+  const [h, m] = s.split(":").map(Number);
+  return { hour: h % 24, minute: m };
+}
+
+function LegendDot({ className, label }: { className: string; label: string }) {
+  return (
+    <div className="flex items-center gap-1.5">
+      <div className={cn("h-3 w-3 rounded-sm", className)} />
+      {label}
+    </div>
+  );
+}
+
 function ScheduleTimeline({
+  hours,
   selectedHour,
   onSelectHour,
-  activities,
+  loading,
 }: {
+  hours: HourBucket[];
   selectedHour: number;
   onSelectHour: (h: number) => void;
-  activities: ActivityItem[];
+  loading: boolean;
 }) {
-  const now = new Date();
-  const currentHour = now.getHours();
+  const { hour: currentHour, minute: currentMin } = jstNowHM();
+  const nowFrac = ((currentHour + currentMin / 60) / 24) * 100;
 
-  // Compute which hours have activity
-  const hoursWithActivity = useMemo(() => {
-    const set = new Set<number>();
-    const today = new Date().toISOString().slice(0, 10);
-    for (const a of activities) {
-      const d = new Date(a.startedAt);
-      if (d.toISOString().slice(0, 10) === today) {
-        set.add(d.getHours());
-      }
-    }
-    return set;
-  }, [activities]);
+  const data =
+    hours.length === 24
+      ? hours
+      : Array.from({ length: 24 }, (_, hour) => ({ hour, total: 0, byType: {} }));
 
-  const hours = Array.from({ length: 24 }, (_, i) => i);
+  const totalToday = data.reduce((n, b) => n + b.total, 0);
+  const activeHours = data.filter((b) => b.hour <= currentHour && b.total > 0).length;
+  const lastActive = [...data].reverse().find((b) => b.hour <= currentHour && b.total > 0)?.hour;
 
   return (
     <Card>
       <CardHeader className="pb-3">
         <CardTitle className="text-sm font-medium flex items-center gap-2">
           <Clock className="h-4 w-4 text-blue-400" />
-          本日のスケジュール
-          <span className="text-xs text-muted-foreground font-normal ml-auto">
-            1時間サイクル
-          </span>
+          本日の稼働タイムライン
+          <span className="text-xs text-muted-foreground font-normal ml-auto">1時間ごとに自動稼働</span>
         </CardTitle>
       </CardHeader>
       <CardContent className="pb-4">
-        <p className="mb-3 text-xs leading-relaxed text-muted-foreground">
-          エンジンは24時間止まらず稼働しています。緑＝タスクが実行された時間／オレンジ＝実行中／破線＝過去だがタスクなし／グレー＝これから。
-          記事の生成はコスト管理のため1日に数回まとめて、検索順位・AI引用のチェックは1日1回行う設計のため、タスクが無い（破線の）時間帯があるのは正常です。
-        </p>
-        {/* Timeline blocks */}
-        <div className="relative">
-          <div className="flex gap-px">
-            {hours.map((h) => {
-              const isPast = h < currentHour;
-              const isCurrent = h === currentHour;
-              const isFuture = h > currentHour;
-              const isSelected = h === selectedHour;
-              const hasActivity = hoursWithActivity.has(h);
-
-              return (
-                <button
-                  key={h}
-                  onClick={() => onSelectHour(h)}
-                  className="flex-1 group relative focus:outline-none"
-                  aria-label={`${String(h).padStart(2, "0")}:00`}
-                >
-                  <div
-                    className={cn(
-                      "h-9 rounded-sm transition-all cursor-pointer",
-                      isPast && hasActivity && "bg-emerald-500/30 border border-emerald-500/40",
-                      isPast && !hasActivity && "bg-zinc-800/50 border border-dashed border-zinc-700/60",
-                      isCurrent && "bg-amber-500/40 border border-amber-400/60 animate-pulse",
-                      isFuture && "bg-zinc-800 border border-zinc-700/50",
-                      isSelected && "ring-2 ring-blue-400 ring-offset-1 ring-offset-zinc-950",
-                      !isSelected && "hover:brightness-125",
-                    )}
-                  >
-                    {/* Dot indicator for hours with tasks */}
-                    {hasActivity && isPast && (
-                      <div className="absolute top-1 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-emerald-400" />
-                    )}
-                  </div>
-                  {/* Tooltip */}
-                  <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-zinc-800 border border-zinc-700 rounded text-[10px] text-zinc-300 whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
-                    {String(h).padStart(2, "0")}:00 — {isPast ? (hasActivity ? "稼働あり" : "タスクなし") : isCurrent ? "実行中" : "予定"}
-                  </div>
-                </button>
-              );
-            })}
-          </div>
-
-          {/* Hour labels */}
-          <div className="flex mt-2 relative h-4">
-            {[0, 6, 12, 18, 23].map((h) => (
-              <div
-                key={h}
-                className="text-[10px] text-muted-foreground absolute"
-                style={{
-                  left: `${(h / 23) * 100}%`,
-                  transform: "translateX(-50%)",
-                }}
-              >
-                {String(h).padStart(2, "0")}:00
-              </div>
-            ))}
-          </div>
+        {/* Summary chips */}
+        <div className="mb-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs">
+          <span className="text-muted-foreground">
+            本日の実行タスク <span className="font-bold text-foreground">{totalToday}</span> 件
+          </span>
+          <span className="text-muted-foreground">
+            稼働した時間帯 <span className="font-bold text-foreground">{activeHours}</span> / {currentHour + 1}
+          </span>
+          {lastActive != null && (
+            <span className="text-muted-foreground">
+              直近の稼働 <span className="font-bold text-foreground">{String(lastActive).padStart(2, "0")}:00台</span>
+            </span>
+          )}
         </div>
+        <p className="mb-3 text-xs leading-relaxed text-muted-foreground">
+          エンジンは毎時、自動で巡回・レポートを実行し、記事生成（1日数回）と検索順位・AI引用チェック（1日1回）を集中して行います。バーの高さ＝作業の重さ、数字＝実行件数。バーをクリックすると下にその時間帯の内容が出ます。
+        </p>
+
+        {loading ? (
+          <div className="flex h-24 items-center justify-center text-xs text-muted-foreground">読み込み中…</div>
+        ) : (
+          <div className="relative">
+            <div className="relative flex h-20 items-end gap-px">
+              {data.map((b) => {
+                const h = b.hour;
+                const isFuture = h > currentHour;
+                const isCurrent = h === currentHour;
+                const isSelected = h === selectedHour;
+                const kind: HourKind = isFuture ? "idle" : hourKind(b);
+                const style = KIND_STYLE[kind];
+                const notable = sumTypes(b.byType, CONTENT_TYPES) + sumTypes(b.byType, CHECK_TYPES);
+                return (
+                  <button
+                    key={h}
+                    onClick={() => onSelectHour(h)}
+                    className="group relative flex h-full flex-1 flex-col items-center justify-end focus:outline-none"
+                    aria-label={`${String(h).padStart(2, "0")}:00`}
+                  >
+                    {notable > 0 && (
+                      <span className="mb-0.5 text-[8px] font-semibold leading-none text-foreground/70">{notable}</span>
+                    )}
+                    <div
+                      className={cn(
+                        "w-full rounded-sm transition-all",
+                        isFuture
+                          ? "h-1.5 border border-dashed border-zinc-700/60 bg-zinc-800/30"
+                          : cn(style.h, style.bar),
+                        isCurrent && "ring-2 ring-amber-400/80 animate-pulse",
+                        isSelected && !isCurrent && "ring-2 ring-blue-400",
+                        !isSelected && !isCurrent && "hover:brightness-125",
+                      )}
+                    />
+                    <div className="pointer-events-none absolute bottom-full left-1/2 z-10 mb-1 -translate-x-1/2 whitespace-nowrap rounded border border-zinc-700 bg-zinc-800 px-2 py-1 text-[10px] text-zinc-200 opacity-0 transition-opacity group-hover:opacity-100">
+                      {String(h).padStart(2, "0")}:00 — {isFuture ? "予定" : isCurrent ? "実行中" : hourSummary(b)}
+                    </div>
+                  </button>
+                );
+              })}
+              {/* Now marker */}
+              <div className="pointer-events-none absolute inset-y-0 z-20" style={{ left: `${nowFrac}%` }}>
+                <div className="h-full w-px bg-amber-400/80" />
+                <div className="absolute -top-1.5 -translate-x-1/2 whitespace-nowrap rounded bg-amber-500 px-1 py-px text-[8px] font-bold text-black">
+                  今 {String(currentHour).padStart(2, "0")}:{String(currentMin).padStart(2, "0")}
+                </div>
+              </div>
+            </div>
+
+            {/* Hour axis */}
+            <div className="relative mt-1.5 h-4">
+              {[0, 6, 12, 18, 23].map((h) => (
+                <div
+                  key={h}
+                  className="absolute text-[10px] text-muted-foreground"
+                  style={{ left: `${(h / 23) * 100}%`, transform: "translateX(-50%)" }}
+                >
+                  {String(h).padStart(2, "0")}:00
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Legend */}
-        <div className="flex flex-wrap gap-4 mt-4 text-[10px] text-muted-foreground">
-          <div className="flex items-center gap-1.5">
-            <div className="w-3 h-3 rounded-sm bg-emerald-500/30 border border-emerald-500/40" />
-            稼働あり（タスク実行）
-          </div>
-          <div className="flex items-center gap-1.5">
-            <div className="w-3 h-3 rounded-sm bg-amber-500/40 border border-amber-400/60" />
-            実行中
-          </div>
-          <div className="flex items-center gap-1.5">
-            <div className="w-3 h-3 rounded-sm bg-zinc-800/50 border border-dashed border-zinc-700/60" />
-            過去・タスクなし
-          </div>
-          <div className="flex items-center gap-1.5">
-            <div className="w-3 h-3 rounded-sm bg-zinc-800 border border-zinc-700/50" />
-            予定
-          </div>
+        <div className="mt-4 flex flex-wrap gap-x-4 gap-y-1.5 text-[10px] text-muted-foreground">
+          <LegendDot className="bg-emerald-500/70" label="記事生成" />
+          <LegendDot className="bg-violet-500/60" label="順位・AI引用チェック" />
+          <LegendDot className="bg-cyan-500/40" label="巡回・レポート（毎時）" />
+          <LegendDot className="bg-amber-400/80" label="現在" />
+          <LegendDot className="border border-dashed border-zinc-600 bg-transparent" label="これから" />
         </div>
       </CardContent>
     </Card>
@@ -592,10 +657,12 @@ function HourTaskPanel({
   selectedHour,
   activities,
   loading,
+  hourBucket,
 }: {
   selectedHour: number;
   activities: ActivityItem[];
   loading: boolean;
+  hourBucket?: HourBucket;
 }) {
   const [expandedPhases, setExpandedPhases] = useState<Set<string>>(new Set(PHASES.map((p) => p.id)));
 
@@ -648,7 +715,7 @@ function HourTaskPanel({
           {hourStr}:00 〜 {hourStr}:59 のサイクル
         </h3>
         <span className="text-xs text-muted-foreground ml-auto">
-          {filtered.length}件のタスク
+          {hourBucket?.total ?? filtered.length}件のタスク
         </span>
       </div>
 
@@ -656,10 +723,24 @@ function HourTaskPanel({
         <Card>
           <CardContent className="p-8 text-center text-muted-foreground">
             <Clock className="h-6 w-6 mx-auto mb-2 opacity-50" />
-            <p className="text-sm">この時間帯はタスクがありません</p>
-            <p className="mx-auto mt-1 max-w-md text-xs leading-relaxed">
-              異常ではありません。エンジンは記事生成を1日に数回・検索順位やAI引用のチェックを1日1回にまとめて実行する設計のため、その他の時間帯はタスクが表示されません。緑（●印）の時間帯を選ぶと、実行された内容を確認できます。
-            </p>
+            {hourBucket && hourBucket.total > 0 ? (
+              <>
+                <p className="text-sm text-foreground">
+                  この時間帯は <span className="font-semibold">{hourBucket.total}</span> 件のタスクを実行しました
+                </p>
+                <p className="mt-1 text-xs">{hourSummary(hourBucket)}</p>
+                <p className="mx-auto mt-2 max-w-md text-xs leading-relaxed opacity-80">
+                  個別タスクの詳細ログは直近の時間帯のみ表示されます。過去の集計はこの件数でご確認ください。
+                </p>
+              </>
+            ) : (
+              <>
+                <p className="text-sm">この時間帯はまだ実行されていません</p>
+                <p className="mx-auto mt-1 max-w-md text-xs leading-relaxed">
+                  エンジンは毎時、巡回・レポートを自動実行し、記事生成（1日数回）と順位・AI引用チェック（1日1回）を集中実行します。上のタイムラインで稼働済みの時間帯を選ぶと内容を確認できます。
+                </p>
+              </>
+            )}
           </CardContent>
         </Card>
       ) : (
@@ -805,12 +886,14 @@ export default function ProjectDashboardPage({
 
   const [analytics, setAnalytics] = useState<AnalyticsData | null>(null);
   const [activities, setActivities] = useState<ActivityItem[]>([]);
+  const [hourly, setHourly] = useState<HourBucket[]>([]);
   const [analyticsLoading, setAnalyticsLoading] = useState(true);
   const [activitiesLoading, setActivitiesLoading] = useState(true);
+  const [hourlyLoading, setHourlyLoading] = useState(true);
   const [analyticsError, setAnalyticsError] = useState<string | null>(null);
   const [activitiesError, setActivitiesError] = useState<string | null>(null);
   const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
-  const [selectedHour, setSelectedHour] = useState<number>(new Date().getHours());
+  const [selectedHour, setSelectedHour] = useState<number>(() => jstNowHM().hour);
 
   // Fetch analytics
   const fetchAnalytics = useCallback(async () => {
@@ -849,12 +932,27 @@ export default function ProjectDashboardPage({
     }
   }, [projectId]);
 
+  // Fetch full-day hourly schedule (DB-backed → 1日分すべての時間帯を正確に取得)
+  const fetchHourly = useCallback(async () => {
+    setHourlyLoading(true);
+    try {
+      const res = await fetch(`/api/engine/activities/hourly?projectId=${projectId}`);
+      const json = res.ok ? await res.json() : null;
+      setHourly(Array.isArray(json?.hours) ? json.hours : []);
+    } catch {
+      setHourly([]);
+    } finally {
+      setHourlyLoading(false);
+    }
+  }, [projectId]);
+
   // Initial load only — manual refresh via button
   useEffect(() => {
     fetchAnalytics();
     fetchActivities();
+    fetchHourly();
     setLastRefresh(new Date());
-  }, [fetchAnalytics, fetchActivities]);
+  }, [fetchAnalytics, fetchActivities, fetchHourly]);
 
   // プロジェクトをエンジンに自動登録（未起動なら起動＝即サイクル実行・冪等）。
   // ダッシュボードを開いた瞬間にエンジンが動き出すようにする。
@@ -869,6 +967,7 @@ export default function ProjectDashboardPage({
   const handleRefresh = () => {
     fetchAnalytics();
     fetchActivities();
+    fetchHourly();
     setLastRefresh(new Date());
   };
 
@@ -959,9 +1058,10 @@ export default function ProjectDashboardPage({
 
       {/* 3. 24-Hour Schedule Timeline */}
       <ScheduleTimeline
+        hours={hourly}
         selectedHour={selectedHour}
         onSelectHour={setSelectedHour}
-        activities={activities}
+        loading={hourlyLoading}
       />
 
       {/* 4. Selected Hour's Tasks */}
@@ -969,6 +1069,7 @@ export default function ProjectDashboardPage({
         selectedHour={selectedHour}
         activities={activities}
         loading={activitiesLoading}
+        hourBucket={hourly[selectedHour]}
       />
 
       {/* 5. Presence trends — stock-chart style (day/month/year + slider) */}

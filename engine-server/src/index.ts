@@ -54,8 +54,17 @@ app.use((req: Request, _res: Response, next: NextFunction) => {
 // API Key Auth Middleware
 // ---------------------------------------------------------------------------
 function apiKeyAuth(req: Request, res: Response, next: NextFunction): void {
-  // Skip auth for health check and public articles
-  if (req.path === "/health" || req.path.startsWith("/health") || req.path.startsWith("/articles") || req.path.startsWith("/analytics")) {
+  // Skip auth for read-only dashboard data (health/articles/analytics/activities).
+  // これらはダッシュボードが /api/engine プロキシ経由で読む公開データ。activities を
+  // 含めないと「本日のスケジュール」等の /activities 取得が 401 で空になる（プロキシの
+  // x-api-key が未設定/不一致のVercel環境で顕在化）。書き込み系は /engine 配下のみ。
+  if (
+    req.path === "/health" ||
+    req.path.startsWith("/health") ||
+    req.path.startsWith("/articles") ||
+    req.path.startsWith("/analytics") ||
+    req.path.startsWith("/activities")
+  ) {
     next();
     return;
   }

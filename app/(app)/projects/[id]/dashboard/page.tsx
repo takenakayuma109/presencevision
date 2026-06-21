@@ -281,6 +281,7 @@ function ScheduleTimeline({
   const maxTotal = Math.max(1, ...data.filter((b) => b.hour <= currentHour).map((b) => b.total));
   const TRACK_PX = 104;
   const MIN_BAR_PX = 12;
+  const MIN_SEG_PX = 10; // 各タスク種別の最低表示高（巡回など少数でも視認できるように）
 
   return (
     <Card>
@@ -330,13 +331,25 @@ function ScheduleTimeline({
                 const isSelected = h === selectedHour;
                 const content = sumTypes(b.byType, CONTENT_TYPES);
                 const check = sumTypes(b.byType, CHECK_TYPES);
+                const patrol = Math.max(0, b.total - content - check);
                 const barPx =
                   b.total > 0
                     ? Math.round(MIN_BAR_PX + (TRACK_PX - MIN_BAR_PX) * (Math.sqrt(b.total) / Math.sqrt(maxTotal)))
                     : 0;
-                const cPx = b.total > 0 ? Math.round((barPx * content) / b.total) : 0;
-                const chPx = b.total > 0 ? Math.round((barPx * check) / b.total) : 0;
-                const pPx = Math.max(0, barPx - cPx - chPx);
+                // 各種別が存在すれば最低 MIN_SEG_PX を確保し、残りを件数比で配分（巡回も必ず見える）
+                const segParts = [
+                  { key: "content", count: content, cls: "bg-emerald-500/80" },
+                  { key: "check", count: check, cls: "bg-violet-500/70" },
+                  { key: "patrol", count: patrol, cls: "bg-cyan-500/70" },
+                ].filter((s) => s.count > 0);
+                const extra = Math.max(0, barPx - segParts.length * MIN_SEG_PX);
+                const countSum = segParts.reduce((n, s) => n + s.count, 0) || 1;
+                const segs = segParts.map((s) => ({
+                  key: s.key,
+                  cls: s.cls,
+                  px: MIN_SEG_PX + Math.round((extra * s.count) / countSum),
+                }));
+                const barTotalPx = segs.reduce((n, s) => n + s.px, 0);
                 return (
                   <button
                     key={h}
@@ -357,11 +370,11 @@ function ScheduleTimeline({
                           isSelected && !isCurrent && "ring-2 ring-blue-400",
                           !isSelected && !isCurrent && "hover:brightness-125",
                         )}
-                        style={{ height: Math.max(3, barPx) }}
+                        style={{ height: Math.max(3, barTotalPx) }}
                       >
-                        {cPx > 0 && <div className="bg-emerald-500/80" style={{ height: cPx }} />}
-                        {chPx > 0 && <div className="bg-violet-500/70" style={{ height: chPx }} />}
-                        {pPx > 0 && <div className="bg-cyan-500/55" style={{ height: pPx }} />}
+                        {segs.map((s) => (
+                          <div key={s.key} className={s.cls} style={{ height: s.px }} />
+                        ))}
                       </div>
                     )}
                     <div className="pointer-events-none absolute bottom-full left-1/2 z-40 mb-1 -translate-x-1/2 whitespace-nowrap rounded border border-zinc-700 bg-zinc-800 px-2 py-1 text-[10px] text-zinc-200 opacity-0 transition-opacity group-hover:opacity-100">
@@ -396,7 +409,7 @@ function ScheduleTimeline({
         <div className="mt-4 flex flex-wrap gap-x-4 gap-y-1.5 text-[10px] text-muted-foreground">
           <LegendDot className="bg-emerald-500/80" label="記事生成" />
           <LegendDot className="bg-violet-500/70" label="順位・AI引用チェック" />
-          <LegendDot className="bg-cyan-500/55" label="巡回・レポート（毎時）" />
+          <LegendDot className="bg-cyan-500/70" label="巡回・レポート（毎時）" />
           <LegendDot className="bg-amber-400/80" label="現在" />
           <LegendDot className="border border-dashed border-zinc-600 bg-transparent" label="これから" />
         </div>

@@ -138,6 +138,9 @@ function HeroMetrics({ data, loading }: { data: AnalyticsData | null; loading: b
                 )}
               </div>
               <p className="text-sm text-blue-300/70 mt-1">平均検索順位</p>
+              <p className="mt-2 max-w-xs text-xs leading-relaxed text-blue-200/50">
+                Google検索（SERP＝検索結果ページ）で自社ページが平均で何番目に出るか。数字が小さい＝上位で良い。「---」はまだ順位が付く前の状態です。
+              </p>
             </div>
             <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-500/15">
               <TrendingDown className="h-6 w-6 text-blue-400" />
@@ -171,6 +174,9 @@ function HeroMetrics({ data, loading }: { data: AnalyticsData | null; loading: b
                     ({mentionedCount}/{totalChecks}件)
                   </span>
                 )}
+              </p>
+              <p className="mt-2 max-w-xs text-xs leading-relaxed text-purple-200/50">
+                ChatGPTなどのAI（LLM＝大規模言語モデル）が回答の中で自社を引用した割合。新しいブランドは0%から始まり、記事が増えるにつれて上がっていきます。
               </p>
             </div>
             <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-purple-500/15">
@@ -226,6 +232,10 @@ function ScheduleTimeline({
         </CardTitle>
       </CardHeader>
       <CardContent className="pb-4">
+        <p className="mb-3 text-xs leading-relaxed text-muted-foreground">
+          エンジンは1時間ごとに自動で動きます（緑＝完了・オレンジ＝実行中・グレー＝これから／●印は実際にタスクがあった時間）。
+          記事の生成はコスト管理のため1日に数回まとめて、検索順位・AI引用のチェックは1日1回行うため、タスクが無い時間帯もあります。プロセス自体は24時間止まらず稼働しています。
+        </p>
         {/* Timeline blocks */}
         <div className="relative">
           <div className="flex gap-px">
@@ -649,8 +659,10 @@ function HourTaskPanel({
         <Card>
           <CardContent className="p-8 text-center text-muted-foreground">
             <Clock className="h-6 w-6 mx-auto mb-2 opacity-50" />
-            <p className="text-sm">このサイクルのタスクはありません</p>
-            <p className="text-xs mt-1">エンジンが実行されるとここにタスクが表示されます</p>
+            <p className="text-sm">この時間帯はタスクがありません</p>
+            <p className="mx-auto mt-1 max-w-md text-xs leading-relaxed">
+              異常ではありません。エンジンは記事生成を1日に数回・検索順位やAI引用のチェックを1日1回にまとめて実行する設計のため、その他の時間帯はタスクが表示されません。緑（●印）の時間帯を選ぶと、実行された内容を確認できます。
+            </p>
           </CardContent>
         </Card>
       ) : (
@@ -766,10 +778,12 @@ function SerpChart({ data }: { data: AnalyticsData }) {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="flex flex-col items-center justify-center h-[280px] text-muted-foreground">
+          <div className="flex flex-col items-center justify-center h-[280px] px-6 text-center text-muted-foreground">
             <Search className="h-8 w-8 mb-3 opacity-50" />
-            <p className="text-sm font-medium">まだSERPデータがありません</p>
-            <p className="text-xs mt-1">SERP確認タスクが実行されるとデータが表示されます</p>
+            <p className="text-sm font-medium">まだ検索順位データがありません</p>
+            <p className="mt-1 max-w-sm text-xs leading-relaxed">
+              SERP（検索結果ページ）での自社ページの順位を日ごとに記録するグラフです。Googleが新しい記事を見つけて順位を付けるまで数週間かかるため、立ち上げ直後は空欄になります。記事が増えてくると自動で表示されます。
+            </p>
           </div>
         </CardContent>
       </Card>
@@ -883,10 +897,12 @@ function LlmChart({ data }: { data: AnalyticsData }) {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="flex flex-col items-center justify-center h-[280px] text-muted-foreground">
+          <div className="flex flex-col items-center justify-center h-[280px] px-6 text-center text-muted-foreground">
             <MessageSquare className="h-8 w-8 mb-3 opacity-50" />
-            <p className="text-sm font-medium">まだ引用データがありません</p>
-            <p className="text-xs mt-1">LLM引用チェックが実行されるとデータが表示されます</p>
+            <p className="text-sm font-medium">まだAI引用データがありません</p>
+            <p className="mt-1 max-w-sm text-xs leading-relaxed">
+              ChatGPTやPerplexityなどのAI（LLM＝大規模言語モデル）が、回答の中で自社をどれくらい引用したかを日ごとに記録するグラフです。AIが自社の記事を学習・参照するまで時間がかかるため、立ち上げ直後は空欄になります。
+            </p>
           </div>
         </CardContent>
       </Card>

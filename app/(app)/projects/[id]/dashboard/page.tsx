@@ -10,10 +10,7 @@ import {
   Loader2,
 } from "lucide-react";
 import { ExposureSummary } from "@/components/dashboard/exposure-summary";
-import {
-  BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer,
-  CartesianGrid, Legend,
-} from "recharts";
+import { PresenceTrends } from "@/components/dashboard/presence-trends";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -60,11 +57,6 @@ interface ActivityItem {
 // ---------------------------------------------------------------------------
 // Constants
 // ---------------------------------------------------------------------------
-
-const CHART_COLORS = [
-  "#3b82f6", "#8b5cf6", "#10b981", "#f59e0b", "#ef4444",
-  "#06b6d4", "#ec4899", "#84cc16",
-];
 
 const METHOD_ICONS: Record<string, typeof Search> = {
   SEO: Search,
@@ -233,8 +225,8 @@ function ScheduleTimeline({
       </CardHeader>
       <CardContent className="pb-4">
         <p className="mb-3 text-xs leading-relaxed text-muted-foreground">
-          エンジンは1時間ごとに自動で動きます（緑＝完了・オレンジ＝実行中・グレー＝これから／●印は実際にタスクがあった時間）。
-          記事の生成はコスト管理のため1日に数回まとめて、検索順位・AI引用のチェックは1日1回行うため、タスクが無い時間帯もあります。プロセス自体は24時間止まらず稼働しています。
+          エンジンは24時間止まらず稼働しています。緑＝タスクが実行された時間／オレンジ＝実行中／破線＝過去だがタスクなし／グレー＝これから。
+          記事の生成はコスト管理のため1日に数回まとめて、検索順位・AI引用のチェックは1日1回行う設計のため、タスクが無い（破線の）時間帯があるのは正常です。
         </p>
         {/* Timeline blocks */}
         <div className="relative">
@@ -256,7 +248,8 @@ function ScheduleTimeline({
                   <div
                     className={cn(
                       "h-9 rounded-sm transition-all cursor-pointer",
-                      isPast && "bg-emerald-500/30 border border-emerald-500/40",
+                      isPast && hasActivity && "bg-emerald-500/30 border border-emerald-500/40",
+                      isPast && !hasActivity && "bg-zinc-800/50 border border-dashed border-zinc-700/60",
                       isCurrent && "bg-amber-500/40 border border-amber-400/60 animate-pulse",
                       isFuture && "bg-zinc-800 border border-zinc-700/50",
                       isSelected && "ring-2 ring-blue-400 ring-offset-1 ring-offset-zinc-950",
@@ -270,7 +263,7 @@ function ScheduleTimeline({
                   </div>
                   {/* Tooltip */}
                   <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-zinc-800 border border-zinc-700 rounded text-[10px] text-zinc-300 whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
-                    {String(h).padStart(2, "0")}:00 — {isPast ? "完了" : isCurrent ? "実行中" : "予定"}
+                    {String(h).padStart(2, "0")}:00 — {isPast ? (hasActivity ? "稼働あり" : "タスクなし") : isCurrent ? "実行中" : "予定"}
                   </div>
                 </button>
               );
@@ -295,14 +288,18 @@ function ScheduleTimeline({
         </div>
 
         {/* Legend */}
-        <div className="flex gap-4 mt-4 text-[10px] text-muted-foreground">
+        <div className="flex flex-wrap gap-4 mt-4 text-[10px] text-muted-foreground">
           <div className="flex items-center gap-1.5">
             <div className="w-3 h-3 rounded-sm bg-emerald-500/30 border border-emerald-500/40" />
-            完了
+            稼働あり（タスク実行）
           </div>
           <div className="flex items-center gap-1.5">
             <div className="w-3 h-3 rounded-sm bg-amber-500/40 border border-amber-400/60" />
             実行中
+          </div>
+          <div className="flex items-center gap-1.5">
+            <div className="w-3 h-3 rounded-sm bg-zinc-800/50 border border-dashed border-zinc-700/60" />
+            過去・タスクなし
           </div>
           <div className="flex items-center gap-1.5">
             <div className="w-3 h-3 rounded-sm bg-zinc-800 border border-zinc-700/50" />
@@ -762,202 +759,6 @@ function HourTaskPanel({
   );
 }
 
-// ---------------------------------------------------------------------------
-// SERP Chart
-// ---------------------------------------------------------------------------
-
-function SerpChart({ data }: { data: AnalyticsData }) {
-  const serpKeywords = Object.keys(data.serpTrend);
-  if (serpKeywords.length === 0) {
-    return (
-      <Card>
-        <CardHeader className="pb-2">
-          <CardTitle className="text-sm font-medium flex items-center gap-2">
-            <TrendingDown className="h-4 w-4 text-blue-400" />
-            SERP順位推移
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex flex-col items-center justify-center h-[280px] px-6 text-center text-muted-foreground">
-            <Search className="h-8 w-8 mb-3 opacity-50" />
-            <p className="text-sm font-medium">まだ検索順位データがありません</p>
-            <p className="mt-1 max-w-sm text-xs leading-relaxed">
-              SERP（検索結果ページ）での自社ページの順位を日ごとに記録するグラフです。Googleが新しい記事を見つけて順位を付けるまで数週間かかるため、立ち上げ直後は空欄になります。記事が増えてくると自動で表示されます。
-            </p>
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  const serpDates = new Set<string>();
-  for (const kw of serpKeywords) {
-    for (const pt of data.serpTrend[kw]) serpDates.add(pt.date);
-  }
-  const chartData = Array.from(serpDates).sort().map((date) => {
-    const row: Record<string, unknown> = { date: date.slice(5) };
-    for (const kw of serpKeywords) {
-      const pt = data.serpTrend[kw].find((p) => p.date === date);
-      if (pt) row[kw] = pt.position;
-    }
-    return row;
-  });
-
-  if (chartData.length === 0) return null;
-
-  return (
-    <Card>
-      <CardHeader className="pb-2">
-        <CardTitle className="text-sm font-medium flex items-center gap-2">
-          <TrendingDown className="h-4 w-4 text-blue-400" />
-          SERP順位推移
-          <span className="text-xs text-muted-foreground font-normal">（低いほど良い）</span>
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="pb-4">
-        <ResponsiveContainer width="100%" height={280}>
-          <BarChart data={chartData} barCategoryGap="8%">
-            <CartesianGrid strokeDasharray="3 3" stroke="#27272a" />
-            <XAxis
-              dataKey="date"
-              tick={{ fontSize: 11, fill: "#a1a1aa" }}
-              stroke="#27272a"
-            />
-            <YAxis
-              reversed
-              domain={[1, "auto"]}
-              tick={{ fontSize: 11, fill: "#a1a1aa" }}
-              stroke="#27272a"
-              label={{ value: "順位", angle: -90, position: "insideLeft", style: { fontSize: 11, fill: "#a1a1aa" } }}
-            />
-            <Tooltip
-              contentStyle={{
-                backgroundColor: "#18181b",
-                border: "1px solid #27272a",
-                borderRadius: "8px",
-                fontSize: 12,
-                color: "#fafafa",
-              }}
-              formatter={(value) => [`${value}位`, ""]}
-            />
-            <Legend wrapperStyle={{ fontSize: 11 }} />
-            {serpKeywords.slice(0, 8).map((kw, i) => (
-              <Bar
-                key={kw}
-                dataKey={kw}
-                fill={CHART_COLORS[i % CHART_COLORS.length]}
-                radius={[2, 2, 0, 0]}
-                opacity={0.85}
-              />
-            ))}
-          </BarChart>
-        </ResponsiveContainer>
-      </CardContent>
-    </Card>
-  );
-}
-
-// ---------------------------------------------------------------------------
-// LLM Chart
-// ---------------------------------------------------------------------------
-
-function LlmChart({ data }: { data: AnalyticsData }) {
-  const llmPlatforms = Object.keys(data.llmTrend);
-
-  // Build chart data even if platforms exist
-  const llmDates = new Set<string>();
-  for (const p of llmPlatforms) {
-    for (const pt of data.llmTrend[p]) llmDates.add(pt.date);
-  }
-  const chartData = Array.from(llmDates).sort().map((date) => {
-    const row: Record<string, unknown> = { date: date.slice(5) };
-    for (const p of llmPlatforms) {
-      const pt = data.llmTrend[p].find((x) => x.date === date);
-      if (pt && pt.total > 0) {
-        row[p] = Math.round((pt.mentioned / pt.total) * 100);
-      } else {
-        row[p] = 0;
-      }
-    }
-    return row;
-  });
-
-  const allZero =
-    llmPlatforms.length === 0 ||
-    chartData.length === 0 ||
-    chartData.every((row) => llmPlatforms.every((p) => (row[p] as number) === 0));
-
-  if (allZero) {
-    return (
-      <Card>
-        <CardHeader className="pb-2">
-          <CardTitle className="text-sm font-medium flex items-center gap-2">
-            <MessageSquare className="h-4 w-4 text-purple-400" />
-            LLM引用推移
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex flex-col items-center justify-center h-[280px] px-6 text-center text-muted-foreground">
-            <MessageSquare className="h-8 w-8 mb-3 opacity-50" />
-            <p className="text-sm font-medium">まだAI引用データがありません</p>
-            <p className="mt-1 max-w-sm text-xs leading-relaxed">
-              ChatGPTやPerplexityなどのAI（LLM＝大規模言語モデル）が、回答の中で自社をどれくらい引用したかを日ごとに記録するグラフです。AIが自社の記事を学習・参照するまで時間がかかるため、立ち上げ直後は空欄になります。
-            </p>
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  return (
-    <Card>
-      <CardHeader className="pb-2">
-        <CardTitle className="text-sm font-medium flex items-center gap-2">
-          <MessageSquare className="h-4 w-4 text-purple-400" />
-          LLM引用推移
-          <span className="text-xs text-muted-foreground font-normal">（言及率 %）</span>
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="pb-4">
-        <ResponsiveContainer width="100%" height={280}>
-          <BarChart data={chartData} barCategoryGap="8%">
-            <CartesianGrid strokeDasharray="3 3" stroke="#27272a" />
-            <XAxis
-              dataKey="date"
-              tick={{ fontSize: 11, fill: "#a1a1aa" }}
-              stroke="#27272a"
-            />
-            <YAxis
-              domain={[0, 100]}
-              tick={{ fontSize: 11, fill: "#a1a1aa" }}
-              stroke="#27272a"
-              label={{ value: "%", angle: -90, position: "insideLeft", style: { fontSize: 11, fill: "#a1a1aa" } }}
-            />
-            <Tooltip
-              contentStyle={{
-                backgroundColor: "#18181b",
-                border: "1px solid #27272a",
-                borderRadius: "8px",
-                fontSize: 12,
-                color: "#fafafa",
-              }}
-              formatter={(value) => [`${value}%`, ""]}
-            />
-            <Legend wrapperStyle={{ fontSize: 11 }} />
-            {llmPlatforms.slice(0, 8).map((p, i) => (
-              <Bar
-                key={p}
-                dataKey={p}
-                fill={CHART_COLORS[i % CHART_COLORS.length]}
-                radius={[2, 2, 0, 0]}
-              />
-            ))}
-          </BarChart>
-        </ResponsiveContainer>
-      </CardContent>
-    </Card>
-  );
-}
 
 // ---------------------------------------------------------------------------
 // Content Generation Stats (Compact)
@@ -1170,29 +971,8 @@ export default function ProjectDashboardPage({
         loading={activitiesLoading}
       />
 
-      {/* 5. Charts Side by Side */}
-      <div className="grid gap-4 lg:grid-cols-2">
-        {analytics && <SerpChart data={analytics} />}
-        {analytics && <LlmChart data={analytics} />}
-        {!analytics && !analyticsLoading && (
-          <>
-            <Card>
-              <CardContent className="p-10 text-center text-muted-foreground">
-                <TrendingDown className="h-8 w-8 mx-auto mb-3 opacity-50" />
-                <p className="text-sm font-medium">まだトレンドデータがありません</p>
-                <p className="text-xs mt-1">エンジンを稼働させるとトレンドが表示されます</p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="p-10 text-center text-muted-foreground">
-                <MessageSquare className="h-8 w-8 mx-auto mb-3 opacity-50" />
-                <p className="text-sm font-medium">まだ引用データがありません</p>
-                <p className="text-xs mt-1">LLM引用チェックが実行されるとデータが表示されます</p>
-              </CardContent>
-            </Card>
-          </>
-        )}
-      </div>
+      {/* 5. Presence trends — stock-chart style (day/month/year + slider) */}
+      <PresenceTrends projectId={projectId} />
 
       {/* 6. Content Generation Stats */}
       <ContentStats data={analytics} loading={analyticsLoading} />

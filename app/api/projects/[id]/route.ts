@@ -58,13 +58,15 @@ export async function PATCH(
     }
 
     const body = await request.json();
-    const { name, description, status, url, keywords, competitors } = body;
+    const { name, description, status, url, keywords, competitors, autoPublish } = body;
 
-    // Build metadata update if keywords provided
+    // Build metadata update if keywords or autoPublish provided
     let metadata: Record<string, unknown> | undefined;
-    if (keywords !== undefined) {
+    if (keywords !== undefined || autoPublish !== undefined) {
       const existingMeta = (existing.metadata as Record<string, unknown>) ?? {};
-      metadata = { ...existingMeta, keywords };
+      metadata = { ...existingMeta };
+      if (keywords !== undefined) metadata.keywords = keywords;
+      if (autoPublish !== undefined) metadata.autoPublish = autoPublish === true;
     }
 
     const updated = await projectRepository.update(id, {

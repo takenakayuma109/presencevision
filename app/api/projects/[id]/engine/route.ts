@@ -106,6 +106,7 @@ export async function POST(
         keywords,
         targetCountries,
         methods,
+        autoPublish: meta.autoPublish === true || body.autoPublish === true,
         planId: access.planId,
         ...(companyProfile ? { companyProfile } : {}),
         status: "active",

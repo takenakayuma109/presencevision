@@ -38,6 +38,7 @@ export default function ProjectSettingsPage({
   const [keywordInput, setKeywordInput] = useState("");
   const [competitors, setCompetitors] = useState<string[]>([]);
   const [competitorInput, setCompetitorInput] = useState("");
+  const [autoPublish, setAutoPublish] = useState(false);
 
   // Fetch project
   useEffect(() => {
@@ -51,6 +52,7 @@ export default function ProjectSettingsPage({
           setDescription(data.description ?? "");
           const meta = data.metadata as Record<string, unknown> | null;
           setKeywords((meta?.keywords as string[]) ?? []);
+          setAutoPublish(meta?.autoPublish === true);
           setCompetitors(data.competitors.map((c) => c.name));
         }
       })
@@ -95,6 +97,7 @@ export default function ProjectSettingsPage({
           description: description.trim() || null,
           keywords,
           competitors,
+          autoPublish,
         }),
       });
       if (!res.ok) throw new Error("Save failed");
@@ -174,6 +177,60 @@ export default function ProjectSettingsPage({
           </Button>
         </div>
       </div>
+
+      {/* Publish mode */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">公開モード</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <button
+            type="button"
+            onClick={() => setAutoPublish(false)}
+            className={`flex w-full items-start gap-3 rounded-lg border p-4 text-left transition-colors ${
+              !autoPublish
+                ? "border-emerald-500/50 bg-emerald-500/5"
+                : "border-border hover:border-blue-500/30"
+            }`}
+          >
+            <div
+              className={`mt-1 h-4 w-4 shrink-0 rounded-full border-2 ${
+                !autoPublish ? "border-emerald-500 bg-emerald-500" : "border-muted-foreground"
+              }`}
+            />
+            <div>
+              <div className="text-sm font-semibold">🛡️ 安全モード（承認あり・推奨）</div>
+              <div className="mt-0.5 text-xs text-muted-foreground">
+                公開前にあなたが確認してから公開。誤情報リスクをゼロに。
+              </div>
+            </div>
+          </button>
+          <button
+            type="button"
+            onClick={() => setAutoPublish(true)}
+            className={`flex w-full items-start gap-3 rounded-lg border p-4 text-left transition-colors ${
+              autoPublish
+                ? "border-blue-500/50 bg-blue-500/5"
+                : "border-border hover:border-blue-500/30"
+            }`}
+          >
+            <div
+              className={`mt-1 h-4 w-4 shrink-0 rounded-full border-2 ${
+                autoPublish ? "border-blue-500 bg-blue-500" : "border-muted-foreground"
+              }`}
+            />
+            <div>
+              <div className="text-sm font-semibold">⚡ おまかせモード（承認なし）</div>
+              <div className="mt-0.5 text-xs text-muted-foreground">
+                承認もスキップして、AIが完全自動で公開。手間ゼロの「ほったらかし」運用。
+              </div>
+            </div>
+          </button>
+          <p className="text-xs text-muted-foreground">
+            ※ 自社Hubは常時自動公開です。このモードは連携先（WordPress等）への公開方法に適用されます。変更後は右上の「保存」を押してください。
+          </p>
+        </CardContent>
+      </Card>
 
       {/* Basic Info */}
       <Card>

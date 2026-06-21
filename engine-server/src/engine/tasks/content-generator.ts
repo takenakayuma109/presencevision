@@ -130,6 +130,8 @@ export async function generateSeoArticle(params: {
   tier?: "bulk" | "flagship";
   /** 会社プロフィール（検証済み事実をプロンプトに供給し、E-E-A-T向上＆捏造防止） */
   companyProfile?: Record<string, unknown>;
+  /** 顧客サイトの最新ニュース要約（自社サイト発の一次情報＝最新かつ検証済みの事実） */
+  siteNews?: string;
 }): Promise<GeneratedContent> {
   const activity = startActivity({
     projectId: params.projectId,
@@ -182,8 +184,8 @@ Company (use this exact name): ${verifiedName}
 Country: ${params.country}
 Suggested topic (use ONLY if genuinely relevant to this company; otherwise ignore it): ${params.topic}
 Candidate keywords (use only the genuinely relevant ones; ignore typos/unrelated noise): ${params.keywords.join(", ")}
-${profileSummary ? `\nVerified company facts (use ONLY these; invent nothing else):\n${profileSummary}\n` : ""}
-Write ${wordTarget}. Use H2/H3 headings. Prioritize factual accuracy over keyword inclusion.
+${profileSummary ? `\nVerified company facts (use ONLY these; invent nothing else):\n${profileSummary}\n` : ""}${params.siteNews ? `\nLatest news/updates published on the company's OWN website (these are current, first-party verified facts — prefer reflecting the most recent and relevant of these so the article stays up to date; never contradict them, and do not invent details beyond them):\n${params.siteNews}\n` : ""}
+Write ${wordTarget}. Use H2/H3 headings. Prioritize factual accuracy over keyword inclusion. When the company's latest news above is relevant to the topic, weave it in so the content reflects what is currently happening at the company.
 
 Example output format:
 {"title": "Your Title Here", "body": "## Heading\\n\\nArticle text...", "metaTitle": "Short Meta Title", "metaDescription": "A 150-char description."}

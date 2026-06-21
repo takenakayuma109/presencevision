@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { ExposureSummary } from "@/components/dashboard/exposure-summary";
 import { PresenceTrends } from "@/components/dashboard/presence-trends";
+import { EngineAgenda } from "@/components/dashboard/engine-agenda";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -1063,6 +1064,9 @@ export default function ProjectDashboardPage({
         onSelectHour={setSelectedHour}
         loading={hourlyLoading}
       />
+
+      {/* 3b. Past log + recurring TODO agenda (+ tracked SERP keywords) */}
+      <EngineAgenda projectId={projectId} hours={hourly} />
 
       {/* 4. Selected Hour's Tasks */}
       <HourTaskPanel

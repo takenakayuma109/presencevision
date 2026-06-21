@@ -412,4 +412,60 @@ router.get("/timeseries", async (req: Request, res: Response) => {
   }
 });
 
+/**
+ * GET /analytics/serp-keywords?projectId=xxx
+ *
+ * SERP順位追跡が「どのキーワードで検索した結果か」を明示するための一覧。
+ * 直近の serp_check アクティビティから、追跡中キーワードと最新順位を返す。
+ */
+router.get("/serp-keywords", async (req: Request, res: Response) => {
+  try {
+    const projectId = req.query.projectId as string | undefined;
+    if (!projectId) {
+      res.status(400).json({ error: "Missing required query parameter: projectId" });
+      return;
+    }
+
+    const db = getDB();
+    const result = await db.query(
+      `SELECT description, metrics, started_at, country
+       FROM activities
+       WHERE project_id = $1 AND type = 'serp_check' AND status = 'completed'
+       ORDER BY started_at DESC
+       LIMIT 400`,
+      [projectId],
+    );
+
+    // keyword -> 最新の {keyword, position, country, checkedAt}（ORDER BY desc なので先勝ち＝最新）
+    const map = new Map<
+      string,
+      { keyword: string; position: number | null; country: string | null; checkedAt: string }
+    >();
+    for (const row of result.rows) {
+      const desc = (row.description as string) ?? "";
+      const km = desc.match(/"([^"]+)"/);
+      if (!km) continue;
+      const keyword = km[1];
+      if (map.has(keyword)) continue;
+      const posRaw = (row.metrics as Record<string, unknown> | null)?.["position"];
+      const posNum = posRaw == null ? NaN : Number(posRaw);
+      const position = Number.isFinite(posNum) && posNum > 0 ? posNum : null;
+      const cm = desc.match(/\(([^)]+)\)\s*$/);
+      map.set(keyword, {
+        keyword,
+        position,
+        country: (row.country as string) || (cm ? cm[1] : null),
+        checkedAt: row.started_at as string,
+      });
+    }
+
+    res.json({ projectId, keywords: Array.from(map.values()).slice(0, 60) });
+  } catch (error) {
+    console.error("[Route] /analytics/serp-keywords error:", error);
+    res.status(500).json({
+      error: error instanceof Error ? error.message : "Internal server error",
+    });
+  }
+});
+
 export default router;

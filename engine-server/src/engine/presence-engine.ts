@@ -24,6 +24,7 @@ import {
   translateContent,
   type GeneratedContent,
 } from "./tasks/content-generator.js";
+import { fetchSiteNews, formatSiteNews } from "./tasks/site-news-fetcher.js";
 import {
   publishToWordPress,
   type CmsConfig,
@@ -396,6 +397,20 @@ async function runCycle(project: PresenceProject, cycleNumber = 0): Promise<Cycl
     );
   }
 
+  // 顧客サイトの最新ニュースを取得（記事を最新情報と連動させる一次情報。6hキャッシュ・失敗しても続行）。
+  let siteNewsText = "";
+  if (doContentGen) {
+    try {
+      const news = await fetchSiteNews(project.targetUrl, project.id);
+      siteNewsText = formatSiteNews(news);
+      if (news.length) {
+        console.log(`[Engine] Site news: ${news.length} item(s) from ${project.targetUrl}`);
+      }
+    } catch (e) {
+      console.warn(`[Engine] Site news fetch failed:`, (e as Error).message);
+    }
+  }
+
   // 各国×各メソッドで実行
   for (const country of project.targetCountries) {
     const language = COUNTRY_LANGUAGES[country] ?? "en";
@@ -590,6 +605,7 @@ async function runCycle(project: PresenceProject, cycleNumber = 0): Promise<Cycl
             planId: project.planId,
             tier,
             companyProfile: project.companyProfile,
+            siteNews: siteNewsText || undefined,
           }),
         );
 

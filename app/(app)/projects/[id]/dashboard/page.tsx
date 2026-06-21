@@ -1014,10 +1014,20 @@ export default function ProjectDashboardPage({
   };
 
   // Count failed tasks for alert
-  const failedActivities = useMemo(
-    () => activities.filter((a) => a.status === "failed"),
-    [activities],
-  );
+  // 直近2時間の「対応が必要な」失敗のみ表示する。
+  // 解消済みの古い失敗（例: 補充前のクレジット切れ）や、自動再試行される一過性エラー
+  // （同時実行上限・タイムアウト・過負荷など）は、現在の問題ではないので出さない。
+  const failedActivities = useMemo(() => {
+    const cutoff = Date.now() - 2 * 60 * 60 * 1000;
+    const isTransient = (e?: string) =>
+      !!e && /max concurrency|timeout|etimedout|econnreset|overloaded|529|rate.?limit|429/i.test(e);
+    return activities.filter(
+      (a) =>
+        a.status === "failed" &&
+        new Date(a.startedAt).getTime() >= cutoff &&
+        !isTransient(a.error),
+    );
+  }, [activities]);
   const hasCreditError = useMemo(
     () => failedActivities.some((a) => isCreditError(a.error)),
     [failedActivities],

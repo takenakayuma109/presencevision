@@ -224,6 +224,29 @@ function jstNowHM(): { hour: number; minute: number } {
   return { hour: h % 24, minute: m };
 }
 
+/** エンジンの生エラー文字列をユーザー向けの平易な日本語に変換（長いJSONは出さない） */
+function friendlyError(raw: string): string {
+  const s = raw.toLowerCase();
+  if (s.includes("credit balance is too low") || s.includes("plans & billing"))
+    return "AI APIのクレジット残高不足（補充後に自動再試行）";
+  if (s.includes("rate_limit") || s.includes("rate limit") || s.includes("429"))
+    return "AI APIのレート制限（時間をおいて自動再試行）";
+  if (s.includes("overloaded") || s.includes("529")) return "AI APIが混雑中（自動再試行）";
+  if (s.includes("authentication") || s.includes("invalid x-api-key") || s.includes("invalid api key"))
+    return "AI APIキーの認証エラー";
+  if (s.includes("timeout") || s.includes("etimedout") || s.includes("econnreset"))
+    return "接続タイムアウト（自動再試行）";
+  if (s.includes("invalid_request")) return "AIリクエストエラー（自動再試行）";
+  const clean = raw.replace(/\s+/g, " ").trim();
+  return clean.length > 100 ? `${clean.slice(0, 100)}…` : clean;
+}
+
+function isCreditError(raw?: string): boolean {
+  if (!raw) return false;
+  const s = raw.toLowerCase();
+  return s.includes("credit balance is too low") || s.includes("plans & billing");
+}
+
 function LegendDot({ className, label }: { className: string; label: string }) {
   return (
     <div className="flex items-center gap-1.5">
@@ -982,9 +1005,13 @@ export default function ProjectDashboardPage({
     () => activities.filter((a) => a.status === "failed"),
     [activities],
   );
+  const hasCreditError = useMemo(
+    () => failedActivities.some((a) => isCreditError(a.error)),
+    [failedActivities],
+  );
 
   return (
-    <div className="space-y-6">
+    <div className="min-w-0 space-y-6">
       {/* 1. Header Row */}
       <div className="flex items-center justify-between">
         <div>
@@ -1037,17 +1064,25 @@ export default function ProjectDashboardPage({
           <CardContent className="p-4">
             <div className="flex items-start gap-3">
               <AlertTriangle className="h-5 w-5 text-red-400 mt-0.5 shrink-0" />
-              <div className="space-y-2 flex-1 min-w-0">
+              <div className="min-w-0 flex-1 space-y-2">
                 <p className="text-sm font-medium text-red-400">
                   {failedActivities.length}件のタスクが失敗しました
                 </p>
+                {hasCreditError && (
+                  <div className="rounded-md border border-amber-500/30 bg-amber-500/10 p-2.5 text-xs leading-relaxed text-amber-300">
+                    <span className="font-semibold">AI（Anthropic）のクレジット残高が不足しています。</span>
+                    AnthropicのコンソールでPro/従量課金のクレジットを補充すると、記事生成や分析タスクが再開します（補充後は自動で再試行されます）。
+                  </div>
+                )}
                 {failedActivities.slice(0, 3).map((a) => (
-                  <div key={a.id} className="text-xs text-red-300/80 truncate">
-                    <span className="text-red-400/60 mr-2">
+                  <div key={a.id} className="min-w-0 break-words text-xs text-red-300/80">
+                    <span className="mr-2 text-red-400/60">
                       {new Date(a.startedAt).toLocaleTimeString("ja-JP", { hour: "2-digit", minute: "2-digit" })}
                     </span>
                     {a.description}
-                    {a.error && <span className="text-red-500/60 ml-2">— {a.error}</span>}
+                    {a.error && (
+                      <span className="ml-2 text-red-500/70">— {friendlyError(a.error)}</span>
+                    )}
                   </div>
                 ))}
                 {failedActivities.length > 3 && (

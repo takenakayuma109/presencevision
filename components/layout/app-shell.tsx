@@ -10,9 +10,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex min-h-screen">
       <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
-      <div className="flex-1 pl-0 md:pl-[var(--sidebar-width)]">
+      <div className="min-w-0 flex-1 pl-0 md:pl-[var(--sidebar-width)]">
         <Header onMenuClick={() => setSidebarOpen(true)} />
-        <main className="p-4 md:p-6">{children}</main>
+        <main className="min-w-0 overflow-x-hidden p-4 md:p-6">{children}</main>
       </div>
     </div>
   );

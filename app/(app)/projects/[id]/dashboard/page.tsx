@@ -199,15 +199,6 @@ function sumTypes(byType: Record<string, number>, types: string[]): number {
   return types.reduce((n, t) => n + (byType[t] ?? 0), 0);
 }
 
-type HourKind = "content" | "check" | "report" | "idle";
-
-function hourKind(b: HourBucket): HourKind {
-  if (sumTypes(b.byType, CONTENT_TYPES) > 0) return "content";
-  if (sumTypes(b.byType, CHECK_TYPES) > 0) return "check";
-  if (b.total > 0) return "report";
-  return "idle";
-}
-
 function hourSummary(b: HourBucket): string {
   const parts: string[] = [];
   const c = sumTypes(b.byType, CONTENT_TYPES);
@@ -220,13 +211,6 @@ function hourSummary(b: HourBucket): string {
   if (r) parts.push(`巡回・レポート ${r}`);
   return parts.join("・") || "タスクなし";
 }
-
-const KIND_STYLE: Record<HourKind, { bar: string; h: string }> = {
-  content: { bar: "bg-emerald-500/70", h: "h-[85%]" },
-  check: { bar: "bg-violet-500/60", h: "h-[58%]" },
-  report: { bar: "bg-cyan-500/40", h: "h-[30%]" },
-  idle: { bar: "bg-transparent", h: "h-0" },
-};
 
 /** 現在のJST時刻 {hour, minute} を返す（ブラウザのTZに依存しない） */
 function jstNowHM(): { hour: number; minute: number } {
@@ -271,6 +255,9 @@ function ScheduleTimeline({
   const totalToday = data.reduce((n, b) => n + b.total, 0);
   const activeHours = data.filter((b) => b.hour <= currentHour && b.total > 0).length;
   const lastActive = [...data].reverse().find((b) => b.hour <= currentHour && b.total > 0)?.hour;
+  const maxTotal = Math.max(1, ...data.filter((b) => b.hour <= currentHour).map((b) => b.total));
+  const TRACK_PX = 104;
+  const MIN_BAR_PX = 12;
 
   return (
     <Card>
@@ -297,22 +284,36 @@ function ScheduleTimeline({
           )}
         </div>
         <p className="mb-3 text-xs leading-relaxed text-muted-foreground">
-          エンジンは毎時、自動で巡回・レポートを実行し、記事生成（1日数回）と検索順位・AI引用チェック（1日1回）を集中して行います。バーの高さ＝作業の重さ、数字＝実行件数。バーをクリックすると下にその時間帯の内容が出ます。
+          エンジンは毎時、自動で巡回・レポートを実行し、記事生成（1日数回）と検索順位・AI引用チェック（1日1回）を集中して行います。各バーは内訳の積み上げ（緑＝記事生成・紫＝順位/AI引用チェック・水色＝巡回）、高さ＝作業量、数字＝実行件数。バーをクリックすると下にその時間帯の内容が出ます。
         </p>
 
         {loading ? (
-          <div className="flex h-24 items-center justify-center text-xs text-muted-foreground">読み込み中…</div>
+          <div className="flex h-32 items-center justify-center text-xs text-muted-foreground">読み込み中…</div>
         ) : (
-          <div className="relative">
-            <div className="relative flex h-20 items-end gap-px">
+          <div className="relative pt-5">
+            {/* Now badge — placed in its own top band so it never overlaps bar numbers */}
+            <div
+              className="pointer-events-none absolute top-0 z-30 -translate-x-1/2 whitespace-nowrap rounded bg-amber-500 px-1.5 py-px text-[9px] font-bold text-black"
+              style={{ left: `${Math.min(96, nowFrac)}%` }}
+            >
+              今 {String(currentHour).padStart(2, "0")}:{String(currentMin).padStart(2, "0")}
+            </div>
+
+            <div className="relative flex h-[124px] items-end gap-px">
               {data.map((b) => {
                 const h = b.hour;
                 const isFuture = h > currentHour;
                 const isCurrent = h === currentHour;
                 const isSelected = h === selectedHour;
-                const kind: HourKind = isFuture ? "idle" : hourKind(b);
-                const style = KIND_STYLE[kind];
-                const notable = sumTypes(b.byType, CONTENT_TYPES) + sumTypes(b.byType, CHECK_TYPES);
+                const content = sumTypes(b.byType, CONTENT_TYPES);
+                const check = sumTypes(b.byType, CHECK_TYPES);
+                const barPx =
+                  b.total > 0
+                    ? Math.round(MIN_BAR_PX + (TRACK_PX - MIN_BAR_PX) * (Math.sqrt(b.total) / Math.sqrt(maxTotal)))
+                    : 0;
+                const cPx = b.total > 0 ? Math.round((barPx * content) / b.total) : 0;
+                const chPx = b.total > 0 ? Math.round((barPx * check) / b.total) : 0;
+                const pPx = Math.max(0, barPx - cPx - chPx);
                 return (
                   <button
                     key={h}
@@ -320,33 +321,37 @@ function ScheduleTimeline({
                     className="group relative flex h-full flex-1 flex-col items-center justify-end focus:outline-none"
                     aria-label={`${String(h).padStart(2, "0")}:00`}
                   >
-                    {notable > 0 && (
-                      <span className="mb-0.5 text-[8px] font-semibold leading-none text-foreground/70">{notable}</span>
+                    {!isFuture && b.total > 3 && (
+                      <span className="mb-0.5 text-[8px] font-semibold leading-none text-foreground/60">{b.total}</span>
                     )}
-                    <div
-                      className={cn(
-                        "w-full rounded-sm transition-all",
-                        isFuture
-                          ? "h-1.5 border border-dashed border-zinc-700/60 bg-zinc-800/30"
-                          : cn(style.h, style.bar),
-                        isCurrent && "ring-2 ring-amber-400/80 animate-pulse",
-                        isSelected && !isCurrent && "ring-2 ring-blue-400",
-                        !isSelected && !isCurrent && "hover:brightness-125",
-                      )}
-                    />
-                    <div className="pointer-events-none absolute bottom-full left-1/2 z-10 mb-1 -translate-x-1/2 whitespace-nowrap rounded border border-zinc-700 bg-zinc-800 px-2 py-1 text-[10px] text-zinc-200 opacity-0 transition-opacity group-hover:opacity-100">
+                    {isFuture ? (
+                      <div className="h-1.5 w-full rounded-sm border border-dashed border-zinc-700/60 bg-zinc-800/30" />
+                    ) : (
+                      <div
+                        className={cn(
+                          "flex w-full flex-col overflow-hidden rounded-sm transition-all",
+                          isCurrent && "ring-2 ring-amber-400/80",
+                          isSelected && !isCurrent && "ring-2 ring-blue-400",
+                          !isSelected && !isCurrent && "hover:brightness-125",
+                        )}
+                        style={{ height: Math.max(3, barPx) }}
+                      >
+                        {cPx > 0 && <div className="bg-emerald-500/80" style={{ height: cPx }} />}
+                        {chPx > 0 && <div className="bg-violet-500/70" style={{ height: chPx }} />}
+                        {pPx > 0 && <div className="bg-cyan-500/55" style={{ height: pPx }} />}
+                      </div>
+                    )}
+                    <div className="pointer-events-none absolute bottom-full left-1/2 z-40 mb-1 -translate-x-1/2 whitespace-nowrap rounded border border-zinc-700 bg-zinc-800 px-2 py-1 text-[10px] text-zinc-200 opacity-0 transition-opacity group-hover:opacity-100">
                       {String(h).padStart(2, "0")}:00 — {isFuture ? "予定" : isCurrent ? "実行中" : hourSummary(b)}
                     </div>
                   </button>
                 );
               })}
-              {/* Now marker */}
-              <div className="pointer-events-none absolute inset-y-0 z-20" style={{ left: `${nowFrac}%` }}>
-                <div className="h-full w-px bg-amber-400/80" />
-                <div className="absolute -top-1.5 -translate-x-1/2 whitespace-nowrap rounded bg-amber-500 px-1 py-px text-[8px] font-bold text-black">
-                  今 {String(currentHour).padStart(2, "0")}:{String(currentMin).padStart(2, "0")}
-                </div>
-              </div>
+              {/* Now line (within bars only) */}
+              <div
+                className="pointer-events-none absolute inset-y-0 z-10 w-px bg-amber-400/60"
+                style={{ left: `${nowFrac}%` }}
+              />
             </div>
 
             {/* Hour axis */}
@@ -366,9 +371,9 @@ function ScheduleTimeline({
 
         {/* Legend */}
         <div className="mt-4 flex flex-wrap gap-x-4 gap-y-1.5 text-[10px] text-muted-foreground">
-          <LegendDot className="bg-emerald-500/70" label="記事生成" />
-          <LegendDot className="bg-violet-500/60" label="順位・AI引用チェック" />
-          <LegendDot className="bg-cyan-500/40" label="巡回・レポート（毎時）" />
+          <LegendDot className="bg-emerald-500/80" label="記事生成" />
+          <LegendDot className="bg-violet-500/70" label="順位・AI引用チェック" />
+          <LegendDot className="bg-cyan-500/55" label="巡回・レポート（毎時）" />
           <LegendDot className="bg-amber-400/80" label="現在" />
           <LegendDot className="border border-dashed border-zinc-600 bg-transparent" label="これから" />
         </div>

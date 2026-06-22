@@ -10,6 +10,7 @@ import {
   Check,
   ChevronRight,
   ExternalLink,
+  Video,
 } from "lucide-react";
 
 interface ArticleLite {
@@ -42,15 +43,17 @@ const DESTINATIONS = [
     // Hub の件数は記事DB（published_articles）から算出する
     method: null as string | null,
     alwaysOn: true,
+    comingSoon: false,
   },
   {
     key: "cms",
-    name: "あなたのサイト / WordPress",
-    desc: "連携すると、あなたの既存サイトにも自動投稿",
+    name: "自社サイト（WP / Wix / 自作）",
+    desc: "APIキー＋埋め込みコードで、どんなサイトにも連携",
     icon: Globe,
-    types: ["wordpress"],
+    types: ["wordpress", "site_api"],
     method: "WordPress",
     alwaysOn: false,
+    comingSoon: false,
   },
   {
     key: "gbp",
@@ -60,15 +63,27 @@ const DESTINATIONS = [
     types: ["google_business"],
     method: "GoogleBusiness",
     alwaysOn: false,
+    comingSoon: false,
   },
   {
-    key: "community",
-    name: "技術コミュニティ",
-    desc: "dev.to / Qiita / Hashnode（公式API）",
+    key: "note",
+    name: "note.com",
+    desc: "日本最大級のコンテンツ基盤に記事を展開",
     icon: FileText,
-    types: ["devto", "qiita", "hashnode"],
-    method: "BlogDistribution",
+    types: [] as string[],
+    method: null as string | null,
     alwaysOn: false,
+    comingSoon: true,
+  },
+  {
+    key: "video",
+    name: "動画 / 資料（YouTube・Speaker Deck）",
+    desc: "記事を動画・スライド化して別モダリティで露出",
+    icon: Video,
+    types: [] as string[],
+    method: null as string | null,
+    alwaysOn: false,
+    comingSoon: true,
   },
 ];
 
@@ -225,7 +240,11 @@ export function ExposureSummary({ projectId }: { projectId: string }) {
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">
                   <span className="truncate text-sm font-medium">{d.name}</span>
-                  {connected ? (
+                  {d.comingSoon ? (
+                    <span className="shrink-0 rounded-full bg-amber-500/15 px-1.5 py-0.5 text-[10px] font-medium text-amber-500">
+                      近日対応
+                    </span>
+                  ) : connected ? (
                     <span className="inline-flex shrink-0 items-center gap-0.5 rounded-full bg-emerald-500/15 px-1.5 py-0.5 text-[10px] font-medium text-emerald-500">
                       <Check className="h-2.5 w-2.5" />
                       {d.alwaysOn ? "常時有効" : "連携済み"}
@@ -237,32 +256,38 @@ export function ExposureSummary({ projectId }: { projectId: string }) {
                   )}
                 </div>
                 <div className="truncate text-xs text-muted-foreground">{d.desc}</div>
-                <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-muted-foreground">
-                  <span>
-                    累計{" "}
-                    <span className="font-semibold text-foreground">{s.total}</span>件/
-                    {hub.total}件
-                  </span>
-                  <span>
-                    今月{" "}
-                    <span className="font-semibold text-foreground">{s.month}</span>件/
-                    {hub.month}件
-                  </span>
-                  <span>
-                    今日{" "}
-                    <span
-                      className={`font-semibold ${s.today > 0 ? "text-blue-400" : "text-foreground"}`}
-                    >
-                      {s.today}
-                    </span>件/{hub.today}件
-                  </span>
-                </div>
+                {d.comingSoon ? (
+                  <div className="mt-1.5 text-[11px] text-muted-foreground/70">準備中 — 近日対応予定</div>
+                ) : (
+                  <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-muted-foreground">
+                    <span>
+                      累計{" "}
+                      <span className="font-semibold text-foreground">{s.total}</span>件/
+                      {hub.total}件
+                    </span>
+                    <span>
+                      今月{" "}
+                      <span className="font-semibold text-foreground">{s.month}</span>件/
+                      {hub.month}件
+                    </span>
+                    <span>
+                      今日{" "}
+                      <span
+                        className={`font-semibold ${s.today > 0 ? "text-blue-400" : "text-foreground"}`}
+                      >
+                        {s.today}
+                      </span>件/{hub.today}件
+                    </span>
+                  </div>
+                )}
               </div>
               <div className="mt-0.5 shrink-0 text-right text-xs">
                 {d.alwaysOn ? (
                   <span className="inline-flex items-center gap-0.5 text-blue-400">
                     開く <ExternalLink className="h-3 w-3" />
                   </span>
+                ) : d.comingSoon ? (
+                  <span className="text-muted-foreground/60">近日</span>
                 ) : connected ? (
                   <span className="text-emerald-500">公開中</span>
                 ) : (
@@ -286,6 +311,9 @@ export function ExposureSummary({ projectId }: { projectId: string }) {
               </a>
             );
           }
+          if (d.comingSoon) {
+            return <div key={d.key}>{inner}</div>;
+          }
           return (
             <Link key={d.key} href={`/projects/${projectId}/channels`}>
               {inner}
@@ -296,7 +324,7 @@ export function ExposureSummary({ projectId }: { projectId: string }) {
 
       <p className="mt-3 text-xs text-muted-foreground">
         ※ 各ブロックの件数は「その露出先に届いた件数／公開した全件数」です（例: 本日 0件/15件 ＝ 本日公開した15件のうち0件がその露出先に届いた）。
-        自社Hub以外（WordPress・GBP・技術コミュニティ）の記事は、連携先のプラットフォーム上で公開・閲覧されます。連携はチャネル画面から。
+        自社Hub以外の記事は連携先のプラットフォーム上で公開・閲覧されます。<b className="text-foreground/80">自社サイト（WP/Wix/自作）はチャネル画面のAPIキー＋埋め込みコードで連携</b>できます。
       </p>
     </div>
   );

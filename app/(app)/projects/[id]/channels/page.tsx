@@ -2,6 +2,7 @@
 
 import { use, useState, useEffect } from "react";
 import { ChannelManager } from "@/components/channels/channel-manager";
+import { SiteIntegration } from "@/components/dashboard/site-integration";
 import { Activity } from "lucide-react";
 import { Card, CardContent } from "@/components/ui";
 
@@ -57,6 +58,7 @@ export default function ProjectChannelsPage({
           プロジェクトの配信チャネルを管理・設定
         </p>
       </div>
+      <SiteIntegration projectId={projectId} />
       <ChannelManager
         projectId={projectId}
         workspaceId={project?.workspaceId}

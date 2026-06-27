@@ -88,6 +88,9 @@ export interface PresenceProject {
   targetUrl: string;
   brandName: string;
   keywords: string[];
+  /** 主役キーワード（ユーザーが「この語で検索1位を狙う」と指定した最優先語）。
+   *  未指定なら keywords 先頭を主役とみなす。毎サイクルの主力(pillar)記事はこの語で生成する。 */
+  primaryKeyword?: string;
   targetCountries: string[];
   methods: PresenceMethod[];
   status: "active" | "paused" | "completed";
@@ -342,6 +345,15 @@ async function runCycle(project: PresenceProject, cycleNumber = 0): Promise<Cycl
     console.error(`[Engine] Browser reset failed for cycle ${cycleId}:`, error);
   }
 
+  // 主役キーワード（ユーザーが「この語で1位を狙う」と指定した最優先語）。
+  // primaryKeyword を最優先し、無ければ keywords 先頭を採用。これをサイクルの背骨にして
+  // 記事・発掘・順位監視をこの1語＋その派生に集中させる（キーワードのバラけ防止）。
+  const primaryKeyword = (
+    project.primaryKeyword?.trim() ||
+    project.keywords.find((k) => !!k && k.trim().length > 0)?.trim() ||
+    ""
+  );
+
   // --- Phase 1: キーワード自動発掘（1日1回） ---
   if (runSerpLlm && project.keywords.length > 0) {
     const primaryCountry = project.targetCountries[0] ?? "JP";
@@ -350,7 +362,10 @@ async function runCycle(project: PresenceProject, cycleNumber = 0): Promise<Cycl
       const discovered = await discoverKeywords({
         projectId: project.id,
         taskId: `${cycleId}-keywords`,
-        seedKeywords: project.keywords.slice(0, 5),
+        // 主役キーワードを必ず先頭シードにし、そのロングテール（例:「ドローンショー 料金/演出/結婚式」）を集中発掘
+        seedKeywords: Array.from(
+          new Set([primaryKeyword, ...project.keywords].filter((k) => !!k && k.trim().length > 0)),
+        ).slice(0, 5),
         brandName: project.brandName,
         country: primaryCountry,
         language: primaryLang,
@@ -377,8 +392,18 @@ async function runCycle(project: PresenceProject, cycleNumber = 0): Promise<Cycl
   const discoveredBatch = getNextKeywordBatch(project.id, 8)
     .map((k) => k.keyword)
     .filter(isUsableKw);
+  // 主役キーワードを必ず先頭(=pillar/Opusスロット, 下の kwIndex===0)に固定し、
+  // 残り枠は「主役の派生（主役語を含む/主役に含まれるロングテール）」を優先して充てる。
+  // これで毎サイクルの主力記事は必ずユーザーの狙った語で生成・公開され、Hubのキーワード欄も主役中心になる。
+  const primaryChildren = discoveredBatch.filter(
+    (k) => !!primaryKeyword && (k.includes(primaryKeyword) || primaryKeyword.includes(k)),
+  );
   const cycleKeywords = Array.from(
-    new Set([...discoveredBatch, ...project.keywords.filter(isUsableKw)]),
+    new Set(
+      [primaryKeyword, ...primaryChildren, ...discoveredBatch, ...project.keywords].filter(
+        isUsableKw,
+      ),
+    ),
   ).slice(0, 3);
   console.log(
     `[Engine] Cycle keywords (discovered=${discoveredBatch.length}, total=${cycleKeywords.length}): ${cycleKeywords.join(", ")}`,
@@ -434,7 +459,11 @@ async function runCycle(project: PresenceProject, cycleNumber = 0): Promise<Cycl
 
       // SERP順位チェック（キーワードごと）。Playwrightスクレイピングは失敗しがちで遅いため、
       // 監視は軽量に（上位3件のみ）し、コンテンツ生成をブロックしないようにする。
-      for (const keyword of project.keywords.filter(isUsableKw).slice(0, 3)) {
+      // 主役キーワードの順位を必ず監視対象の先頭に（「この語で1位」を測る）
+      const serpKeywords = Array.from(
+        new Set([primaryKeyword, ...project.keywords].filter(isUsableKw)),
+      ).slice(0, 3);
+      for (const keyword of serpKeywords) {
         try {
           const result = await checkSerp({
             projectId: project.id,
@@ -460,8 +489,8 @@ async function runCycle(project: PresenceProject, cycleNumber = 0): Promise<Cycl
     if (project.methods.includes("GEO") && runSerpLlm) {
       const queries = [
         `${project.brandName}について教えて`,
-        `${project.keywords[0] ?? project.brandName} おすすめ`,
-        `${project.keywords[0] ?? project.brandName} 比較`,
+        `${primaryKeyword || project.brandName} おすすめ`,
+        `${primaryKeyword || project.brandName} 比較`,
       ];
 
       for (const query of queries) {
@@ -495,7 +524,7 @@ async function runCycle(project: PresenceProject, cycleNumber = 0): Promise<Cycl
         generateFaq({
           projectId: project.id,
           taskId: `${cycleId}-faq-${country}`,
-          topic: project.keywords[0] ?? project.brandName,
+          topic: primaryKeyword || project.brandName,
           existingQuestions: [],
           country,
           language,
@@ -517,7 +546,7 @@ async function runCycle(project: PresenceProject, cycleNumber = 0): Promise<Cycl
                 title: faq.title,
                 body: faq.body,
                 type: "faq",
-                keyword: project.keywords[0],
+                keyword: primaryKeyword || project.keywords[0],
                 language,
               },
               cmsConfig: project.cmsConfig,
@@ -754,7 +783,7 @@ async function runCycle(project: PresenceProject, cycleNumber = 0): Promise<Cycl
                   body: content.body,
                   tags: (content.metadata?.keywords as string[]) ?? project.keywords.slice(0, 5),
                 },
-                keyword: project.keywords[0] ?? project.brandName,
+                keyword: primaryKeyword || project.brandName,
                 language,
               },
               channels: readyChannels,

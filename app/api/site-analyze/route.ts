@@ -129,6 +129,15 @@ export async function POST(request: NextRequest) {
       if (/^(https?:\/\/|www\.|mailto:|tel:)/.test(k)) return false;
       if (/[@#]/.test(k)) return false;
       if (/\.(com|co|jp|org|net|io)\b/.test(k)) return false;
+      // Slogans/taglines/sentences: anything with sentence punctuation is not a
+      // keyword (e.g. "未来を、創る。" or "あなたの夢を叶えます！").
+      if (/[。！？!?]/.test(k) || /[、]$/.test(k)) return false;
+      // Sentence-like phrases: a full-width space usually joins clauses
+      // (catchcopy), and a long unbroken Japanese run with no space is prose,
+      // not a single keyword. Keep this conservative so "brand サービス" style
+      // candidates (which use a half-width space and are short) still pass.
+      if (/　/.test(k)) return false;
+      if (k.length > 18 && !/[\s]/.test(k)) return false;
       // Too long = sentence, not keyword
       if (k.split(/[\s　]/).length > 4) return false;
       // Ends with particle = not a keyword (e.g. "VISIONOIDは", "VISIONOIDの")

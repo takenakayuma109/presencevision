@@ -35,6 +35,7 @@ export default function ProjectSettingsPage({
   const [url, setUrl] = useState("");
   const [description, setDescription] = useState("");
   const [keywords, setKeywords] = useState<string[]>([]);
+  const [primaryKeyword, setPrimaryKeyword] = useState<string>("");
   const [keywordInput, setKeywordInput] = useState("");
   const [competitors, setCompetitors] = useState<string[]>([]);
   const [competitorInput, setCompetitorInput] = useState("");
@@ -52,6 +53,10 @@ export default function ProjectSettingsPage({
           setDescription(data.description ?? "");
           const meta = data.metadata as Record<string, unknown> | null;
           setKeywords((meta?.keywords as string[]) ?? []);
+          setPrimaryKeyword(
+            (meta?.primaryKeyword as string) ??
+              ((meta?.keywords as string[])?.[0] ?? ""),
+          );
           setAutoPublish(meta?.autoPublish === true);
           setCompetitors(data.competitors.map((c) => c.name));
         }
@@ -96,6 +101,7 @@ export default function ProjectSettingsPage({
           url: url.trim() || null,
           description: description.trim() || null,
           keywords,
+          primaryKeyword,
           competitors,
           autoPublish,
         }),
@@ -104,6 +110,13 @@ export default function ProjectSettingsPage({
       const updated = await res.json();
       setProject(updated);
       setSaveStatus("saved");
+      // Push the updated keyword config to the running engine (best-effort —
+      // does not block the "saved" status).
+      fetch(`/api/projects/${projectId}/engine`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ keywords, primaryKeyword }),
+      }).catch(() => {});
       setTimeout(() => setSaveStatus("idle"), 3000);
     } catch {
       setSaveStatus("error");
@@ -278,6 +291,18 @@ export default function ProjectSettingsPage({
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
+          {/* Primary (main) keyword — the user's #1 target */}
+          <div className="space-y-1.5">
+            <label className="text-sm font-medium block">
+              メインキーワード（最優先で1位を狙う語）
+            </label>
+            <p className="text-xs text-muted-foreground">記事はこのワード中心に生成されます。</p>
+            <Input
+              value={primaryKeyword}
+              onChange={(e) => setPrimaryKeyword(e.target.value)}
+              placeholder="例: ドローンショー"
+            />
+          </div>
           <div className="flex gap-2">
             <Input
               value={keywordInput}

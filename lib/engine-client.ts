@@ -147,6 +147,7 @@ export async function startEngine(project: {
   url: string;
   brandName: string;
   keywords: string[];
+  primaryKeyword?: string;
   targetCountries: string[];
   methods: string[];
   cmsConfig?: CmsConfig;
@@ -159,6 +160,7 @@ export async function startEngine(project: {
       targetUrl: project.url,
       brandName: project.brandName,
       keywords: project.keywords,
+      primaryKeyword: project.primaryKeyword,
       targetCountries: project.targetCountries,
       methods: mapMethodsToEngine(project.methods),
       status: "active",

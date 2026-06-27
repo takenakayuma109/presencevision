@@ -62,6 +62,12 @@ export async function POST(
       Array.isArray(v) ? (v.filter((x) => typeof x === "string") as string[]) : [];
 
     const keywords = asArr(body.keywords).length ? asArr(body.keywords) : asArr(meta.keywords);
+    // User's #1 target keyword: explicit body > persisted metadata > first keyword.
+    const primaryKeyword =
+      (typeof body.primaryKeyword === "string" && body.primaryKeyword.trim()) ||
+      (typeof meta.primaryKeyword === "string" && meta.primaryKeyword) ||
+      keywords[0] ||
+      undefined;
     const methods = asArr(body.methods).length
       ? asArr(body.methods)
       : asArr(meta.methods).length
@@ -92,31 +98,47 @@ export async function POST(
     }
 
     // Register with the engine（契約から確定した planId と会社プロフィールを注入）
-    const engineRes = await fetch(`${ENGINE_URL}/engine/start`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "x-api-key": ENGINE_API_KEY,
-      },
-      body: JSON.stringify({
-        id: project.id,
-        name: project.name,
-        targetUrl: url || `https://${project.name.toLowerCase().replace(/\s+/g, "-")}.com`,
-        brandName,
-        keywords,
-        targetCountries,
-        methods,
-        autoPublish: meta.autoPublish === true || body.autoPublish === true,
-        planId: access.planId,
-        ...(companyProfile ? { companyProfile } : {}),
-        status: "active",
-        createdAt: project.createdAt,
-      }),
-    });
+    const engineHeaders = {
+      "Content-Type": "application/json",
+      "x-api-key": ENGINE_API_KEY,
+    };
+    const startEngineFetch = () =>
+      fetch(`${ENGINE_URL}/engine/start`, {
+        method: "POST",
+        headers: engineHeaders,
+        body: JSON.stringify({
+          id: project.id,
+          name: project.name,
+          targetUrl: url || `https://${project.name.toLowerCase().replace(/\s+/g, "-")}.com`,
+          brandName,
+          keywords,
+          ...(primaryKeyword ? { primaryKeyword } : {}),
+          targetCountries,
+          methods,
+          autoPublish: meta.autoPublish === true || body.autoPublish === true,
+          planId: access.planId,
+          ...(companyProfile ? { companyProfile } : {}),
+          status: "active",
+          createdAt: project.createdAt,
+        }),
+      });
+
+    let engineRes = await startEngineFetch();
+
+    // 409 = already running. To make re-registration actually apply updated
+    // keywords/primaryKeyword to a RUNNING engine, stop it and start again.
+    if (engineRes.status === 409) {
+      await fetch(`${ENGINE_URL}/engine/stop`, {
+        method: "POST",
+        headers: engineHeaders,
+        body: JSON.stringify({ projectId: project.id }),
+      }).catch(() => {});
+      engineRes = await startEngineFetch();
+    }
 
     if (!engineRes.ok) {
       const errData = await engineRes.json().catch(() => ({}));
-      // 409 means already running — treat as success
+      // Retry still reports already-running — treat as success (config best-effort)
       if (engineRes.status === 409) {
         return NextResponse.json({
           message: "Project is already registered with the engine",

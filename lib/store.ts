@@ -173,6 +173,8 @@ export interface WizardState {
   step: 1 | 2 | 3 | 4;
   siteInfo: SiteInfo | null;
   keywords: string[];
+  /** User's #1 target keyword. Defaults to keywords[0] when empty. */
+  primaryKeyword: string;
   competitors: string[];
   brandName: string;
   goals: PresenceGoal[];
@@ -239,6 +241,8 @@ export interface Project {
   duration: string;
   additionalNotes: string;
   keywords: string[];
+  /** User's #1 target keyword. Defaults to keywords[0] when empty. */
+  primaryKeyword?: string;
   competitors: string[];
   brandName: string;
   reportConfig: ReportConfig;
@@ -341,6 +345,7 @@ function initialWizardState(): WizardState {
     step: 1,
     siteInfo: null,
     keywords: [],
+    primaryKeyword: "",
     competitors: [],
     brandName: "",
     goals: [],
@@ -533,6 +538,7 @@ interface StoreActions {
   setWizardNotes: (notes: string) => void;
   setWizardReportConfig: (config: Partial<ReportConfig>) => void;
   setWizardKeywords: (keywords: string[]) => void;
+  setWizardPrimaryKeyword: (kw: string) => void;
   setWizardCompetitors: (competitors: string[]) => void;
   setWizardBrandName: (brandName: string) => void;
   setWizardCmsConfig: (config: CmsConfig | undefined) => void;
@@ -575,6 +581,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     setWizard((p) => ({ ...p, reportConfig: { ...p.reportConfig, ...config } }));
   }, []);
   const setWizardKeywords = useCallback((keywords: string[]) => setWizard((p) => ({ ...p, keywords })), []);
+  const setWizardPrimaryKeyword = useCallback((kw: string) => setWizard((p) => ({ ...p, primaryKeyword: kw })), []);
   const setWizardCompetitors = useCallback((competitors: string[]) => setWizard((p) => ({ ...p, competitors })), []);
   const setWizardBrandName = useCallback((brandName: string) => setWizard((p) => ({ ...p, brandName })), []);
   const setWizardCmsConfig = useCallback((config: CmsConfig | undefined) => setWizard((p) => ({ ...p, cmsConfig: config })), []);
@@ -587,7 +594,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         ...p,
         siteInfo: info,
         brandName: p.brandName || info.title || "",
-        keywords: p.keywords.length > 0 ? p.keywords : (info.suggestedKeywords ?? []),
+        keywords: p.keywords.length > 0 ? p.keywords : (info.suggestedKeywords ?? []).slice(0, 6),
         isAnalyzing: false,
       }));
     } catch { setWizard((p) => ({ ...p, isAnalyzing: false })); }
@@ -606,6 +613,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     if (!w.siteInfo || !w.generatedPlan) return;
 
     const brandName = w.brandName || w.siteInfo.title || w.siteInfo.url;
+    // User's #1 target keyword — falls back to the first keyword when unset.
+    const primaryKeyword = (w.primaryKeyword?.trim() || w.keywords[0] || "").trim();
 
     // Persist to database via API
     let dbProjectId: string | null = null;
@@ -619,6 +628,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
           description: w.additionalNotes || undefined,
           locale: w.siteInfo.language || "ja",
           keywords: w.keywords,
+          primaryKeyword,
           competitors: w.competitors,
           goals: w.goals,
           businessCountries: w.businessCountries,
@@ -656,6 +666,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       duration: w.duration,
       additionalNotes: w.additionalNotes,
       keywords: w.keywords,
+      primaryKeyword,
       competitors: w.competitors,
       brandName,
       reportConfig: w.reportConfig,
@@ -677,6 +688,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       url: proj.url,
       brandName: proj.siteInfo.title || proj.name,
       keywords: w.keywords,
+      primaryKeyword,
       targetCountries: expandPresenceCountries(proj.presenceCountries),
       methods: proj.methods,
       cmsConfig: proj.cmsConfig,
@@ -699,6 +711,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
           url: proj.url,
           brandName: proj.siteInfo.title || proj.name,
           keywords: proj.keywords ?? [],
+          primaryKeyword: proj.primaryKeyword ?? proj.keywords?.[0],
           targetCountries: expandPresenceCountries(proj.presenceCountries),
           methods: proj.methods,
           cmsConfig: proj.cmsConfig,
@@ -726,7 +739,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     openWizard, closeWizard, setWizardStep, setWizardSiteInfo,
     setWizardGoals, setWizardBusinessCountries, setWizardPresenceCountries,
     setWizardAudiences, setWizardMethods, setWizardDuration, setWizardNotes,
-    setWizardReportConfig, setWizardKeywords, setWizardCompetitors, setWizardBrandName, setWizardCmsConfig,
+    setWizardReportConfig, setWizardKeywords, setWizardPrimaryKeyword, setWizardCompetitors, setWizardBrandName, setWizardCmsConfig,
     analyzeSiteUrl, generatePlan, confirmAndStartProject,
     removeProject, updateProjectStatus, updateProjectReportConfig, updateProjectSettings, selectTask,
   };

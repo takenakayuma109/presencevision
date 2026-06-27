@@ -17,7 +17,7 @@ interface SuggestedCompetitor {
 export function StepUrl() {
   const {
     wizard, analyzeSiteUrl, setWizardStep,
-    setWizardKeywords, setWizardCompetitors, setWizardBrandName,
+    setWizardKeywords, setWizardPrimaryKeyword, setWizardCompetitors, setWizardBrandName,
   } = useStore();
   const [url, setUrl] = useState("");
   const [keywordInput, setKeywordInput] = useState("");
@@ -179,11 +179,26 @@ export function StepUrl() {
               />
             </div>
 
-            {/* Keywords */}
+            {/* Primary (main) keyword — the user's #1 target */}
+            <div className="space-y-2">
+              <div className="flex items-center gap-2">
+                <Trophy className="h-4 w-4 text-amber-500" />
+                <h3 className="text-sm font-semibold">メインキーワード（このワードで検索1位を狙います）</h3>
+              </div>
+              <p className="text-xs text-muted-foreground ml-6">最優先で対策する1語。記事はこのワード中心に作られます。</p>
+              <Input
+                value={wizard.primaryKeyword}
+                onChange={(e) => setWizardPrimaryKeyword(e.target.value)}
+                placeholder="例: ドローンショー"
+                className="h-10"
+              />
+            </div>
+
+            {/* Related keywords (optional) */}
             <div className="space-y-2">
               <div className="flex items-center gap-2">
                 <Search className="h-4 w-4 text-muted-foreground" />
-                <h3 className="text-sm font-semibold">{t("wizard.keywords")}</h3>
+                <h3 className="text-sm font-semibold">関連キーワード（任意）</h3>
               </div>
               <p className="text-xs text-muted-foreground ml-6">{t("wizard.keywordsDesc")}</p>
               {wizard.keywords.length > 0 && (

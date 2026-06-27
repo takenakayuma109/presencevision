@@ -101,6 +101,7 @@ export async function POST(request: NextRequest) {
       description,
       locale,
       keywords,
+      primaryKeyword,
       competitors,
       goals,
       businessCountries,
@@ -127,9 +128,17 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Could not resolve workspace" }, { status: 500 });
     }
 
+    // User's #1 target keyword. Falls back to the first keyword when unset so
+    // generated content stays centered on the user's real goal.
+    const resolvedPrimary =
+      (typeof primaryKeyword === "string" && primaryKeyword.trim()) ||
+      (Array.isArray(keywords) && keywords[0]) ||
+      undefined;
+
     // Store wizard-specific config as metadata JSON
     const metadata: Record<string, unknown> = {};
     if (keywords?.length) metadata.keywords = keywords;
+    if (resolvedPrimary) metadata.primaryKeyword = resolvedPrimary;
     if (goals?.length) metadata.goals = goals;
     if (businessCountries?.length) metadata.businessCountries = businessCountries;
     if (presenceCountries?.length) metadata.presenceCountries = presenceCountries;
@@ -179,6 +188,7 @@ export async function POST(request: NextRequest) {
           targetUrl: url || `https://${name.toLowerCase().replace(/\s+/g, "-")}.com`,
           brandName: brandName || name,
           keywords: keywords || [],
+          ...(resolvedPrimary ? { primaryKeyword: resolvedPrimary } : {}),
           targetCountries: presenceCountries || ["JP"],
           methods: methods || ["SEO"],
           autoPublish: autoPublish === true, // おまかせモード（既定は安全モード=承認あり）

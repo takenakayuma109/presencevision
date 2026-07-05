@@ -99,7 +99,7 @@ export async function checkSerp(params: {
   // UI入力はNFD（分解形。例: ド = ト + 濁点）で来ることがある（macOSの日本語入力等）。
   // Search Console は NFC（合成形）でクエリしないと同じ語でもヒットしないため、
   // 必ずNFC正規化してから検索・記録する。
-  const keyword = (keyword || "").normalize("NFC");
+  const keyword = (params.keyword || "").normalize("NFC");
   const activity = startActivity({
     projectId: params.projectId,
     taskId: params.taskId,

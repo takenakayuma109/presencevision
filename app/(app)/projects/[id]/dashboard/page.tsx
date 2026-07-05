@@ -102,7 +102,15 @@ function getTaskTags(type: string): ("SERP" | "LLM")[] {
 // Hero Metric Cards
 // ---------------------------------------------------------------------------
 
-function HeroMetrics({ data, loading }: { data: AnalyticsData | null; loading: boolean }) {
+function HeroMetrics({
+  data,
+  loading,
+  primaryKeyword,
+}: {
+  data: AnalyticsData | null;
+  loading: boolean;
+  primaryKeyword?: string;
+}) {
   const avgPos = data?.summary.avgPosition;
   const mentionRate = data?.summary.llmMentionRate;
   const mentionedCount = data?.summary.llmMentionedCount ?? 0;
@@ -131,8 +139,19 @@ function HeroMetrics({ data, loading }: { data: AnalyticsData | null; loading: b
                 )}
               </div>
               <p className="text-sm text-blue-300/70 mt-1">平均検索順位（SERP）</p>
+              <div className="mt-1.5">
+                {primaryKeyword ? (
+                  <span className="inline-flex items-center gap-1 rounded-full bg-blue-500/15 px-2 py-0.5 text-xs font-medium text-blue-100">
+                    🔍 検索キーワード：{primaryKeyword}
+                  </span>
+                ) : (
+                  <span className="text-xs text-blue-300/50">
+                    検索キーワード：メインキーワード未設定（設定→キーワードで指定）
+                  </span>
+                )}
+              </div>
               <p className="mt-2 max-w-xs text-xs leading-relaxed text-blue-200/50">
-                SERP（Search Engine Results Page＝検索結果ページ）＝Googleなどの検索結果画面。自社ページが平均で何番目に出るかを示します。数字が小さい＝上位で良い。「---」は順位をまだ実測できていない状態です（実測値の取得元を接続すると表示されます）。
+                「{primaryKeyword || "メインキーワード"}」でGoogle検索したとき、自社ページが平均で何番目に出るか（SERP＝Search Engine Results Page／検索結果ページ）。数字が小さい＝上位で良い。「---」は順位をまだ実測できていない状態です（実測値の取得元を接続すると表示されます）。
               </p>
             </div>
             <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-500/15">
@@ -168,8 +187,19 @@ function HeroMetrics({ data, loading }: { data: AnalyticsData | null; loading: b
                   </span>
                 )}
               </p>
+              <div className="mt-1.5">
+                {primaryKeyword ? (
+                  <span className="inline-flex items-center gap-1 rounded-full bg-purple-500/15 px-2 py-0.5 text-xs font-medium text-purple-100">
+                    💬 検索キーワード：{primaryKeyword}（＋ブランド名）
+                  </span>
+                ) : (
+                  <span className="text-xs text-purple-300/50">
+                    検索キーワード：メインキーワード未設定（設定→キーワードで指定）
+                  </span>
+                )}
+              </div>
               <p className="mt-2 max-w-xs text-xs leading-relaxed text-purple-200/50">
-                ChatGPTなどのAI（LLM＝大規模言語モデル）が回答の中で自社を引用した割合。新しいブランドは0%から始まり、記事が増えるにつれて上がっていきます。
+                AI（LLM＝大規模言語モデル）に「{primaryKeyword || "メインキーワード"}」やブランド名について質問したとき、回答の中で自社が引用された割合。新しいブランドは0%から始まり、記事が増えるにつれて上がっていきます。
               </p>
             </div>
             <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-purple-500/15">
@@ -936,6 +966,7 @@ export default function ProjectDashboardPage({
   const [activitiesError, setActivitiesError] = useState<string | null>(null);
   const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
   const [selectedHour, setSelectedHour] = useState<number>(() => jstNowHM().hour);
+  const [primaryKeyword, setPrimaryKeyword] = useState<string>("");
 
   // Fetch analytics
   const fetchAnalytics = useCallback(async () => {
@@ -988,13 +1019,31 @@ export default function ProjectDashboardPage({
     }
   }, [projectId]);
 
+  // メインキーワード（＝SERP/LLMの測定対象キーワード）を取得
+  const fetchKeyword = useCallback(async () => {
+    try {
+      const res = await fetch(`/api/projects/${projectId}`);
+      if (!res.ok) return;
+      const data = await res.json();
+      const meta = (data?.metadata ?? {}) as Record<string, unknown>;
+      const kw =
+        (typeof meta.primaryKeyword === "string" && meta.primaryKeyword.trim()) ||
+        (Array.isArray(meta.keywords) ? (meta.keywords as string[])[0] : "") ||
+        "";
+      setPrimaryKeyword(typeof kw === "string" ? kw : "");
+    } catch {
+      /* ignore — カード側で未設定表示にフォールバック */
+    }
+  }, [projectId]);
+
   // Initial load only — manual refresh via button
   useEffect(() => {
     fetchAnalytics();
     fetchActivities();
     fetchHourly();
+    fetchKeyword();
     setLastRefresh(new Date());
-  }, [fetchAnalytics, fetchActivities, fetchHourly]);
+  }, [fetchAnalytics, fetchActivities, fetchHourly, fetchKeyword]);
 
   // プロジェクトをエンジンに自動登録（未起動なら起動＝即サイクル実行・冪等）。
   // ダッシュボードを開いた瞬間にエンジンが動き出すようにする。
@@ -1010,6 +1059,7 @@ export default function ProjectDashboardPage({
     fetchAnalytics();
     fetchActivities();
     fetchHourly();
+    fetchKeyword();
     setLastRefresh(new Date());
   };
 
@@ -1138,7 +1188,7 @@ export default function ProjectDashboardPage({
       )}
 
       {/* 2. Hero Metric Cards */}
-      <HeroMetrics data={analytics} loading={analyticsLoading} />
+      <HeroMetrics data={analytics} loading={analyticsLoading} primaryKeyword={primaryKeyword} />
 
       {/* 3. 24-Hour Schedule Timeline */}
       <ScheduleTimeline

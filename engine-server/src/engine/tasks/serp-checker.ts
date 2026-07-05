@@ -96,6 +96,10 @@ export async function checkSerp(params: {
   country: string;
   language: string;
 }): Promise<SerpResult> {
+  // UI入力はNFD（分解形。例: ド = ト + 濁点）で来ることがある（macOSの日本語入力等）。
+  // Search Console は NFC（合成形）でクエリしないと同じ語でもヒットしないため、
+  // 必ずNFC正規化してから検索・記録する。
+  const keyword = (keyword || "").normalize("NFC");
   const activity = startActivity({
     projectId: params.projectId,
     taskId: params.taskId,
@@ -103,13 +107,13 @@ export async function checkSerp(params: {
     country: params.country,
     language: params.language,
     method: "SEO",
-    description: `SERP順位チェック: "${params.keyword}" (${params.country})`,
+    description: `SERP順位チェック: "${keyword}" (${params.country})`,
   });
 
   const targetDomain = hostnameOf(params.targetUrl);
 
   const empty = (): SerpResult => ({
-    keyword: params.keyword,
+    keyword,
     country: params.country,
     language: params.language,
     targetUrl: params.targetUrl,
@@ -154,7 +158,7 @@ export async function checkSerp(params: {
           dimensionFilterGroups: [
             {
               filters: [
-                { dimension: "query", operator: "equals", expression: params.keyword },
+                { dimension: "query", operator: "equals", expression: keyword },
               ],
             },
           ],
@@ -179,10 +183,10 @@ export async function checkSerp(params: {
 
     addArtifact(activity.id, {
       type: "json",
-      title: `Search Console: "${params.keyword}" (${startDate}〜${endDate})`,
+      title: `Search Console: "${keyword}" (${startDate}〜${endDate})`,
       content: JSON.stringify(
         {
-          keyword: params.keyword,
+          keyword: keyword,
           siteUrl,
           position,
           impressions: row?.impressions ?? 0,
@@ -219,7 +223,7 @@ export async function checkSerp(params: {
   } catch (error) {
     // エラー（未連携含む）でもクラッシュさせない — スキップ扱い
     const msg = error instanceof Error ? error.message : String(error);
-    console.warn(`[SERP] Skipping "${params.keyword}": ${msg}`);
+    console.warn(`[SERP] Skipping "${keyword}": ${msg}`);
     completeActivity(activity.id, {
       metrics: { position: -1, topResultsCount: 0, paaCount: 0 },
       details: { note: `スキップ: ${msg}`, source: "search-console" },

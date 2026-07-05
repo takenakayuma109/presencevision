@@ -57,6 +57,7 @@ services:
       - BROWSER_HEADLESS=true
       - ENGINE_CYCLE_INTERVAL_MS=${ENGINE_CYCLE_INTERVAL_MS:-21600000}
       - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
+      - GOOGLE_SA_KEY=${GOOGLE_SA_KEY:-}
       - DATABASE_URL=postgresql://${POSTGRES_USER:-pvuser}:${POSTGRES_PASSWORD}@postgres:5432/presencevision
     ports:
       - "4000:4000"

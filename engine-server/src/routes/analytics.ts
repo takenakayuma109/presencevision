@@ -74,13 +74,13 @@ router.get("/", async (req: Request, res: Response) => {
       `SELECT
          DATE(started_at) AS date,
          description,
-         (metrics->>'position')::int AS position
+         (metrics->>'position')::float AS position
        FROM activities
        WHERE project_id = $1
          AND type = 'serp_check'
          AND status = 'completed'
          AND metrics->>'position' IS NOT NULL
-         AND (metrics->>'position')::int > 0
+         AND (metrics->>'position')::float > 0
          AND started_at >= NOW() - INTERVAL '1 day' * $2
        ORDER BY date ASC`,
       [projectId, dayCount],
@@ -168,7 +168,7 @@ router.get("/", async (req: Request, res: Response) => {
          AVG((metrics->>'position')::float) FILTER (
            WHERE type = 'serp_check' AND status = 'completed'
              AND metrics->>'position' IS NOT NULL
-             AND (metrics->>'position')::int > 0
+             AND (metrics->>'position')::float > 0
          ) AS avg_position,
          COUNT(*) FILTER (
            WHERE type = 'llm_check' AND status = 'completed'
@@ -284,7 +284,7 @@ router.get("/timeseries", async (req: Request, res: Response) => {
               AVG((metrics->>'position')::float) AS avg_pos, COUNT(*)::int AS n
        FROM activities
        WHERE project_id = $1 AND type = 'serp_check' AND status = 'completed'
-         AND metrics->>'position' IS NOT NULL AND (metrics->>'position')::int > 0
+         AND metrics->>'position' IS NOT NULL AND (metrics->>'position')::float > 0
          AND ${rangeWhere("started_at")}
        GROUP BY 1`,
       [projectId, from, to],

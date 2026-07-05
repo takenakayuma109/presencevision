@@ -106,12 +106,16 @@ function HeroMetrics({
   data,
   loading,
   primaryKeyword,
+  primaryKeywordPosition,
 }: {
   data: AnalyticsData | null;
   loading: boolean;
   primaryKeyword?: string;
+  primaryKeywordPosition?: number | null;
 }) {
-  const avgPos = data?.summary.avgPosition;
+  // SERPカードは「メインキーワード単体」の順位を出す。全キーワードの平均だと
+  // 自社ブランド名（ほぼ1位）に引っ張られて実態より良く見え、誤解を招くため。
+  const serpPos = primaryKeywordPosition ?? null;
   const mentionRate = data?.summary.llmMentionRate;
   const mentionedCount = data?.summary.llmMentionedCount ?? 0;
   const totalChecks = data?.summary.llmTotalChecks ?? 0;
@@ -131,14 +135,14 @@ function HeroMetrics({
                   <Loader2 className="h-8 w-8 animate-spin text-blue-400" />
                 ) : (
                   <span className="text-5xl font-bold text-blue-50 tracking-tight">
-                    {avgPos != null ? `${avgPos}` : "---"}
+                    {serpPos != null ? `${Math.round(serpPos)}` : "---"}
                   </span>
                 )}
-                {avgPos != null && (
+                {serpPos != null && (
                   <span className="text-2xl font-semibold text-blue-300">位</span>
                 )}
               </div>
-              <p className="text-sm text-blue-300/70 mt-1">平均検索順位（SERP）</p>
+              <p className="text-sm text-blue-300/70 mt-1">「{primaryKeyword || "メインキーワード"}」の検索順位（SERP）</p>
               <div className="mt-1.5">
                 {primaryKeyword ? (
                   <span className="inline-flex items-center gap-1 rounded-full bg-blue-500/15 px-2 py-0.5 text-xs font-medium text-blue-100">
@@ -967,6 +971,7 @@ export default function ProjectDashboardPage({
   const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
   const [selectedHour, setSelectedHour] = useState<number>(() => jstNowHM().hour);
   const [primaryKeyword, setPrimaryKeyword] = useState<string>("");
+  const [primaryKeywordPosition, setPrimaryKeywordPosition] = useState<number | null>(null);
 
   // Fetch analytics
   const fetchAnalytics = useCallback(async () => {
@@ -1030,7 +1035,27 @@ export default function ProjectDashboardPage({
         (typeof meta.primaryKeyword === "string" && meta.primaryKeyword.trim()) ||
         (Array.isArray(meta.keywords) ? (meta.keywords as string[])[0] : "") ||
         "";
-      setPrimaryKeyword(typeof kw === "string" ? kw : "");
+      const kwStr = typeof kw === "string" ? kw : "";
+      setPrimaryKeyword(kwStr);
+      // メインキーワード「単体」の掲載順位を取得（全キーワードの平均ではなく）
+      if (kwStr) {
+        try {
+          const skRes = await fetch(
+            `/api/engine/analytics/serp-keywords?projectId=${projectId}`,
+          );
+          if (skRes.ok) {
+            const skJson = await skRes.json();
+            const list: { keyword?: string; position?: number | null }[] =
+              Array.isArray(skJson?.keywords) ? skJson.keywords : [];
+            const hit = list.find((k) => k.keyword === kwStr);
+            setPrimaryKeywordPosition(
+              hit && typeof hit.position === "number" ? hit.position : null,
+            );
+          }
+        } catch {
+          /* ignore */
+        }
+      }
     } catch {
       /* ignore — カード側で未設定表示にフォールバック */
     }
@@ -1188,7 +1213,7 @@ export default function ProjectDashboardPage({
       )}
 
       {/* 2. Hero Metric Cards */}
-      <HeroMetrics data={analytics} loading={analyticsLoading} primaryKeyword={primaryKeyword} />
+      <HeroMetrics data={analytics} loading={analyticsLoading} primaryKeyword={primaryKeyword} primaryKeywordPosition={primaryKeywordPosition} />
 
       {/* 3. 24-Hour Schedule Timeline */}
       <ScheduleTimeline

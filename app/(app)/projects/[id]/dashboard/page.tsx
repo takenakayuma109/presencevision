@@ -1047,7 +1047,11 @@ export default function ProjectDashboardPage({
             const skJson = await skRes.json();
             const list: { keyword?: string; position?: number | null }[] =
               Array.isArray(skJson?.keywords) ? skJson.keywords : [];
-            const hit = list.find((k) => k.keyword === kwStr);
+            // キーワード文字列はUI入力とエンジン記録でUnicode正規化がズレ得るので
+            // NFC正規化＋trimして照合する（半角/全角の合成差などを吸収）。
+            const norm = (s: string) => (s || "").normalize("NFC").trim();
+            const target = norm(kwStr);
+            const hit = list.find((k) => norm(k.keyword ?? "") === target);
             setPrimaryKeywordPosition(
               hit && typeof hit.position === "number" ? hit.position : null,
             );

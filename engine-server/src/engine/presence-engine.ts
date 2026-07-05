@@ -494,26 +494,27 @@ async function runCycle(project: PresenceProject, cycleNumber = 0): Promise<Cycl
       ];
 
       for (const query of queries) {
-        for (const platform of ["perplexity", "google-ai-overview"] as const) {
-          try {
-            const result = await checkLlm({
-              projectId: project.id,
-              taskId: `${cycleId}-llm-${country}`,
-              query,
-              targetBrand: project.brandName,
-              platform,
-              country,
-              language,
-            });
-            llmResults.push(result);
-            tasksExecuted++;
-          } catch (error) {
-            console.error(`[Engine] LLM check failed on ${platform} (${country}):`, error);
-            tasksFailed++;
-          }
-
-          await sleep(10000 + Math.random() * 10000);
+        // web検索API（Claude + web_search）で1回だけ測定。旧スクレイピング
+        // （perplexity / google-ai-overview）はブロックされ0件だったため廃止。
+        try {
+          const result = await checkLlm({
+            projectId: project.id,
+            taskId: `${cycleId}-llm-${country}`,
+            query,
+            targetBrand: project.brandName,
+            platform: "ai-search",
+            country,
+            language,
+            targetUrl: project.targetUrl,
+          });
+          llmResults.push(result);
+          tasksExecuted++;
+        } catch (error) {
+          console.error(`[Engine] LLM check failed (${country}):`, error);
+          tasksFailed++;
         }
+
+        await sleep(5000 + Math.random() * 5000);
       }
     }
 

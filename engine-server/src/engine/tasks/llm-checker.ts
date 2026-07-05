@@ -1,13 +1,16 @@
 /**
- * LLM Checker — ChatGPT/Perplexity等でのブランド言及状況を確認
+ * LLM Checker — Anthropic の web_search ツールでブランド言及状況を測定（GEO）
  *
- * 「〇〇について教えて」等のプロンプトを各LLMに投げて、
- * ターゲットブランド/URLが言及されるかを確認。
- * GEO（Generative Engine Optimization）の効果測定。
+ * 旧実装は Perplexity / Google AI Overview を Playwright でブラウザスクレイピング
+ * していたが、datacenter IP からはほぼCAPTCHA/ブロックされ 0件しか取れなかった。
+ * ここでは Claude（+ web_search サーバーツール）に「〇〇について教えて」等を投げ、
+ * 実際にweb検索した回答の中でターゲットブランド/URLが言及・引用されるかを測定する。
+ * これはスクレイピングと違いブロックされず、安定して実測値が得られる。
+ *
+ * metrics 契約（mentioned / mentionCount / citedUrlCount）は従来と同一に保つため、
+ * analytics.ts（AI引用率の集計）は変更不要。
  */
 
-import type { Page } from "playwright";
-import { getBrowserPool } from "../browser-pool.js";
 import {
   startActivity,
   completeActivity,
@@ -28,145 +31,101 @@ export interface LlmCheckResult {
   checkedAt: Date;
 }
 
-// Perplexity（ログイン不要で使える）
-async function checkPerplexity(
-  page: Page,
-  query: string,
-  targetBrand: string,
-): Promise<Partial<LlmCheckResult>> {
-  // domcontentloaded で十分（networkidle はPerplexityのストリーミングで詰まる）
-  await page.goto("https://www.perplexity.ai/", { waitUntil: "domcontentloaded", timeout: 45000 });
+// 旧プラットフォーム名も型として許容（呼び出し側の移行を容易にするため）
+export type LlmPlatform = "ai-search" | "perplexity" | "google-ai-overview";
 
-  // ページの初期化を待つ
-  await page.waitForTimeout(5000);
+const ANTHROPIC_API_URL = "https://api.anthropic.com/v1/messages";
+// Haiku 4.5 では web_search は基本版 web_search_20250305 を使う
+// （_20260209 の動的フィルタ版は Opus 4.6+/Sonnet 4.6+ のみ）
+const WEB_SEARCH_TOOL = {
+  type: "web_search_20250305",
+  name: "web_search",
+  max_uses: 3,
+} as const;
 
-  // 検索ボックスに入力（Perplexity UIは頻繁に変わるため複数パターン対応）
-  const searchInput = page.locator([
-    'textarea[placeholder*="Ask"]',
-    'textarea[placeholder*="ask"]',
-    'textarea[placeholder*="Search"]',
-    'textarea[placeholder*="search"]',
-    'textarea',
-    'input[placeholder*="Ask"]',
-    'input[placeholder*="ask"]',
-    'input[type="text"]',
-    '[contenteditable="true"]',
-  ].join(", ")).first();
-  await searchInput.waitFor({ timeout: 30000 });
-  await searchInput.fill(query);
-  await page.waitForTimeout(500);
-  await searchInput.press("Enter");
+interface WebSearchResponse {
+  responseText: string;
+  citedUrls: string[];
+}
 
-  // 回答生成を待つ（proseセレクタが出るまで、最大60秒）
+function hostnameOf(url: string): string {
   try {
-    await page.waitForSelector('[class*="prose"], [class*="answer"], .markdown', { timeout: 60000 });
-    // 生成完了を待つ（テキストが安定するまで）
-    await page.waitForTimeout(5000);
+    return new URL(url).hostname.replace(/^www\./, "").toLowerCase();
   } catch {
-    // セレクタが見つからなくてもページのテキストを取る
-    await page.waitForTimeout(10000);
+    return "";
+  }
+}
+
+/** Claude に web_search させて回答テキストと引用URLを取得する */
+async function askWithWebSearch(
+  query: string,
+  language: string,
+): Promise<WebSearchResponse> {
+  const apiKey = process.env.ANTHROPIC_API_KEY;
+  if (!apiKey) {
+    throw new Error(
+      "ANTHROPIC_API_KEY 未設定（web検索によるGEO測定に必要）",
+    );
+  }
+  const model = process.env.ANTHROPIC_MODEL ?? "claude-haiku-4-5";
+
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 90_000);
+  let res: Response;
+  try {
+    res = await fetch(ANTHROPIC_API_URL, {
+      method: "POST",
+      headers: {
+        "x-api-key": apiKey,
+        "anthropic-version": "2023-06-01",
+        "content-type": "application/json",
+      },
+      body: JSON.stringify({
+        model,
+        max_tokens: 1024,
+        system: `あなたは検索アシスタントです。ユーザーの質問（言語: ${language}）に対し、必ず web_search で最新情報を調べてから、事実に基づいて簡潔に答えてください。`,
+        messages: [{ role: "user", content: query }],
+        tools: [WEB_SEARCH_TOOL],
+      }),
+      signal: controller.signal,
+    });
+  } finally {
+    clearTimeout(timeout);
   }
 
-  // 回答テキストを取得
-  const responseText = await page.evaluate(() => {
-    const answerEl = document.querySelector('[class*="prose"], [class*="answer"], .markdown');
-    return (answerEl?.textContent || document.body.innerText || "").trim();
-  }) as string;
+  if (!res.ok) {
+    const body = await res.text().catch(() => "");
+    throw new Error(`Anthropic web_search failed: ${res.status} ${body.slice(0, 300)}`);
+  }
 
-  // 引用URLを取得
-  const citedUrls = await page.evaluate(() => {
-    const urls: string[] = [];
-    document.querySelectorAll('a[href^="http"]').forEach((a) => {
-      const href = a.getAttribute("href") || "";
-      if (href && !href.includes("perplexity.ai")) {
-        urls.push(href);
+  const data = (await res.json()) as {
+    content?: Array<Record<string, unknown>>;
+  };
+  const blocks = Array.isArray(data.content) ? data.content : [];
+
+  const responseText = blocks
+    .filter((b) => b.type === "text")
+    .map((b) => (typeof b.text === "string" ? b.text : ""))
+    .join("\n")
+    .trim();
+
+  // 引用URL: web_search_tool_result の結果リスト + text ブロックの citations
+  const citedUrls: string[] = [];
+  for (const b of blocks) {
+    if (b.type === "web_search_tool_result" && Array.isArray(b.content)) {
+      for (const r of b.content as Array<Record<string, unknown>>) {
+        if (r && typeof r.url === "string") citedUrls.push(r.url);
       }
-    });
-    return Array.from(new Set(urls));
-  }) as string[];
-
-  const brandLower = targetBrand.toLowerCase();
-  const responseLower = (responseText || "").toLowerCase();
-  const mentioned = responseLower.includes(brandLower);
-  const mentionCount = mentioned ? responseLower.split(brandLower).length - 1 : 0;
-
-  return {
-    platform: "perplexity",
-    responseText: (responseText || "").slice(0, 5000),
-    citedUrls,
-    mentioned,
-    mentionCount,
-    sentiment: mentioned ? "neutral" : "unknown",
-  };
-}
-
-// Google AI Overview（SGE）
-async function checkGoogleAI(
-  page: Page,
-  query: string,
-  targetBrand: string,
-  country: string,
-  language: string,
-): Promise<Partial<LlmCheckResult>> {
-  const googleDomains: Record<string, string> = {
-    JP: "google.co.jp", US: "google.com", GB: "google.co.uk",
-    DE: "google.de", FR: "google.fr", KR: "google.co.kr",
-    CN: "google.com", IN: "google.co.in", BR: "google.com.br",
-  };
-  const domain = googleDomains[country] ?? "google.com";
-
-  await page.goto(
-    `https://www.${domain}/search?q=${encodeURIComponent(query)}&hl=${language}`,
-    { waitUntil: "domcontentloaded", timeout: 45000 },
-  );
-
-  // Cookie同意
-  try {
-    const btn = page.locator('#L2AGLb, button:has-text("Accept"), button:has-text("同意")');
-    if (await btn.isVisible({ timeout: 3000 })) await btn.click();
-  } catch { /* */ }
-
-  // ページ読み込み＋AI Overview生成を待つ
-  await page.waitForTimeout(5000);
-
-  // AI Overview セクションを探す（null安全）
-  const aiOverview = await page.evaluate((brand) => {
-    const selectors = [
-      '[data-attrid*="ai"]',
-      '[class*="ai-overview"]',
-      '#kp-wp-tab-overview',
-      '.wDYxhc',
-      '[data-sgrd]',
-      '.ILfuVd',
-    ];
-    let aiEl: Element | null = null;
-    for (const sel of selectors) {
-      aiEl = document.querySelector(sel);
-      if (aiEl && (aiEl.textContent || "").trim().length > 50) break;
     }
-    const text = (aiEl?.textContent || "").trim();
-    const brandLower = brand.toLowerCase();
-    const textLower = text.toLowerCase();
-    const mentioned = textLower.includes(brandLower);
-    return {
-      hasAiOverview: !!aiEl && text.length > 0,
-      responseText: text.slice(0, 3000),
-      mentioned,
-      mentionCount: mentioned ? textLower.split(brandLower).length - 1 : 0,
-    };
-  }, targetBrand);
+    if (b.type === "text" && Array.isArray(b.citations)) {
+      for (const c of b.citations as Array<Record<string, unknown>>) {
+        if (c && typeof c.url === "string") citedUrls.push(c.url);
+      }
+    }
+  }
 
-  return {
-    platform: "google-ai-overview",
-    responseText: aiOverview?.responseText ?? "",
-    citedUrls: [],
-    mentioned: aiOverview?.mentioned ?? false,
-    mentionCount: aiOverview?.mentionCount ?? 0,
-    sentiment: aiOverview?.mentioned ? "neutral" : "unknown",
-  };
+  return { responseText, citedUrls: Array.from(new Set(citedUrls)) };
 }
-
-export type LlmPlatform = "perplexity" | "google-ai-overview";
 
 export async function checkLlm(params: {
   projectId: string;
@@ -176,6 +135,7 @@ export async function checkLlm(params: {
   platform: LlmPlatform;
   country: string;
   language: string;
+  targetUrl?: string;
 }): Promise<LlmCheckResult> {
   const activity = startActivity({
     projectId: params.projectId,
@@ -187,69 +147,73 @@ export async function checkLlm(params: {
     description: `LLM言及チェック: "${params.query}" on ${params.platform} (${params.country})`,
   });
 
-  const pool = getBrowserPool();
-
   try {
-    const result = await pool.withPage(
-      async (page) => {
-        let data: Partial<LlmCheckResult>;
-
-        switch (params.platform) {
-          case "perplexity":
-            data = await checkPerplexity(page, params.query, params.targetBrand);
-            break;
-          case "google-ai-overview":
-            data = await checkGoogleAI(page, params.query, params.targetBrand, params.country, params.language);
-            break;
-          default:
-            throw new Error(`Unknown platform: ${params.platform}`);
-        }
-
-        // スクリーンショット
-        const screenshot = await page.screenshot({ fullPage: false, type: "png" });
-        addArtifact(activity.id, {
-          type: "screenshot",
-          title: `LLM: ${params.platform} "${params.query}" (${params.country})`,
-          content: screenshot.toString("base64"),
-          mimeType: "image/png",
-        });
-
-        return {
-          query: params.query,
-          platform: params.platform,
-          country: params.country,
-          language: params.language,
-          targetBrand: params.targetBrand,
-          mentioned: data.mentioned ?? false,
-          mentionCount: data.mentionCount ?? 0,
-          responseText: data.responseText ?? "",
-          citedUrls: data.citedUrls ?? [],
-          sentiment: data.sentiment ?? "unknown",
-          checkedAt: new Date(),
-        };
-      },
-      { country: params.country, locale: params.language },
+    const { responseText, citedUrls } = await askWithWebSearch(
+      params.query,
+      params.language,
     );
+
+    const brandLower = (params.targetBrand || "").trim().toLowerCase();
+    const textLower = responseText.toLowerCase();
+    const mentioned = brandLower.length > 0 && textLower.includes(brandLower);
+    const mentionCount = mentioned
+      ? textLower.split(brandLower).length - 1
+      : 0;
+
+    // 自社ドメインが引用元に含まれるか（より強いGEOシグナル）
+    const targetDomain = params.targetUrl ? hostnameOf(params.targetUrl) : "";
+    const brandCited =
+      targetDomain.length > 0 &&
+      citedUrls.some((u) => {
+        const h = hostnameOf(u);
+        return h.length > 0 && (h.includes(targetDomain) || targetDomain.includes(h));
+      });
 
     addArtifact(activity.id, {
       type: "json",
-      title: "LLMチェック結果",
-      content: JSON.stringify({ ...result, responseText: result.responseText.slice(0, 500) }, null, 2),
+      title: "LLMチェック結果（web検索）",
+      content: JSON.stringify(
+        {
+          query: params.query,
+          platform: params.platform,
+          mentioned,
+          mentionCount,
+          brandCited,
+          citedUrls: citedUrls.slice(0, 20),
+          responseText: responseText.slice(0, 800),
+        },
+        null,
+        2,
+      ),
     });
 
     completeActivity(activity.id, {
       metrics: {
-        mentioned: result.mentioned ? 1 : 0,
-        mentionCount: result.mentionCount,
-        citedUrlCount: result.citedUrls.length,
+        mentioned: mentioned ? 1 : 0,
+        mentionCount,
+        citedUrlCount: citedUrls.length,
+        brandCited: brandCited ? 1 : 0,
       },
+      details: { source: "anthropic-web-search", brandCited },
     });
 
-    return result;
+    return {
+      query: params.query,
+      platform: params.platform,
+      country: params.country,
+      language: params.language,
+      targetBrand: params.targetBrand,
+      mentioned,
+      mentionCount,
+      responseText,
+      citedUrls,
+      sentiment: mentioned ? "neutral" : "unknown",
+      checkedAt: new Date(),
+    };
   } catch (error) {
     // エラーでもクラッシュさせない — スキップ扱い
     const msg = error instanceof Error ? error.message : String(error);
-    console.warn(`[LLM] Skipping ${params.platform} "${params.query}": ${msg}`);
+    console.warn(`[LLM] Skipping "${params.query}": ${msg}`);
     completeActivity(activity.id, {
       metrics: { mentioned: 0, mentionCount: 0, citedUrlCount: 0 },
       details: { note: `スキップ: ${msg}` },

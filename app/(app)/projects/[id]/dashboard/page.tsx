@@ -130,9 +130,9 @@ function HeroMetrics({ data, loading }: { data: AnalyticsData | null; loading: b
                   <span className="text-2xl font-semibold text-blue-300">位</span>
                 )}
               </div>
-              <p className="text-sm text-blue-300/70 mt-1">平均検索順位</p>
+              <p className="text-sm text-blue-300/70 mt-1">平均検索順位（SERP）</p>
               <p className="mt-2 max-w-xs text-xs leading-relaxed text-blue-200/50">
-                Google検索（SERP＝検索結果ページ）で自社ページが平均で何番目に出るか。数字が小さい＝上位で良い。「---」はまだ順位が付く前の状態です。
+                SERP（Search Engine Results Page＝検索結果ページ）＝Googleなどの検索結果画面。自社ページが平均で何番目に出るかを示します。数字が小さい＝上位で良い。「---」は順位をまだ実測できていない状態です（実測値の取得元を接続すると表示されます）。
               </p>
             </div>
             <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-500/15">
